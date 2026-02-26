@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -141,8 +140,8 @@ export default function OnboardingPage() {
                                         key={s}
                                         onClick={() => { setSport(s); setCustomSport(""); }}
                                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${sport === s
-                                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
-                                                : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
+                                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
+                                            : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
                                             }`}
                                         data-testid={`sport-${s.toLowerCase().replace(/[^a-z]/g, "")}`}
                                     >
@@ -152,8 +151,8 @@ export default function OnboardingPage() {
                                 <button
                                     onClick={() => setSport("Other")}
                                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${sport === "Other"
-                                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
-                                            : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
+                                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
+                                        : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
                                         }`}
                                     data-testid="sport-other"
                                 >
@@ -208,8 +207,8 @@ export default function OnboardingPage() {
                                     key={l.value}
                                     onClick={() => setLevel(l.value)}
                                     className={`w-full p-4 rounded-xl text-left transition-all duration-200 border-2 ${level === l.value
-                                            ? "border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
-                                            : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
+                                        ? "border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
+                                        : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
                                         }`}
                                     data-testid={`level-${l.value}`}
                                 >
@@ -258,8 +257,8 @@ export default function OnboardingPage() {
                                         key={s.value}
                                         onClick={() => toggleSymptom(s.value)}
                                         className={`p-4 rounded-xl text-left transition-all duration-200 border-2 relative ${symptoms.includes(s.value)
-                                                ? "border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
-                                                : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
+                                            ? "border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
+                                            : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
                                             }`}
                                         data-testid={`symptom-${s.value}`}
                                     >
@@ -312,8 +311,8 @@ export default function OnboardingPage() {
                                     key={t.value}
                                     onClick={() => setTimePreference(t.value)}
                                     className={`w-full p-4 rounded-xl text-left transition-all duration-200 border-2 ${timePreference === t.value
-                                            ? "border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
-                                            : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
+                                        ? "border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
+                                        : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
                                         }`}
                                     data-testid={`time-${t.value}`}
                                 >
