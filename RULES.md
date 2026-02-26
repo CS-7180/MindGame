@@ -32,12 +32,14 @@
 
 ### Testing Strategy
 - **Core Approach:** Test-Driven Development (TDD) — write failing tests before implementing the logic.
-- **Framework:** **Playwright** is the primary testing framework for End-to-End (E2E) UI testing and integration tests.
+- **Frameworks:**
+  - **Playwright:** Primary for End-to-End (E2E) UI testing and comprehensive user flows (e.g., onboarding, routine execution).
+  - **Vitest:** Primary for unit tests and integration tests covering pure functions, utility logic (e.g., `lib/recommender.ts`), and API route business logic.
 - **Coverage Goal:** Maintain a minimum **70% test coverage** for all new features.
-- **Playwright Best Practices:**
-  - Focus on comprehensive user flows (e.g., complete onboarding journey, full routine execution flow) rather than purely isolated unit tests.
-  - Rely on resilient identifiers like `data-testid` instead of fragile CSS selectors to locate test elements.
-  - Run `--ui` mode during active development for immediate visual feedback.
+- **Testing Best Practices:**
+  - Use **Playwright** for resilient UI-based assertions using `data-testid` rather than CSS selectors.
+  - Use **Vitest** for fast-executing logic validation where a browser environment is not required.
+  - Run Playwright in `--ui` mode during active development for visual feedback.
 
 ---
 
@@ -78,6 +80,7 @@ Use meaningful, descriptive commit messages following the Conventional Commits f
 ### Agile & Sprints
 - **Milestones:** Every time you create an issue, you must explicitly associate it with the corresponding Sprint Milestone (e.g., "Sprint 1", "Sprint 2").
 - **MVP Iterations:** At the end of each sprint cycle, the team MUST deliver a functional, testable MVP satisfying that sprint's designated success criteria.
+- **Issue Granularity:** Each GitHub Issue must map to exactly one row in the milestone task tables from the PRD (e.g., "Build `/login` page" is one issue; "M1.1 Authentication" is not). One issue = one PR = one squash commit on main.
 
 ---
 
@@ -109,3 +112,58 @@ Use meaningful, descriptive commit messages following the Conventional Commits f
   - Applications must be usable entirely via keyboard navigation.
   - All form controls must have clearly associated, readable labels.
   - Retain the built-in accessibility properties (like ARIA attributes and focus management) provided by the Radix UI primitives underlying shadcn components.
+
+---
+
+## 5. CI/CD Pipeline
+
+### GitHub Actions Workflow — Required File
+A `.github/workflows/ci.yml` file MUST exist in the repository. 
+This file must be created as part of M1.0 (Project Scaffolding) 
+before any other milestone begins.
+
+### Required CI Jobs
+The workflow must run the following jobs on every push to any branch 
+and on every pull request targeting `main`:
+
+1. **Lint** — `next lint`
+2. **Type Check** — `tsc --noEmit`
+3. **Unit & Integration Tests** — `vitest run`
+4. **E2E Tests** — `playwright test`
+
+All 4 jobs must pass green before a PR is eligible for merge.
+
+### Workflow Trigger Rules
+- Trigger on: `push` to any branch, `pull_request` targeting `main`
+- E2E tests should run against a local Next.js dev server started 
+  within the workflow (use Playwright's `webServer` config)
+- Use Supabase CLI to spin up a local Supabase instance for tests
+  (`supabase start` in the workflow before running tests)
+
+### Environment Variables in CI
+- Store `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and 
+  `SUPABASE_SERVICE_ROLE_KEY` as GitHub Actions secrets
+- Never hardcode credentials in the workflow file
+- Use a separate test-only Supabase project for CI 
+  (not the production project)
+
+### Agent Instruction
+When scaffolding the project (M1.0), the agent MUST:
+1. Create `.github/workflows/ci.yml` with the jobs listed above
+2. Verify the workflow file is syntactically valid YAML before committing
+3. Commit it under: `chore(ci): add GitHub Actions CI workflow`
+4. Confirm the workflow appears and runs in the GitHub Actions tab 
+   before marking M1.0 complete
+
+---
+
+## 6. Database Migration Workflow
+- Every schema change MUST be captured as a versioned migration file 
+  in `supabase/migrations/` using the Supabase CLI:
+  `supabase migration new [description]`
+- Migration files must be committed in the same PR as the code that 
+  depends on the schema change — never separately.
+- To apply locally: `supabase db reset` (runs all migrations + seed)
+- Migration files are never edited after being committed. 
+  If a fix is needed, create a new migration.
+
