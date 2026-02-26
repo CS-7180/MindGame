@@ -43,7 +43,9 @@ const TIME_OPTIONS: { value: TimePreference; label: string; desc: string }[] = [
     { value: "10min", label: "10 Minutes", desc: "Extended — deep preparation for big games" },
 ];
 
-export default function OnboardingPage() {
+import { Suspense } from "react";
+
+function OnboardingContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const currentStep = parseInt(searchParams.get("step") || "1");
@@ -348,5 +350,17 @@ export default function OnboardingPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function OnboardingPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <div className="text-white animate-pulse">Loading onboarding...</div>
+            </div>
+        }>
+            <OnboardingContent />
+        </Suspense>
     );
 }

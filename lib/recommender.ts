@@ -87,7 +87,7 @@ export function recommend(
     }
 
     // Sort by score descending
-    const ranked = [...scored.entries()]
+    const ranked = Array.from(scored.entries())
         .sort((a, b) => b[1] - a[1])
         .map(([slug]) => techMap.get(slug))
         .filter(Boolean) as Technique[];
