@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MindGame
 
-## Getting Started
+**MindGame** is a full-stack web application designed to help athletes build and execute personalized pre-game mental routines. By leveraging techniques like visualization, guided breathing, and affirmations, MindGame empowers athletes to close the practice-to-match performance gap and achieve peak mental states on game day.
 
-First, run the development server:
+## 🚀 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Personalized Onboarding**: A rule-based recommender engine that maps your sport and anxiety symptoms to a tailored starter routine.
+- **Guided Routine Execution**: A step-by-step walkthrough of your mental routine, ensuring focus and consistency.
+- **Correlation Dashboard**: Track your adherence and visualize how mental preparation correlates with your self-reported game performance.
+- **Coach-Athlete Feedback Loop**: Coaches can share routine templates with their teams while maintaining athlete privacy and ownership.
+- **Privacy by Default**: All sensitive data is protected via Supabase Row Level Security (RLS), ensuring only you can access your personal reflections and scores.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+- **Frontend**: [React 18](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) (Radix UI)
+- **Database & Auth**: [Supabase](https://supabase.com/) (PostgreSQL + RLS + Auth)
+- **Charts**: [Recharts](https://recharts.org/)
+- **Notifications**: Web Push API (`web-push`)
+- **Testing**: [Vitest](https://vitest.dev/) (Unit/Integration), [Playwright](https://playwright.dev/) (E2E)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏗️ Getting Started
 
-## Learn More
+### Prerequisites
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js (v18 or later)
+- A Supabase Project
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Local Development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1.  **Clone the repository**:
+    ```bash
+    git clone <your-repo-url>
+    cd MindGame
+    ```
 
-## Deploy on Vercel
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3.  **Environment Variables**:
+    Create a `.env.local` file in the root directory and add your Supabase credentials:
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+    SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4.  **Run the development server**:
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
+
+## 🧪 Testing
+
+We follow a TDD approach with a minimum coverage requirement of 70%.
+
+- **Unit/Integration Tests**: `npm run test` (Vitest)
+- **E2E Tests**: `npx playwright test`
+
+## 📂 Project Structure
+
+- `app/`: Next.js App Router pages and API routes.
+- `components/`: Domain-specific and shared UI components.
+- `lib/`: Core logic, including the routine recommender and Supabase clients.
+- `supabase/`: Database migrations and seed scripts.
+- `types/`: Auto-generated database types.
+
+## 📄 License & Credits
+
+Built for CS7180 Project 2. Designed and developed by Raj Laskar and Vineela Goli.
