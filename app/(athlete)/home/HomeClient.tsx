@@ -108,6 +108,7 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                             <Button
                                 className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/25 h-12"
                                 data-testid="start-routine"
+                                onClick={() => router.push(`/routine/execute/${activeRoutine.id}`)}
                             >
                                 <Play className="h-5 w-5 mr-2" />
                                 Start Routine
@@ -152,6 +153,7 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                                     <Card
                                         key={routine.id}
                                         className="border-white/5 bg-slate-900/40 backdrop-blur-md hover:bg-slate-800/60 hover:border-white/10 transition-all cursor-pointer shadow-sm group"
+                                        onClick={() => router.push(`/routine/execute/${routine.id}`)}
                                     >
                                         <CardContent className="p-4 flex items-center justify-between">
                                             <div className="flex flex-col">
