@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
+
+const createRoutineSchema = z.object({
+    name: z.string().min(1, "Name is required").max(100, "Name is too long"),
+    steps: z.array(z.object({
+        technique_id: z.string().uuid(),
+        step_order: z.number().int().min(0)
+    })).min(1, "At least one step is required")
+});
 
 export async function GET() {
     try {
@@ -16,12 +25,12 @@ export async function GET() {
         const { data: routines, error } = await supabase
             .from("routines")
             .select(`
-        *,
-        routine_steps (
-          *,
-          techniques (*)
-        )
-      `)
+                *,
+                steps:routine_steps(
+                    *,
+                    technique:techniques(*)
+                )
+            `)
             .eq("athlete_id", user.id)
             .order("created_at", { ascending: false });
 
@@ -53,52 +62,62 @@ export async function POST(request: Request) {
             );
         }
 
-        const body = await request.json();
-        const { name, source = "custom", steps } = body;
-
-        if (!name || !steps?.length) {
-            return NextResponse.json(
-                { data: null, error: { message: "Name and at least one step required", code: "VALIDATION_ERROR" } },
-                { status: 400 }
-            );
-        }
-
-        // Check routine limit (max 5)
-        const { count } = await supabase
+        // 1. Check strict 5 routine limit
+        const { count, error: countError } = await supabase
             .from("routines")
             .select("*", { count: "exact", head: true })
             .eq("athlete_id", user.id);
 
-        if (count !== null && count >= 5) {
+        if (countError) {
             return NextResponse.json(
-                { data: null, error: { message: "Maximum 5 routines allowed", code: "LIMIT_EXCEEDED" } },
-                { status: 400 }
-            );
-        }
-
-        // Create routine
-        const { data: routine, error: routineError } = await supabase
-            .from("routines")
-            .insert({
-                athlete_id: user.id,
-                name,
-                source,
-            })
-            .select()
-            .single();
-
-        if (routineError || !routine) {
-            return NextResponse.json(
-                { data: null, error: { message: routineError?.message || "Failed to create routine", code: "DB_ERROR" } },
+                { data: null, error: { message: countError.message, code: "DB_ERROR" } },
                 { status: 500 }
             );
         }
 
-        // Create routine steps
-        const stepsToInsert = steps.map((step: { technique_id: string; step_order: number }) => ({
+        if (count !== null && count >= 5) {
+            return NextResponse.json(
+                { data: null, error: { message: "Maximum of 5 routines reached. Please delete an existing routine.", code: "LIMIT_REACHED" } },
+                { status: 400 }
+            );
+        }
+
+        // 2. Parse and validate request body
+        const body = await request.json();
+        const validation = createRoutineSchema.safeParse(body);
+
+        if (!validation.success) {
+            return NextResponse.json(
+                { data: null, error: { message: "Invalid request data", details: validation.error.format(), code: "INVALID_DATA" } },
+                { status: 400 }
+            );
+        }
+
+        const { name, steps } = validation.data;
+
+        // 3. Insert routine
+        const { data: routine, error: routineError } = await supabase
+            .from("routines")
+            .insert({
+                athlete_id: user.id,
+                name: name,
+                source: "custom"
+            })
+            .select()
+            .single();
+
+        if (routineError) {
+            return NextResponse.json(
+                { data: null, error: { message: routineError.message, code: "DB_ERROR" } },
+                { status: 500 }
+            );
+        }
+
+        // 4. Insert steps linking to the new routine
+        const stepsToInsert = steps.map(step => ({
             routine_id: routine.id,
             technique_id: step.technique_id,
-            step_order: step.step_order,
+            step_order: step.step_order
         }));
 
         const { error: stepsError } = await supabase
@@ -106,13 +125,30 @@ export async function POST(request: Request) {
             .insert(stepsToInsert);
 
         if (stepsError) {
+            // Note: In a real system we might want a proper RPC transaction here
+            // or we manually cleanup the routine if steps fail.
+            await supabase.from("routines").delete().eq("id", routine.id);
             return NextResponse.json(
                 { data: null, error: { message: stepsError.message, code: "DB_ERROR" } },
                 { status: 500 }
             );
         }
 
-        return NextResponse.json({ data: routine, error: null }, { status: 201 });
+        // Fetch the fully created routine to return
+        const { data: completeRoutine } = await supabase
+            .from("routines")
+            .select(`
+                *,
+                steps:routine_steps(
+                    *,
+                    technique:techniques(*)
+                )
+            `)
+            .eq("id", routine.id)
+            .single();
+
+        return NextResponse.json({ data: completeRoutine, error: null }, { status: 201 });
+
     } catch {
         return NextResponse.json(
             { data: null, error: { message: "Internal server error", code: "INTERNAL_ERROR" } },
