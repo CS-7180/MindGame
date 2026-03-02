@@ -127,6 +127,7 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                             <Button
                                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white"
                                 data-testid="build-routine"
+                                onClick={() => router.push("/routine/builder")}
                             >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Build Routine
@@ -135,24 +136,75 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                     </Card>
                 )}
 
-                {/* Quick Actions */}
-                <div className="grid grid-cols-2 gap-3">
-                    <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer">
-                        <CardContent className="p-4 text-center">
-                            <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                                <Plus className="h-5 w-5 text-indigo-400" />
+                {/* Sub-sections Grid */}
+                <div className="space-y-6">
+                    {/* Saved Routines */}
+                    {routines.length > 0 && (
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-semibold text-white">Your Routines</h3>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-400">{routines.length}/5 Saved</span>
+                                </div>
                             </div>
-                            <p className="text-sm font-medium text-slate-300">Routine Builder</p>
-                        </CardContent>
-                    </Card>
-                    <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer">
-                        <CardContent className="p-4 text-center">
-                            <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                                <Brain className="h-5 w-5 text-purple-400" />
+                            <div className="grid grid-cols-1 gap-2">
+                                {routines.map((routine) => (
+                                    <Card
+                                        key={routine.id}
+                                        className="border-white/5 bg-slate-900/40 backdrop-blur-md hover:bg-slate-800/60 hover:border-white/10 transition-all cursor-pointer shadow-sm group"
+                                    >
+                                        <CardContent className="p-4 flex items-center justify-between">
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-medium text-slate-200 group-hover:text-indigo-300 transition-colors">{routine.name}</p>
+                                                    {routine.is_active && (
+                                                        <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+                                                            Active
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-slate-400 mt-1">
+                                                    {routine.routine_steps?.length || 0} steps • {routine.source === "recommended" ? "Personalized" : "Custom"}
+                                                </p>
+                                            </div>
+                                            <Button variant="ghost" size="icon" className="text-slate-500 hover:text-white hover:bg-slate-800 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Play className="h-4 w-4" />
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                ))}
                             </div>
-                            <p className="text-sm font-medium text-slate-300">Pre-Game Log</p>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    )}
+
+                    {/* Quick Actions */}
+                    <div className="space-y-3">
+                        <h3 className="font-semibold text-white">Quick Actions</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Card
+                                className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
+                                onClick={() => router.push("/routine/builder")}
+                            >
+                                <CardContent className="p-4 text-center">
+                                    <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                                        <Plus className="h-5 w-5 text-indigo-400" />
+                                    </div>
+                                    <p className="text-sm font-medium text-slate-300">Routine Builder</p>
+                                </CardContent>
+                            </Card>
+                            <Card
+                                className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
+                                onClick={() => router.push("/log")}
+                            >
+                                <CardContent className="p-4 text-center">
+                                    <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                                        <Brain className="h-5 w-5 text-purple-400" />
+                                    </div>
+                                    <p className="text-sm font-medium text-slate-300">Pre-Game Log</p>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Privacy Footer */}

@@ -33,9 +33,9 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { Clock, GripVertical, Plus, Trash2, Save, ArrowLeft } from 'lucide-react'
+import { Clock, GripVertical, Plus, Trash2, Save, ArrowLeft, BookOpen, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { Technique } from '@/types/database'
+import { Technique } from '@/types/index'
 
 // Local state representation of a step before saving
 interface BuilderStep {
@@ -59,33 +59,36 @@ function SortableStepItem({ step, onRemove }: { step: BuilderStep, onRemove: (id
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        zIndex: isDragging ? 10 : 1,
-        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 50 : 1,
+        opacity: isDragging ? 0.8 : 1,
     }
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className="flex items-center gap-4 bg-card border rounded-lg p-4 mb-2 shadow-sm"
+            className={`flex items-center gap-4 border p-4 mb-3 rounded-2xl shadow-sm transition-all duration-200 ${isDragging
+                    ? 'bg-indigo-900/40 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]'
+                    : 'bg-slate-900/60 border-white/5 hover:border-white/10 hover:bg-slate-800/60'
+                }`}
         >
             <div
                 {...attributes}
                 {...listeners}
-                className="cursor-move text-muted-foreground hover:text-foreground touch-none"
+                className="cursor-move text-slate-500 hover:text-indigo-400 touch-none transition-colors p-1 rounded-md hover:bg-white/5"
             >
                 <GripVertical className="h-5 w-5" />
             </div>
 
             <div className="flex-1 space-y-1">
                 <div className="flex items-center justify-between">
-                    <p className="font-medium leading-none">{step.technique.name}</p>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="mr-1 h-3 w-3" />
+                    <p className="font-semibold text-slate-200 tracking-wide text-sm">{step.technique.name}</p>
+                    <div className="flex items-center text-xs text-indigo-300 font-medium px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20">
+                        <Clock className="mr-1.5 h-3 w-3" />
                         {step.technique.duration_minutes} min
                     </div>
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-1">
+                <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed">
                     {step.technique.instruction}
                 </p>
             </div>
@@ -93,7 +96,7 @@ function SortableStepItem({ step, onRemove }: { step: BuilderStep, onRemove: (id
             <Button
                 variant="ghost"
                 size="icon"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-full h-9 w-9 transition-colors"
                 onClick={() => onRemove(step.id)}
             >
                 <Trash2 className="h-4 w-4" />
@@ -184,7 +187,7 @@ export function RoutineBuilder({ initialTechniques }: { initialTechniques: Techn
             }
 
             toast.success('Routine saved successfully!')
-            router.push('/') // Redirect to dashboard/home
+            router.push('/home') // Redirect to dashboard/home
             router.refresh()
         } catch (error: any) {
             toast.error(error.message)
@@ -194,44 +197,61 @@ export function RoutineBuilder({ initialTechniques }: { initialTechniques: Techn
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 min-h-[calc(100vh-[12rem])] pb-10">
 
             {/* ----------------------------------------------------------- */}
             {/* LEFT COLUMN: Library */}
             {/* ----------------------------------------------------------- */}
-            <div className="lg:col-span-4 space-y-4">
-                <Card className="h-[calc(100vh-12rem)] flex flex-col">
-                    <CardHeader>
-                        <CardTitle>Technique Library</CardTitle>
-                        <CardDescription>Click to add to your routine</CardDescription>
+            <div className="xl:col-span-4 space-y-4">
+                <Card className="h-[calc(100vh-14rem)] flex flex-col border-white/10 bg-slate-900/40 backdrop-blur-xl shadow-2xl relative overflow-hidden rounded-3xl">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-50"></div>
+
+                    <CardHeader className="border-b border-white/5 bg-slate-950/40 pb-5 pt-6 px-6">
+                        <CardTitle className="text-white flex items-center gap-3 text-xl font-bold tracking-tight">
+                            <div className="p-2 bg-indigo-500/20 rounded-lg">
+                                <BookOpen className="h-5 w-5 text-indigo-400" />
+                            </div>
+                            Technique Library
+                        </CardTitle>
+                        <CardDescription className="text-slate-400 mt-2 text-sm">
+                            Click to add techniques to your routine
+                        </CardDescription>
                     </CardHeader>
+
                     <CardContent className="flex-1 overflow-hidden p-0">
-                        <ScrollArea className="h-full px-6 pb-6">
-                            <div className="space-y-6">
+                        <ScrollArea className="h-full px-6 pb-8 pt-5">
+                            <div className="space-y-8">
                                 {Object.entries(groupedTechniques).map(([category, techs]) => (
-                                    <div key={category} className="space-y-3">
-                                        <h3 className="font-semibold capitalize text-sm text-muted-foreground tracking-wider">
+                                    <div key={category} className="space-y-4">
+                                        <h3 className="font-bold capitalize text-sm bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 tracking-widest flex items-center gap-3">
+                                            <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></div>
                                             {category}
                                         </h3>
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                             {techs.map(tech => (
                                                 <div
                                                     key={tech.id}
-                                                    className="group flex flex-col p-3 border rounded-md hover:border-primary/50 hover:bg-muted/50 transition-colors cursor-pointer"
+                                                    className="group relative flex flex-col p-4 border border-white/5 bg-slate-800/30 rounded-2xl hover:border-indigo-500/40 hover:bg-slate-800/80 transition-all duration-300 ease-out cursor-pointer hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.4)]"
                                                     onClick={() => handleAddTechnique(tech)}
                                                 >
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <span className="font-medium text-sm">{tech.name}</span>
-                                                        <div className="flex items-center text-xs text-muted-foreground">
-                                                            <Clock className="w-3 h-3 mr-1" />
-                                                            {tech.duration_minutes}m
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                                                    <div className="relative z-10">
+                                                        <div className="flex items-start justify-between mb-2">
+                                                            <span className="font-semibold text-sm text-slate-200 group-hover:text-indigo-100 transition-colors pr-2 leading-tight">
+                                                                {tech.name}
+                                                            </span>
+                                                            <div className="flex items-center text-xs text-indigo-300 bg-indigo-950/50 px-2.5 py-1 rounded-lg border border-indigo-500/20 whitespace-nowrap">
+                                                                <Clock className="w-3 h-3 mr-1.5" />
+                                                                {tech.duration_minutes}m
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <p className="text-xs text-muted-foreground line-clamp-2">
-                                                        {tech.instruction}
-                                                    </p>
-                                                    <div className="mt-2 flex items-center text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Plus className="w-3 h-3 mr-1" /> Add to routine
+                                                        <p className="text-xs text-slate-400 leading-relaxed line-clamp-2 mt-1">
+                                                            {tech.instruction}
+                                                        </p>
+                                                        <div className="mt-3 flex items-center text-xs text-indigo-400 font-semibold opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                                                            <Plus className="w-3.5 h-3.5 mr-1" /> Add to Routine
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -247,37 +267,40 @@ export function RoutineBuilder({ initialTechniques }: { initialTechniques: Techn
             {/* ----------------------------------------------------------- */}
             {/* RIGHT COLUMN: Builder */}
             {/* ----------------------------------------------------------- */}
-            <div className="lg:col-span-8 space-y-4">
-                <Card className="h-[calc(100vh-12rem)] flex flex-col">
-                    <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
-                        <div className="space-y-1 flex-1 mr-4">
+            <div className="xl:col-span-8 space-y-4">
+                <Card className="h-[calc(100vh-14rem)] flex flex-col border-white/10 bg-slate-900/40 backdrop-blur-xl shadow-2xl rounded-3xl relative overflow-hidden">
+                    <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 pt-6 px-8 border-b border-white/5 bg-slate-950/40 z-10">
+                        <div className="flex-1 w-full max-w-xl">
                             <Input
                                 placeholder="Give your routine a name (e.g., Final Pre-Game Focus)"
-                                className="text-lg font-semibold h-12"
+                                className="text-xl font-bold h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all w-full"
                                 value={routineName}
                                 onChange={(e) => setRoutineName(e.target.value)}
                             />
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                            <Badge variant="secondary" className="text-sm px-3 py-1">
+                        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 w-full sm:w-auto">
+                            <Badge className="text-sm px-4 py-1.5 bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-semibold shadow-none whitespace-nowrap">
                                 Estimated Time: {totalMinutes}m
                             </Badge>
-                            <span className="text-xs text-muted-foreground">
-                                {steps.length} {steps.length === 1 ? 'step' : 'steps'}
+                            <span className="text-xs text-slate-400 font-medium px-1 tracking-wide">
+                                {steps.length} {steps.length === 1 ? 'step' : 'steps'} configured
                             </span>
                         </div>
                     </CardHeader>
 
-                    <Separator />
+                    <CardContent className="flex-1 overflow-hidden p-0 relative bg-slate-950/20">
+                        {/* Decorative background glow */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-                    <CardContent className="flex-1 overflow-hidden p-0 bg-muted/20">
-                        <ScrollArea className="h-full p-6">
+                        <ScrollArea className="h-full px-8 py-6 relative z-10">
                             {steps.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center p-8 border-2 border-dashed rounded-lg text-muted-foreground">
-                                    <Plus className="h-8 w-8 mb-4 opacity-50" />
-                                    <p className="text-lg font-medium">Your routine is empty</p>
-                                    <p className="text-sm max-w-sm mt-1">
-                                        Select techniques from the library on the left to start building your personalized pre-game mental routine.
+                                <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-white/10 rounded-2xl bg-white/[0.02]">
+                                    <div className="p-5 rounded-2xl bg-slate-800/50 border border-white/5 mb-6 shadow-inner">
+                                        <Plus className="h-10 w-10 text-slate-400" />
+                                    </div>
+                                    <p className="text-2xl font-semibold text-white mb-3">Your routine is empty</p>
+                                    <p className="text-base max-w-md text-slate-400 leading-relaxed">
+                                        Select techniques from the library on the left to start building your personalized pre-game mental routine. Drag to reorder!
                                     </p>
                                 </div>
                             ) : (
@@ -290,7 +313,7 @@ export function RoutineBuilder({ initialTechniques }: { initialTechniques: Techn
                                         items={steps.map(s => s.id)}
                                         strategy={verticalListSortingStrategy}
                                     >
-                                        <div className="space-y-1">
+                                        <div className="space-y-1 max-w-4xl mx-auto">
                                             {steps.map((step) => (
                                                 <SortableStepItem
                                                     key={step.id}
@@ -305,23 +328,26 @@ export function RoutineBuilder({ initialTechniques }: { initialTechniques: Techn
                         </ScrollArea>
                     </CardContent>
 
-                    <Separator />
-
-                    <CardFooter className="justify-between pt-4 pb-4">
-                        <Button variant="ghost" onClick={() => router.back()}>
+                    <div className="px-8 py-5 border-t border-white/5 bg-slate-950/60 flex items-center justify-between gap-4 z-10 backdrop-blur-md">
+                        <Button
+                            variant="ghost"
+                            onClick={() => router.back()}
+                            className="text-slate-400 hover:text-white hover:bg-slate-800 transition-colors px-5 rounded-xl text-sm font-medium h-11"
+                        >
                             <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
                         </Button>
                         <Button
                             onClick={handleSaveRoutine}
                             disabled={isSaving || steps.length === 0 || !routineName.trim()}
+                            className="h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold shadow-[0_0_20px_rgba(99,102,241,0.4)] disabled:shadow-none hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all duration-300 px-8 rounded-xl disabled:opacity-50"
                         >
                             {isSaving ? 'Saving...' : (
-                                <>
+                                <span className="flex items-center">
                                     <Save className="mr-2 h-4 w-4" /> Save Routine
-                                </>
+                                </span>
                             )}
                         </Button>
-                    </CardFooter>
+                    </div>
                 </Card>
             </div>
 

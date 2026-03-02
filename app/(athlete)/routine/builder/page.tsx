@@ -27,14 +27,18 @@ export default async function RoutineBuilderPage() {
     }
 
     return (
-        <div className="container mx-auto py-8">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">Routine Builder</h1>
-                <p className="text-muted-foreground mt-2">
-                    Drag and drop techniques to create your personalized pre-game mental routine.
-                </p>
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950">
+            <div className="container mx-auto py-8 xl:max-w-7xl">
+                <div className="mb-8 pl-1">
+                    <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                        Routine Builder
+                    </h1>
+                    <p className="text-slate-400 mt-2 text-base">
+                        Drag and drop techniques to create your personalized pre-game mental routine.
+                    </p>
+                </div>
+                <RoutineBuilder initialTechniques={techniques as Technique[]} />
             </div>
-            <RoutineBuilder initialTechniques={techniques as Technique[]} />
         </div>
     )
 }
