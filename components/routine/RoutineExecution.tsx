@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { RoutineWithSteps } from '@/types/index'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Pause, Play, CheckCircle, ArrowRight, X } from 'lucide-react'
 import { RoutineCompletion } from './RoutineCompletion'
 import { toast } from 'sonner'
@@ -16,8 +15,11 @@ interface RoutineExecutionProps {
 export function RoutineExecution({ routine }: RoutineExecutionProps) {
     const router = useRouter()
 
-    // Sort steps numerically based on step_order
-    const sortedSteps = [...routine.steps].sort((a, b) => a.step_order - b.step_order)
+    // Memoize sorted steps so the reference is stable across renders
+    const sortedSteps = useMemo(
+        () => [...routine.steps].sort((a, b) => a.step_order - b.step_order),
+        [routine.steps]
+    )
     const totalSteps = sortedSteps.length
 
     const [currentStepIndex, setCurrentStepIndex] = useState(0)
@@ -25,6 +27,9 @@ export function RoutineExecution({ routine }: RoutineExecutionProps) {
     const [isPaused, setIsPaused] = useState(false)
     const [isCompleted, setIsCompleted] = useState(false)
     const [isLoaded, setIsLoaded] = useState(false)
+
+    // Ref for the interval so we can clear it from inside the updater
+    const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
     // Calculate total time remaining starting from the current step
     const totalRemainingTime = sortedSteps.slice(currentStepIndex + 1).reduce(
@@ -72,22 +77,28 @@ export function RoutineExecution({ routine }: RoutineExecutionProps) {
         localStorage.setItem(storageKey, JSON.stringify(stateToSave))
     }, [currentStepIndex, timeLeftInStep, isLoaded, isCompleted, storageKey])
 
-    // Timer logic
+    // Timer logic — intentionally excludes `timeLeftInStep` from deps to prevent
+    // re-creating the interval on every tick (which caused the flicker).
+    // The interval is only started/stopped when play/pause/load state changes.
     useEffect(() => {
-        if (!isLoaded || isPaused || isCompleted || timeLeftInStep <= 0) return
+        if (!isLoaded || isPaused || isCompleted) return
 
-        const timerId = setInterval(() => {
+        intervalRef.current = setInterval(() => {
             setTimeLeftInStep((prev) => {
                 if (prev <= 1) {
-                    clearInterval(timerId)
+                    // Clear from ref when we naturally hit zero
+                    if (intervalRef.current) clearInterval(intervalRef.current)
                     return 0
                 }
                 return prev - 1
             })
         }, 1000)
 
-        return () => clearInterval(timerId)
-    }, [isLoaded, isPaused, isCompleted, timeLeftInStep])
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoaded, isPaused, isCompleted])
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60)
@@ -197,8 +208,8 @@ export function RoutineExecution({ routine }: RoutineExecutionProps) {
                         <Button
                             size="lg"
                             className={`h-16 px-8 rounded-full text-lg font-semibold whitespace-nowrap flex-1 transition-all ${timeLeftInStep === 0
-                                    ? 'bg-green-600 hover:bg-green-500 shadow-[0_0_30px_rgba(22,163,74,0.3)]'
-                                    : 'bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.3)]'
+                                ? 'bg-green-600 hover:bg-green-500 shadow-[0_0_30px_rgba(22,163,74,0.3)]'
+                                : 'bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.3)]'
                                 }`}
                             onClick={nextStep}
                         >
