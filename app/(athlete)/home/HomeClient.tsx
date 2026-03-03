@@ -11,7 +11,6 @@ import {
     Lock,
     LogOut,
     Clock,
-    Library,
     Trash2
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -71,8 +70,8 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
 
             toast.success("Routine deleted successfully!");
             router.refresh();
-        } catch (err: any) {
-            toast.error("Failed to delete", { description: err.message });
+        } catch (err: unknown) {
+            toast.error("Failed to delete", { description: err instanceof Error ? err.message : "Unknown error" });
         } finally {
             setIsDeleting(false);
             setDeletingRoutineId(null);

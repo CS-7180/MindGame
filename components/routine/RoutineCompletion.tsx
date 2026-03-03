@@ -22,7 +22,7 @@ export function RoutineCompletion({ routineName }: { routineName: string }) {
                 <div className="space-y-3">
                     <h1 className="text-4xl font-extrabold tracking-tight">Routine Complete!</h1>
                     <p className="text-slate-400 text-lg">
-                        You've successfully completed your <span className="text-indigo-400 font-semibold">{routineName}</span> routine.
+                        You&apos;ve successfully completed your <span className="text-indigo-400 font-semibold">{routineName}</span> routine.
                     </p>
                     <p className="text-slate-300 font-medium pt-2">
                         Your mind is focused. Your body is ready.

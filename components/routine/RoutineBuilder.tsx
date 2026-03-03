@@ -27,13 +27,11 @@ import {
     CardContent,
     CardDescription,
     CardHeader,
-    CardTitle,
-    CardFooter
+    CardTitle
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { Clock, GripVertical, Plus, Trash2, Save, ArrowLeft, BookOpen, X } from 'lucide-react'
+import { Clock, GripVertical, Plus, Trash2, Save, ArrowLeft, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { Technique } from '@/types/index'
 import {
@@ -201,11 +199,11 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
                 throw new Error(result.error?.message || 'Failed to save routine')
             }
 
-            toast.success('Routine saved successfully!')
+            toast.success("Routine saved successfully!")
             router.push('/home') // Redirect to dashboard/home
             router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Unknown error")
         } finally {
             setIsSaving(false)
         }

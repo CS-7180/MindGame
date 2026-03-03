@@ -29,7 +29,7 @@ export default async function ExecuteRoutinePage({ params }: { params: { routine
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-slate-300">
                 <h1 className="text-2xl font-bold mb-2 text-white">Routine Not Found</h1>
-                <p>We couldn't load this routine. It may have been deleted.</p>
+                <p>We couldn&apos;t load this routine. It may have been deleted.</p>
                 <a href="/home" className="mt-6 text-indigo-400 hover:text-indigo-300 underline underline-offset-4">
                     Return Home
                 </a>

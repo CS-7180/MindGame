@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Clock, Download, ArrowRight, Loader2, Play } from 'lucide-react'
+import { Clock, Download, Loader2 } from 'lucide-react'
 import { RoutineWithSteps } from '@/types/index'
 import { TIME_TIERS, getTierForDuration, TimeTierId } from '@/lib/constants'
 import { toast } from 'sonner'
@@ -39,8 +39,8 @@ export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [] }:
                 const json = await res.json()
                 if (json.error) throw new Error(json.error.message)
                 setTemplates(json.data || [])
-            } catch (err: any) {
-                toast.error("Failed to load templates", { description: err.message })
+            } catch (err: unknown) {
+                toast.error("Failed to load templates", { description: err instanceof Error ? err.message : "Unknown error" })
             } finally {
                 setIsLoading(false)
             }
@@ -78,8 +78,8 @@ export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [] }:
 
             toast.success("Routine added to your list!")
             router.refresh() // refresh server data in parent
-        } catch (err: any) {
-            toast.error("Failed to copy", { description: err.message })
+        } catch (err: unknown) {
+            toast.error("Failed to copy", { description: err instanceof Error ? err.message : "Unknown error" })
         } finally {
             setIsCopying(null)
         }

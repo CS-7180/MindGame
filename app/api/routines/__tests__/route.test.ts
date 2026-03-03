@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GET, POST } from '../route'
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
 
 // Mock the Supabase client
 vi.mock('@/lib/supabase/server', () => ({
@@ -16,7 +15,7 @@ describe('Routines API', () => {
     describe('GET /api/routines', () => {
         it('should return 401 if user is not authenticated', async () => {
             // Setup mock to simulate unauthenticated user
-            ; (createClient as any).mockResolvedValue({
+            ; (createClient as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
                 auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }) }
             })
 
@@ -32,7 +31,7 @@ describe('Routines API', () => {
             const mockSelect = vi.fn().mockReturnValue({ eq: mockEq })
             const mockFrom = vi.fn().mockReturnValue({ select: mockSelect })
 
-                ; (createClient as any).mockResolvedValue({
+                ; (createClient as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
                     auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'test-user-id' } }, error: null }) },
                     from: mockFrom
                 })

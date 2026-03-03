@@ -45,9 +45,9 @@ export async function DELETE(
         }
 
         return NextResponse.json({ data: { success: true }, error: null });
-    } catch (err: any) {
+    } catch (err: unknown) {
         return NextResponse.json(
-            { data: null, error: { message: err.message, code: "INTERNAL_ERROR" } },
+            { data: null, error: { message: err instanceof Error ? err.message : "Unknown error", code: "INTERNAL_ERROR" } },
             { status: 500 }
         );
     }
