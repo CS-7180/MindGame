@@ -177,10 +177,10 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
 
                 <Tabs defaultValue="my-routines" className="w-full space-y-6">
                     <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 border border-slate-800 p-1">
-                        <TabsTrigger value="my-routines" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
+                        <TabsTrigger value="my-routines" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-slate-400 transition-all">
                             My Routines
                         </TabsTrigger>
-                        <TabsTrigger value="library" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
+                        <TabsTrigger value="library" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-slate-400 transition-all">
                             Template Library
                         </TabsTrigger>
                     </TabsList>
@@ -270,7 +270,10 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                     </TabsContent>
 
                     <TabsContent value="library" className="focus-visible:outline-none focus-visible:ring-0">
-                        <RoutineLibrary currentRoutinesCount={routines.length} />
+                        <RoutineLibrary
+                            currentRoutinesCount={routines.length}
+                            userRoutineTitles={routines.map(r => r.name)}
+                        />
                     </TabsContent>
                 </Tabs>
             </main>
