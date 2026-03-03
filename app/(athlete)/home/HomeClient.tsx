@@ -11,10 +11,23 @@ import {
     Lock,
     LogOut,
     Clock,
-    Library
+    Library,
+    Trash2
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface RoutineStep {
     id: string;
@@ -43,6 +56,28 @@ interface HomeClientProps {
 
 export default function HomeClient({ displayName, routines, sport }: HomeClientProps) {
     const router = useRouter();
+    const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDeleteRoutine = async () => {
+        if (!deletingRoutineId) return;
+        setIsDeleting(true);
+        try {
+            const res = await fetch(`/api/routines/${deletingRoutineId}`, {
+                method: 'DELETE'
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error?.message || "Failed to delete routine");
+
+            toast.success("Routine deleted successfully!");
+            router.refresh();
+        } catch (err: any) {
+            toast.error("Failed to delete", { description: err.message });
+        } finally {
+            setIsDeleting(false);
+            setDeletingRoutineId(null);
+        }
+    };
 
     const handleLogout = async () => {
         const supabase = createClient();
@@ -181,9 +216,22 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                                                         {routine.routine_steps?.length || 0} steps • {routine.source === "recommended" ? "Personalized" : "Custom"}
                                                     </p>
                                                 </div>
-                                                <Button variant="ghost" size="icon" className="text-slate-500 hover:text-white hover:bg-slate-800 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Play className="h-4 w-4" />
-                                                </Button>
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-8 w-8 rounded-full"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDeletingRoutineId(routine.id);
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="text-slate-500 hover:text-white hover:bg-slate-800 h-8 w-8 rounded-full">
+                                                        <Play className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </CardContent>
                                         </Card>
                                     ))}
@@ -222,7 +270,7 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                     </TabsContent>
 
                     <TabsContent value="library" className="focus-visible:outline-none focus-visible:ring-0">
-                        <RoutineLibrary />
+                        <RoutineLibrary currentRoutinesCount={routines.length} />
                     </TabsContent>
                 </Tabs>
             </main>
@@ -232,6 +280,31 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                 <Lock className="h-3 w-3" />
                 <span>All your data is private — only visible to you</span>
             </footer>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!deletingRoutineId} onOpenChange={(open) => !open && !isDeleting && setDeletingRoutineId(null)}>
+                <AlertDialogContent className="bg-slate-900 border-slate-800 text-white">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            This action cannot be undone. This will permanently delete your pre-game mental routine.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting} className="bg-slate-800 text-white border-slate-700 hover:bg-slate-700 hover:text-white">Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleDeleteRoutine();
+                            }}
+                            disabled={isDeleting}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            {isDeleting ? "Deleting..." : "Delete Routine"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

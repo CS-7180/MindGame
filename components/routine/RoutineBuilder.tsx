@@ -36,6 +36,15 @@ import { Separator } from '@/components/ui/separator'
 import { Clock, GripVertical, Plus, Trash2, Save, ArrowLeft, BookOpen, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Technique } from '@/types/index'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 // Local state representation of a step before saving
 interface BuilderStep {
@@ -68,8 +77,8 @@ function SortableStepItem({ step, onRemove }: { step: BuilderStep, onRemove: (id
             ref={setNodeRef}
             style={style}
             className={`flex items-center gap-4 border p-4 mb-3 rounded-2xl shadow-sm transition-all duration-200 ${isDragging
-                    ? 'bg-indigo-900/40 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]'
-                    : 'bg-slate-900/60 border-white/5 hover:border-white/10 hover:bg-slate-800/60'
+                ? 'bg-indigo-900/40 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]'
+                : 'bg-slate-900/60 border-white/5 hover:border-white/10 hover:bg-slate-800/60'
                 }`}
         >
             <div
@@ -108,11 +117,12 @@ function SortableStepItem({ step, onRemove }: { step: BuilderStep, onRemove: (id
 // ----------------------------------------------------------------------
 // Main Builder Component
 // ----------------------------------------------------------------------
-export function RoutineBuilder({ initialTechniques }: { initialTechniques: Technique[] }) {
+export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: { initialTechniques: Technique[], currentRoutinesCount?: number }) {
     const router = useRouter()
     const [routineName, setRoutineName] = useState('')
     const [steps, setSteps] = useState<BuilderStep[]>([])
     const [isSaving, setIsSaving] = useState(false)
+    const [showLimitDialog, setShowLimitDialog] = useState(false)
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -157,6 +167,11 @@ export function RoutineBuilder({ initialTechniques }: { initialTechniques: Techn
     }
 
     const handleSaveRoutine = async () => {
+        if (currentRoutinesCount >= 5) {
+            setShowLimitDialog(true);
+            return;
+        }
+
         if (!routineName.trim()) {
             toast.error('Please enter a name for your routine.')
             return
@@ -351,6 +366,22 @@ export function RoutineBuilder({ initialTechniques }: { initialTechniques: Techn
                 </Card>
             </div>
 
+            {/* Limit Reached Dialog */}
+            <AlertDialog open={showLimitDialog} onOpenChange={setShowLimitDialog}>
+                <AlertDialogContent className="bg-slate-900 border-slate-800 text-white">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Routine Limit Reached</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            You have reached the maximum limit of 5 saved routines. Please delete an existing custom routine from your Dashboard before creating a new one.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => setShowLimitDialog(false)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                            Okay, Got it
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

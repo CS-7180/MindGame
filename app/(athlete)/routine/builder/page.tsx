@@ -18,10 +18,17 @@ export default async function RoutineBuilderPage() {
         .order('category')
         .order('name')
 
-    if (error || !techniques) {
+    // Count user's current customs routines (not templates)
+    const { count: currentRoutinesCount, error: countError } = await supabase
+        .from('routines')
+        .select('*', { count: 'exact', head: true })
+        .eq('athlete_id', user.id)
+        .eq('is_template', false)
+
+    if (error || !techniques || countError !== null) {
         return (
             <div className="container mx-auto py-8 text-center text-red-500">
-                Failed to load technique library. Please try again later.
+                Failed to load data. Please try again later.
             </div>
         )
     }
@@ -37,7 +44,10 @@ export default async function RoutineBuilderPage() {
                         Drag and drop techniques to create your personalized pre-game mental routine.
                     </p>
                 </div>
-                <RoutineBuilder initialTechniques={techniques as Technique[]} />
+                <RoutineBuilder
+                    initialTechniques={techniques as Technique[]}
+                    currentRoutinesCount={currentRoutinesCount || 0}
+                />
             </div>
         </div>
     )
