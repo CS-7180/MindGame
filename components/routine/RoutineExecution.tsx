@@ -121,9 +121,7 @@ export function RoutineExecution({ routine }: RoutineExecutionProps) {
     }, [currentStepIndex, totalSteps, sortedSteps, storageKey])
 
     const handleExit = () => {
-        if (confirm('Are you sure you want to exit? Your progress is saved.')) {
-            router.push('/home')
-        }
+        router.push('/home')
     }
 
     if (!isLoaded) return <div className="min-h-screen flex items-center justify-center text-white">Loading routine...</div>
