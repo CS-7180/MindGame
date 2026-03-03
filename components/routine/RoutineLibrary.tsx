@@ -21,9 +21,10 @@ import {
 
 interface RoutineLibraryProps {
     currentRoutinesCount: number;
+    userRoutineTitles?: string[];
 }
 
-export function RoutineLibrary({ currentRoutinesCount }: RoutineLibraryProps) {
+export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [] }: RoutineLibraryProps) {
     const router = useRouter()
     const [templates, setTemplates] = useState<RoutineWithSteps[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -93,11 +94,13 @@ export function RoutineLibrary({ currentRoutinesCount }: RoutineLibraryProps) {
     }
 
     // Determine the total time and tier for each template
-    const templatesWithTime = templates.map(t => {
-        const totalMin = t.steps.reduce((acc, step) => acc + step.technique.duration_minutes, 0)
-        const tier = getTierForDuration(totalMin)
-        return { ...t, totalMin, tier }
-    })
+    const templatesWithTime = templates
+        .map(t => {
+            const totalMin = t.steps.reduce((acc, step) => acc + step.technique.duration_minutes, 0)
+            const tier = getTierForDuration(totalMin)
+            return { ...t, totalMin, tier }
+        })
+        .filter(t => !userRoutineTitles.includes(t.name))
 
     const filteredTemplates = activeTierFilter === 'ALL'
         ? templatesWithTime
@@ -114,7 +117,7 @@ export function RoutineLibrary({ currentRoutinesCount }: RoutineLibraryProps) {
             <div className="flex flex-wrap gap-2">
                 <Badge
                     variant={activeTierFilter === 'ALL' ? 'default' : 'outline'}
-                    className={`cursor-pointer px-4 py-1.5 text-sm transition-colors ${activeTierFilter === 'ALL' ? 'bg-indigo-600 hover:bg-indigo-500' : 'hover:bg-slate-800'}`}
+                    className={`cursor-pointer px-4 py-1.5 text-sm transition-colors ${activeTierFilter === 'ALL' ? 'bg-indigo-600 hover:bg-indigo-500' : 'hover:bg-slate-800 text-slate-300'}`}
                     onClick={() => setActiveTierFilter('ALL')}
                 >
                     All
@@ -123,7 +126,7 @@ export function RoutineLibrary({ currentRoutinesCount }: RoutineLibraryProps) {
                     <Badge
                         key={key}
                         variant={activeTierFilter === key ? 'default' : 'outline'}
-                        className={`cursor-pointer px-4 py-1.5 text-sm transition-colors ${activeTierFilter === key ? 'bg-indigo-600 hover:bg-indigo-500' : 'hover:bg-slate-800'}`}
+                        className={`cursor-pointer px-4 py-1.5 text-sm transition-colors ${activeTierFilter === key ? 'bg-indigo-600 hover:bg-indigo-500' : 'hover:bg-slate-800 text-slate-300'}`}
                         onClick={() => setActiveTierFilter(key as TimeTierId)}
                     >
                         {tier.label} ({tier.description})

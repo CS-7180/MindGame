@@ -13,6 +13,8 @@ export const metadata: Metadata = {
     "Build personalized pre-game mental routines using visualization, breathing, and affirmations. Track your routine adherence and performance over time.",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -22,6 +24,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.variable} font-sans antialiased`}>
         {children}
+        <Toaster theme="dark" position="top-center" richColors />
       </body>
     </html>
   );
