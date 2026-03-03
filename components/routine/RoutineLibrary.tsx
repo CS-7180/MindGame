@@ -9,13 +9,27 @@ import { Clock, Download, ArrowRight, Loader2, Play } from 'lucide-react'
 import { RoutineWithSteps } from '@/types/index'
 import { TIME_TIERS, getTierForDuration, TimeTierId } from '@/lib/constants'
 import { toast } from 'sonner'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
-export function RoutineLibrary() {
+interface RoutineLibraryProps {
+    currentRoutinesCount: number;
+}
+
+export function RoutineLibrary({ currentRoutinesCount }: RoutineLibraryProps) {
     const router = useRouter()
     const [templates, setTemplates] = useState<RoutineWithSteps[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [activeTierFilter, setActiveTierFilter] = useState<TimeTierId | 'ALL'>('ALL')
     const [isCopying, setIsCopying] = useState<string | null>(null)
+    const [showLimitDialog, setShowLimitDialog] = useState(false)
 
     useEffect(() => {
         const fetchTemplates = async () => {
@@ -34,6 +48,11 @@ export function RoutineLibrary() {
     }, [])
 
     const handleCopyTemplate = async (template: RoutineWithSteps) => {
+        if (currentRoutinesCount >= 5) {
+            setShowLimitDialog(true);
+            return;
+        }
+
         setIsCopying(template.id)
         try {
             // Re-format steps to match builder schema
@@ -174,6 +193,23 @@ export function RoutineLibrary() {
                     ))
                 )}
             </div>
+
+            {/* Limit Reached Dialog */}
+            <AlertDialog open={showLimitDialog} onOpenChange={setShowLimitDialog}>
+                <AlertDialogContent className="bg-slate-900 border-slate-800 text-white">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Routine Limit Reached</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            You have reached the maximum limit of 5 saved routines. Please delete an existing custom routine from your Dashboard before copying a new template.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => setShowLimitDialog(false)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                            Okay, Got it
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
