@@ -11,7 +11,10 @@ import {
     Lock,
     LogOut,
     Clock,
+    Library
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
 
 interface RoutineStep {
     id: string;
@@ -137,84 +140,98 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                     </Card>
                 )}
 
-                {/* Sub-sections Grid */}
-                <div className="space-y-6">
-                    {/* Saved Routines */}
-                    {routines.length > 0 && (
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <h3 className="font-semibold text-white">Your Routines</h3>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-slate-400">{routines.length}/5 Saved</span>
+                <Tabs defaultValue="my-routines" className="w-full space-y-6">
+                    <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 border border-slate-800 p-1">
+                        <TabsTrigger value="my-routines" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
+                            My Routines
+                        </TabsTrigger>
+                        <TabsTrigger value="library" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
+                            Template Library
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="my-routines" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+                        {/* Saved Routines */}
+                        {routines.length > 0 && (
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="font-semibold text-white">Your Routines</h3>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-slate-400">{routines.length}/5 Saved</span>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {routines.map((routine) => (
+                                        <Card
+                                            key={routine.id}
+                                            className="border-white/5 bg-slate-900/40 backdrop-blur-md hover:bg-slate-800/60 hover:border-white/10 transition-all cursor-pointer shadow-sm group"
+                                            onClick={() => router.push(`/routine/execute/${routine.id}`)}
+                                        >
+                                            <CardContent className="p-4 flex items-center justify-between">
+                                                <div className="flex flex-col">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-medium text-slate-200 group-hover:text-indigo-300 transition-colors">{routine.name}</p>
+                                                        {routine.is_active && (
+                                                            <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+                                                                Active
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-slate-400 mt-1">
+                                                        {routine.routine_steps?.length || 0} steps • {routine.source === "recommended" ? "Personalized" : "Custom"}
+                                                    </p>
+                                                </div>
+                                                <Button variant="ghost" size="icon" className="text-slate-500 hover:text-white hover:bg-slate-800 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Play className="h-4 w-4" />
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 gap-2">
-                                {routines.map((routine) => (
-                                    <Card
-                                        key={routine.id}
-                                        className="border-white/5 bg-slate-900/40 backdrop-blur-md hover:bg-slate-800/60 hover:border-white/10 transition-all cursor-pointer shadow-sm group"
-                                        onClick={() => router.push(`/routine/execute/${routine.id}`)}
-                                    >
-                                        <CardContent className="p-4 flex items-center justify-between">
-                                            <div className="flex flex-col">
-                                                <div className="flex items-center gap-2">
-                                                    <p className="font-medium text-slate-200 group-hover:text-indigo-300 transition-colors">{routine.name}</p>
-                                                    {routine.is_active && (
-                                                        <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
-                                                            Active
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className="text-xs text-slate-400 mt-1">
-                                                    {routine.routine_steps?.length || 0} steps • {routine.source === "recommended" ? "Personalized" : "Custom"}
-                                                </p>
-                                            </div>
-                                            <Button variant="ghost" size="icon" className="text-slate-500 hover:text-white hover:bg-slate-800 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Play className="h-4 w-4" />
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                        )}
+
+                        {/* Quick Actions */}
+                        <div className="space-y-3">
+                            <h3 className="font-semibold text-white">Quick Actions</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                <Card
+                                    className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
+                                    onClick={() => router.push("/routine/builder")}
+                                >
+                                    <CardContent className="p-4 text-center">
+                                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                                            <Plus className="h-5 w-5 text-indigo-400" />
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-300">Routine Builder</p>
+                                    </CardContent>
+                                </Card>
+                                <Card
+                                    className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
+                                    onClick={() => router.push("/log")}
+                                >
+                                    <CardContent className="p-4 text-center">
+                                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                                            <Brain className="h-5 w-5 text-purple-400" />
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-300">Pre-Game Log</p>
+                                    </CardContent>
+                                </Card>
                             </div>
                         </div>
-                    )}
+                    </TabsContent>
 
-                    {/* Quick Actions */}
-                    <div className="space-y-3">
-                        <h3 className="font-semibold text-white">Quick Actions</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            <Card
-                                className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
-                                onClick={() => router.push("/routine/builder")}
-                            >
-                                <CardContent className="p-4 text-center">
-                                    <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                                        <Plus className="h-5 w-5 text-indigo-400" />
-                                    </div>
-                                    <p className="text-sm font-medium text-slate-300">Routine Builder</p>
-                                </CardContent>
-                            </Card>
-                            <Card
-                                className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
-                                onClick={() => router.push("/log")}
-                            >
-                                <CardContent className="p-4 text-center">
-                                    <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                                        <Brain className="h-5 w-5 text-purple-400" />
-                                    </div>
-                                    <p className="text-sm font-medium text-slate-300">Pre-Game Log</p>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Privacy Footer */}
-                <div className="flex items-center justify-center gap-2 text-xs text-slate-600 pt-4 pb-8" data-testid="privacy-footer">
-                    <Lock className="h-3 w-3" />
-                    <span>All your data is private — only visible to you</span>
-                </div>
+                    <TabsContent value="library" className="focus-visible:outline-none focus-visible:ring-0">
+                        <RoutineLibrary />
+                    </TabsContent>
+                </Tabs>
             </main>
+
+            {/* Privacy Footer */}
+            <footer className="flex items-center justify-center gap-2 text-xs text-slate-600 pb-8" data-testid="privacy-footer">
+                <Lock className="h-3 w-3" />
+                <span>All your data is private — only visible to you</span>
+            </footer>
         </div>
     );
 }
