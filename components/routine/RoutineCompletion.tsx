@@ -33,7 +33,7 @@ export function RoutineCompletion({ routineName }: { routineName: string }) {
                     <Button
                         size="lg"
                         className="w-full h-14 rounded-full text-lg font-bold bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.3)]"
-                        onClick={() => router.push('/log')}
+                        onClick={() => router.push('/log/pre')}
                     >
                         Log Pre-Game Entry <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
