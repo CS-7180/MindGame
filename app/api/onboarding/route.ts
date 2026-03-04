@@ -27,6 +27,22 @@ export async function POST(request: Request) {
             );
         }
 
+        // Ensure the profiles row exists (handles cases where profile was deleted but auth user exists)
+        const { error: baseProfileError } = await supabase
+            .from("profiles")
+            .upsert({
+                id: user.id,
+                role: "athlete",
+                updated_at: new Date().toISOString()
+            }, { onConflict: "id" });
+
+        if (baseProfileError) {
+            return NextResponse.json(
+                { data: null, error: { message: "Failed to ensure base profile exists", code: "DB_ERROR" } },
+                { status: 500 }
+            );
+        }
+
         // Upsert athlete profile (insert or update if exists)
         const { error: profileError } = await supabase
             .from("athlete_profiles")
