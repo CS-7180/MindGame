@@ -16,7 +16,7 @@ import { Loader2, ArrowRight } from "lucide-react";
 const preGameLogSchema = z.object({
     sport: z.string().min(1, "Sport is required"),
     routine_completed: z.enum(["yes", "partial", "no"], {
-        required_error: "Please indicate if you completed a routine.",
+        error: "Please indicate if you completed a routine.",
     }),
     pre_anxiety_level: z.number().int().min(1).max(5),
     pre_confidence_level: z.number().int().min(1).max(5),
