@@ -11,7 +11,8 @@ import {
     Lock,
     LogOut,
     Clock,
-    Trash2
+    Trash2,
+    Settings
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
@@ -100,16 +101,27 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                     </div>
                     <span className="font-bold text-white text-lg">MindGame</span>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                    className="text-slate-400 hover:text-white hover:bg-slate-800"
-                    data-testid="logout-button"
-                >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                </Button>
+                <div className="flex items-center gap-1">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => router.push("/settings")}
+                        className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full"
+                        data-testid="settings-button"
+                    >
+                        <Settings className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleLogout}
+                        className="text-slate-400 hover:text-white hover:bg-slate-800"
+                        data-testid="logout-button"
+                    >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                    </Button>
+                </div>
             </header>
 
             <main className="p-4 max-w-lg mx-auto space-y-6">
