@@ -15,6 +15,7 @@ import {
     Check,
 } from "lucide-react";
 import type { AnxietySymptom, TimePreference } from "@/lib/recommender";
+import { toast } from "sonner";
 
 const SPORTS = [
     "Soccer", "Basketball", "Tennis", "Baseball", "Swimming",
@@ -106,6 +107,10 @@ function OnboardingContent() {
             }
             router.push("/onboarding/result");
         } else {
+            const errorData = await response.json().catch(() => ({}));
+            toast.error("Failed to save profile", {
+                description: errorData.error?.message || "Please check your internet connection and try again."
+            });
             setLoading(false);
         }
     };

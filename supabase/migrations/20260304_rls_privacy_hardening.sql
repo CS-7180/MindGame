@@ -177,8 +177,10 @@ BEGIN
     -- 8. Delete athlete profile
     DELETE FROM public.athlete_profiles WHERE athlete_id = calling_user_id;
 
-    -- 9. Delete profile
-    DELETE FROM public.profiles WHERE id = calling_user_id;
+    -- 9. Reset profile (don't delete to prevent breaking FKs on re-onboarding)
+    UPDATE public.profiles
+    SET display_name = NULL, role = NULL
+    WHERE id = calling_user_id;
 
     -- Note: The actual auth.users row deletion must be handled server-side
     -- via the Supabase Admin API (service_role key), not from client-side.
