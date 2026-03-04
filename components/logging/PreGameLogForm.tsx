@@ -224,11 +224,26 @@ export function PreGameLogForm() {
                                                     step={1}
                                                     value={[field.value]}
                                                     onValueChange={(vals) => field.onChange(vals[0])}
-                                                    className="py-2"
+                                                    className="py-4"
                                                     data-testid="anxiety-slider"
                                                 />
                                             </FormControl>
-                                            <div className="flex justify-between text-xs text-slate-500">
+                                            <div className="flex justify-between px-1">
+                                                {[1, 2, 3, 4, 5].map((n) => (
+                                                    <button
+                                                        key={n}
+                                                        type="button"
+                                                        onClick={() => field.onChange(n)}
+                                                        className={`w-8 h-8 rounded-full text-xs font-bold transition-all ${field.value === n
+                                                                ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+                                                                : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
+                                                            }`}
+                                                    >
+                                                        {n}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="flex justify-between text-xs text-slate-500 pt-1">
                                                 <span>Calm</span>
                                                 <span>Overwhelmed</span>
                                             </div>
@@ -268,11 +283,26 @@ export function PreGameLogForm() {
                                                     step={1}
                                                     value={[field.value]}
                                                     onValueChange={(vals) => field.onChange(vals[0])}
-                                                    className="py-2"
+                                                    className="py-4"
                                                     data-testid="confidence-slider"
                                                 />
                                             </FormControl>
-                                            <div className="flex justify-between text-xs text-slate-500">
+                                            <div className="flex justify-between px-1">
+                                                {[1, 2, 3, 4, 5].map((n) => (
+                                                    <button
+                                                        key={n}
+                                                        type="button"
+                                                        onClick={() => field.onChange(n)}
+                                                        className={`w-8 h-8 rounded-full text-xs font-bold transition-all ${field.value === n
+                                                                ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+                                                                : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
+                                                            }`}
+                                                    >
+                                                        {n}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="flex justify-between text-xs text-slate-500 pt-1">
                                                 <span>Very low</span>
                                                 <span>Very high</span>
                                             </div>
