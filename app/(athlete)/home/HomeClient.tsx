@@ -255,7 +255,7 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                                 </Card>
                                 <Card
                                     className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
-                                    onClick={() => router.push("/log")}
+                                    onClick={() => router.push("/log/pre")}
                                 >
                                     <CardContent className="p-4 text-center">
                                         <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-purple-500/10 flex items-center justify-center">
