@@ -65,9 +65,10 @@ export function PreGameLogForm({ sport }: PreGameLogFormProps) {
             // Success! Route them to home to see their dashboard
             router.push("/home");
             router.refresh();
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error submitting pre-game log:", error);
-            setSubmitError(error.message || "An unexpected error occurred. Please try again.");
+            const message = error instanceof Error ? error.message : "An unexpected error occurred. Please try again.";
+            setSubmitError(message);
         } finally {
             setIsSubmitting(false);
         }
