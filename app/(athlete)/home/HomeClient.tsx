@@ -276,6 +276,17 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                                         <p className="text-sm font-medium text-slate-300">Pre-Game Log</p>
                                     </CardContent>
                                 </Card>
+                                <Card
+                                    className="col-span-2 border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
+                                    onClick={() => router.push("/history")}
+                                >
+                                    <CardContent className="p-4 text-center flex items-center justify-center gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                            <Clock className="h-4 w-4 text-emerald-400" />
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-300">View Routine History</p>
+                                    </CardContent>
+                                </Card>
                             </div>
                         </div>
                     </TabsContent>
