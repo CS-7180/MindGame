@@ -26,7 +26,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface RoutineStep {
@@ -58,6 +58,24 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
     const router = useRouter();
     const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [pendingPostLogId, setPendingPostLogId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const checkPendingPosts = async () => {
+            try {
+                const res = await fetch('/api/logs/pending-post');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.pendingLog) {
+                        setPendingPostLogId(data.pendingLog.id);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to check pending posts:", err);
+            }
+        };
+        checkPendingPosts();
+    }, []);
 
     const handleDeleteRoutine = async () => {
         if (!deletingRoutineId) return;
@@ -134,6 +152,31 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                         {sport ? `Ready to dominate your next ${sport} game?` : "Ready to build your mental game?"}
                     </p>
                 </div>
+
+                {/* Pending Post-Game Reflection Alert */}
+                {pendingPostLogId && (
+                    <Card className="border-amber-500/50 bg-amber-500/10 backdrop-blur-sm shadow-xl animate-in slide-in-from-top-2 duration-300">
+                        <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-amber-500/20">
+                                    <Brain className="h-5 w-5 text-amber-400" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-white">Post-Game Reflection Pending</h3>
+                                    <p className="text-sm text-amber-200/80">
+                                        How did your game go today? Take a minute to reflect.
+                                    </p>
+                                </div>
+                            </div>
+                            <Button
+                                className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shadow-lg shadow-amber-500/25 whitespace-nowrap"
+                                onClick={() => router.push(`/post-game/${pendingPostLogId}`)}
+                            >
+                                Complete Now
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Active Routine Card */}
                 {activeRoutine ? (
