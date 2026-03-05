@@ -100,16 +100,16 @@ export default function PostGameForm({ logId }: PostGameFormProps) {
 
     const RatingSelector = ({ value, onChange, label }: { value: number, onChange: (val: number) => void, label: string }) => (
         <div className="space-y-3">
-            <Label className="text-base font-semibold">{label}</Label>
+            <Label className="text-base font-semibold text-white">{label}</Label>
             <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((num) => (
                     <button
                         key={num}
                         type="button"
                         onClick={() => onChange(num)}
-                        className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-lg transition-all border ${value === num
+                        className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-lg transition-all border-2 ${value === num
                             ? 'bg-primary text-primary-foreground border-primary scale-110 shadow-lg shadow-primary/20'
-                            : 'bg-muted/30 text-muted-foreground border-transparent hover:bg-muted focus:ring-2 focus:ring-ring focus:outline-none'
+                            : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-indigo-400 hover:bg-slate-800 hover:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none'
                             }`}
                         aria-label={`Rate ${label} ${num} out of 5`}
                         aria-pressed={value === num}
@@ -136,21 +136,25 @@ export default function PostGameForm({ logId }: PostGameFormProps) {
             />
 
             <div className="space-y-3">
-                <Label htmlFor="descriptor" className="text-base font-semibold">One-Word Descriptor (Optional)</Label>
-                <p className="text-sm text-muted-foreground">How did you feel overall? Keep it short and impactful.</p>
+                <Label htmlFor="descriptor" className="text-base font-semibold text-white">One-Word Descriptor (Optional)</Label>
+                <p className="text-sm text-slate-400">How did you feel overall? Keep it short and impactful.</p>
                 <Input
                     id="descriptor"
                     value={descriptor}
                     onChange={(e) => setDescriptor(e.target.value)}
                     placeholder="e.g. Focused, Frustrated, Energized"
-                    className="max-w-md bg-muted/30"
+                    className="max-w-md bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-indigo-500"
                     maxLength={30}
                     disabled={isSubmitting}
                 />
             </div>
 
-            <div className="flex items-center gap-4 pt-4 border-t border-border/50">
-                <Button type="submit" disabled={isSubmitting} className="font-semibold shadow-lg shadow-primary/20">
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-slate-800/50">
+                <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/25"
+                >
                     {isSubmitting ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -165,7 +169,7 @@ export default function PostGameForm({ logId }: PostGameFormProps) {
                     variant="ghost"
                     onClick={handleSkip}
                     disabled={isSubmitting}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="w-full sm:w-auto text-slate-400 hover:text-white hover:bg-slate-800"
                 >
                     Dismiss
                 </Button>

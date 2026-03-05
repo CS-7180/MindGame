@@ -45,25 +45,32 @@ export default async function PostGamePage({ params }: { params: { id: string } 
     const formattedDate = format(new Date(`${log.log_date}T12:00:00`), 'MMMM d, yyyy');
 
     return (
-        <div className="container max-w-2xl py-8 space-y-6">
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight text-white">Post-Game Reflection</h1>
-                <p className="text-muted-foreground">
-                    Record your performance and mental state for your {log.sport} game on {formattedDate}.
-                </p>
-            </div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl mx-auto space-y-8">
+                <div className="space-y-4 text-center">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-md">
+                        Post-Game Reflection
+                    </h1>
+                    <p className="text-lg text-slate-300">
+                        Record your performance and mental state for your <span className="font-semibold text-white">{log.sport}</span> game on <span className="font-semibold text-indigo-300">{formattedDate}</span>.
+                    </p>
+                </div>
 
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                    <CardTitle className="text-xl">Reflection Details</CardTitle>
-                    <CardDescription>
-                        Be honest with yourself to track your progress accurately over time.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <PostGameForm logId={log.id} />
-                </CardContent>
-            </Card>
+                <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-md shadow-2xl overflow-hidden rounded-2xl">
+                    <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/10 h-2 w-full" />
+                    <CardHeader className="pb-6">
+                        <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
+                            Reflection Details
+                        </CardTitle>
+                        <CardDescription className="text-slate-400 text-base">
+                            Be honest with yourself to track your progress accurately over time.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6 pt-0">
+                        <PostGameForm logId={log.id} />
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
