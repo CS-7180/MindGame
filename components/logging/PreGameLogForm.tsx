@@ -58,7 +58,7 @@ const CONFIDENCE_LABELS: Record<number, string> = {
     5: "Very high",
 };
 
-export function PreGameLogForm() {
+export function PreGameLogForm({ sport }: { sport?: string | null }) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -124,7 +124,9 @@ export function PreGameLogForm() {
                     <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25">
                         <Brain className="h-5 w-5 text-white" />
                     </div>
-                    <h1 className="font-bold text-white text-lg">Pre-Game Log</h1>
+                    <h1 className="font-bold text-white text-lg">
+                        Pre-{sport ? <span className="text-indigo-400">{sport}</span> : ""} Game Log
+                    </h1>
                 </div>
             </header>
 
@@ -143,7 +145,7 @@ export function PreGameLogForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-white text-base font-semibold">
-                                        Did you complete your routine?
+                                        Did you complete your routine? <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormControl>
                                         <RadioGroup
@@ -202,7 +204,7 @@ export function PreGameLogForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-white text-base font-semibold">
-                                        Anxiety Level
+                                        Anxiety Level <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormDescription className="text-slate-400">
                                         How anxious are you feeling right now?
@@ -261,7 +263,7 @@ export function PreGameLogForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-white text-base font-semibold">
-                                        Confidence Level
+                                        Confidence Level <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormDescription className="text-slate-400">
                                         How confident do you feel about your performance?

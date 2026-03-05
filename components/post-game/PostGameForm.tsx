@@ -100,7 +100,9 @@ export default function PostGameForm({ logId }: PostGameFormProps) {
 
     const RatingSelector = ({ value, onChange, label }: { value: number, onChange: (val: number) => void, label: string }) => (
         <div className="space-y-3">
-            <Label className="text-base font-semibold text-white">{label}</Label>
+            <Label className="text-base font-semibold text-white">
+                {label} <span className="text-red-500">*</span>
+            </Label>
             <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((num) => (
                     <button
@@ -108,7 +110,7 @@ export default function PostGameForm({ logId }: PostGameFormProps) {
                         type="button"
                         onClick={() => onChange(num)}
                         className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-lg transition-all border-2 ${value === num
-                            ? 'bg-primary text-primary-foreground border-primary scale-110 shadow-lg shadow-primary/20'
+                            ? 'bg-indigo-600 text-white border-indigo-400 scale-110 shadow-lg shadow-indigo-500/30'
                             : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-indigo-400 hover:bg-slate-800 hover:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none'
                             }`}
                         aria-label={`Rate ${label} ${num} out of 5`}
