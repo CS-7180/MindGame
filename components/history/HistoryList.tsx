@@ -19,6 +19,7 @@ interface GameLog {
     pre_confidence_level: number;
     pre_notes: string | null;
     post_performance: number | null;
+    pre_logged_at?: string;
 }
 
 interface HistoryListProps {
@@ -36,6 +37,10 @@ export function HistoryList({ initialLogs }: HistoryListProps) {
         const matchCompleted = filterCompleted === "all" || log.routine_completed === filterCompleted;
         const matchDate = !searchDate || log.log_date.includes(searchDate);
         return matchCompleted && matchDate;
+    }).sort((a, b) => {
+        const dateA = new Date(a.pre_logged_at || a.log_date).getTime();
+        const dateB = new Date(b.pre_logged_at || b.log_date).getTime();
+        return dateB - dateA;
     });
 
     const getCompletionIcon = (status: string) => {
@@ -60,7 +65,7 @@ export function HistoryList({ initialLogs }: HistoryListProps) {
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Entry History</h1>
+                    <h1 className="text-2xl font-bold text-white">Routine History</h1>
                     <p className="text-sm text-slate-400">Review your past performances and mental states</p>
                 </div>
             </div>
@@ -121,13 +126,16 @@ export function HistoryList({ initialLogs }: HistoryListProps) {
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-white font-medium">
-                                            {format(parseISO(log.log_date), "MMM d, yyyy")}
+                                            {format(parseISO(log.pre_logged_at || log.log_date), "MMM d, yyyy")}
                                         </h3>
                                         <Badge variant="outline" className="border-indigo-500/30 text-indigo-300 bg-indigo-500/10">
                                             {log.sport}
                                         </Badge>
                                     </div>
                                     <div className="flex items-center gap-4 text-xs text-slate-400">
+                                        <div className="flex items-center gap-1 text-slate-300">
+                                            {log.pre_logged_at && format(parseISO(log.pre_logged_at), "h:mm a")}
+                                        </div>
                                         <div className="flex items-center gap-1">
                                             <Brain className="h-3 w-3" />
                                             Anxiety: {log.pre_anxiety_level}/5

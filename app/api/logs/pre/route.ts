@@ -50,10 +50,10 @@ export async function POST(request: Request) {
             );
         }
 
-        // Upsert pre-game log (log_date is unique per athlete)
+        // Insert pre-game log (allows multiple per day now)
         const { data: log, error: logError } = await supabase
             .from("game_logs")
-            .upsert({
+            .insert({
                 athlete_id: user.id,
                 log_date,
                 sport: profile.sport,
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
                 pre_confidence_level,
                 pre_notes: pre_notes || null,
                 pre_logged_at: new Date().toISOString()
-            }, { onConflict: "athlete_id, log_date" })
+            })
             .select()
             .single();
 
