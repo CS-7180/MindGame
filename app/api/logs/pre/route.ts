@@ -8,6 +8,7 @@ const preGameLogSchema = z.object({
     pre_anxiety_level: z.number().int().min(1).max(5),
     pre_confidence_level: z.number().int().min(1).max(5),
     pre_notes: z.string().max(200).optional().nullable(),
+    sport: z.string().min(1)
 });
 
 export async function POST(request: Request) {
@@ -34,41 +35,38 @@ export async function POST(request: Request) {
             );
         }
 
-        const { log_date, routine_completed, pre_anxiety_level, pre_confidence_level, pre_notes } = parsed.data;
+        // Destructure validated data
+        const { log_date, sport, routine_completed, pre_anxiety_level, pre_confidence_level, pre_notes } = parsed.data;
 
-        // Fetch athlete's sport from athlete_profiles
-        const { data: profile, error: profileError } = await supabase
-            .from("athlete_profiles")
-            .select("sport")
-            .eq("athlete_id", user.id)
-            .single();
-
-        if (profileError || !profile || !profile.sport) {
-            return NextResponse.json(
-                { data: null, error: { message: "Athlete profile or sport not found", code: "NOT_FOUND" } },
-                { status: 404 }
-            );
-        }
+        console.log("Saving pre-game log:", {
+            athlete_id: user.id,
+            sport: sport,
+            routine_completed: routine_completed,
+            pre_anxiety_level: pre_anxiety_level,
+            pre_confidence_level: pre_confidence_level,
+            pre_notes: pre_notes || null,
+            pre_logged_at: new Date().toISOString(),
+        });
 
         // Insert pre-game log (allows multiple per day now)
-        const { data: log, error: logError } = await supabase
+        const { data: log, error: insertError } = await supabase
             .from("game_logs")
             .insert({
                 athlete_id: user.id,
-                log_date,
-                sport: profile.sport,
-                routine_completed,
-                pre_anxiety_level,
-                pre_confidence_level,
+                log_date: log_date,
+                sport: sport,
+                routine_completed: routine_completed,
+                pre_anxiety_level: pre_anxiety_level,
+                pre_confidence_level: pre_confidence_level,
                 pre_notes: pre_notes || null,
                 pre_logged_at: new Date().toISOString()
             })
             .select()
             .single();
 
-        if (logError) {
+        if (insertError) {
             return NextResponse.json(
-                { data: null, error: { message: logError.message, code: "DB_ERROR" } },
+                { data: null, error: { message: insertError.message, code: "DB_ERROR" } },
                 { status: 500 }
             );
         }

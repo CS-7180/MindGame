@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -38,6 +39,7 @@ const preGameLogSchema = z.object({
         .max(200, "Notes must be 200 characters or fewer")
         .optional()
         .or(z.literal("")),
+    sport: z.string().min(1, "Please specify a sport"),
 });
 
 type PreGameLogFormValues = z.infer<typeof preGameLogSchema>;
@@ -70,6 +72,7 @@ export function PreGameLogForm({ sport }: { sport?: string | null }) {
             pre_anxiety_level: 3,
             pre_confidence_level: 3,
             pre_notes: "",
+            sport: sport || "",
         },
     });
 
@@ -138,6 +141,30 @@ export function PreGameLogForm({ sport }: { sport?: string | null }) {
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        {/* ── Sport ── */}
+                        <FormField
+                            control={form.control}
+                            name="sport"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-white text-base font-semibold">
+                                        Sport <span className="text-red-500">*</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="e.g. Tennis, Basketball, Soccer"
+                                            className="bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-500 max-w-md focus-visible:ring-indigo-500"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormDescription className="text-slate-400">
+                                        What sport are you playing today?
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         {/* ── Routine Completed ── */}
                         <FormField
                             control={form.control}
