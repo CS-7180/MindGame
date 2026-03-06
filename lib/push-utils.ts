@@ -1,5 +1,3 @@
-export const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-
 export async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) {
     throw new Error('Service worker not supported');
@@ -17,7 +15,8 @@ export async function getSubscription() {
 }
 
 export async function subscribeToNotifications() {
-  if (!VAPID_PUBLIC_KEY) {
+  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  if (!vapidPublicKey) {
     throw new Error("Push notifications are not configured: VAPID public key is missing.");
   }
 
@@ -28,7 +27,7 @@ export async function subscribeToNotifications() {
 
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY!)
+    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
   });
 
   // Send subscription to server
