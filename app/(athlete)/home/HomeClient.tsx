@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
+import { SharedTemplateNotifications } from "@/components/routine/SharedTemplateNotifications";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -52,9 +53,10 @@ interface HomeClientProps {
     displayName: string;
     routines: Routine[];
     sport: string;
+    notifications: any[];
 }
 
-export default function HomeClient({ displayName, routines, sport }: HomeClientProps) {
+export default function HomeClient({ displayName, routines, sport, notifications }: HomeClientProps) {
     const router = useRouter();
     const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -134,6 +136,9 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                         {sport ? `Ready to dominate your next ${sport} game?` : "Ready to build your mental game?"}
                     </p>
                 </div>
+
+                {/* Shared Template Notifications */}
+                <SharedTemplateNotifications notifications={notifications} />
 
                 {/* Active Routine Card */}
                 {activeRoutine ? (
