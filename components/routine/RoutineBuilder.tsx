@@ -30,6 +30,27 @@ import {
     CardTitle
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+
+export const AVAILABLE_SPORTS = [
+    "Soccer",
+    "Basketball",
+    "Football",
+    "Baseball",
+    "Tennis",
+    "Track & Field",
+    "Swimming",
+    "Volleyball",
+    "Golf",
+    "Esports",
+    "Unspecified"
+]
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Clock, GripVertical, Plus, Trash2, Save, ArrowLeft, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
@@ -305,12 +326,20 @@ export function RoutineBuilder({
                                 value={routineName}
                                 onChange={(e) => setRoutineName(e.target.value)}
                             />
-                            <Input
-                                placeholder="Sport (e.g., Soccer)"
-                                className="text-lg font-medium h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all w-1/3"
-                                value={sport}
-                                onChange={(e) => setSport(e.target.value)}
-                            />
+                            <div className="w-1/3">
+                                <Select value={sport} onValueChange={setSport}>
+                                    <SelectTrigger className="h-14 bg-slate-950/50 border-white/10 text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl">
+                                        <SelectValue placeholder="Select Sport" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-slate-900 border-white/10">
+                                        {AVAILABLE_SPORTS.map((s) => (
+                                            <SelectItem key={s} value={s} className="text-slate-200 focus:bg-indigo-500/20 focus:text-white cursor-pointer hover:bg-indigo-500/20">
+                                                {s}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 w-full sm:w-auto">
                             <Badge className="text-sm px-4 py-1.5 bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-semibold shadow-none whitespace-nowrap">

@@ -96,27 +96,29 @@ export async function POST(request: Request) {
 
         const { name, sport, steps } = validation.data;
 
-        // 3. Fetch athlete's sport from their athlete profile
-        const { data: athleteProfile, error: profileError } = await supabase
-            .from("athlete_profiles")
-            .select("sport")
+        // Deactivate any existing active routines for this athlete and sport
+        const { error: deactivateError } = await supabase
+            .from("routines")
+            .update({ is_active: false })
             .eq("athlete_id", user.id)
-            .single();
+            .eq("sport", sport);
 
-        if (profileError || !athleteProfile?.sport) {
+        if (deactivateError) {
             return NextResponse.json(
-                { data: null, error: { message: "Could not determine athlete sport. Please complete onboarding.", code: "MISSING_SPORT" } },
-                { status: 400 }
+                { data: null, error: { message: "Failed to clear previous active routines", code: "DB_ERROR" } },
+                { status: 500 }
             );
         }
 
-        // 4. Insert routine
+        // 3. Insert routine
         const { data: routine, error: routineError } = await supabase
             .from("routines")
             .insert({
                 athlete_id: user.id,
                 name: name,
                 sport: sport,
+                is_template: false,
+                is_active: true,
                 source: "custom",
             })
             .select()

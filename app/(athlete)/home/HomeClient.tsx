@@ -206,7 +206,7 @@ export default function HomeClient({ displayName, routines, sport, notifications
                 <SharedTemplateNotifications notifications={notifications} />
 
                 {/* Sport Selector Tabs */}
-                {allSports.length > 1 && (
+                {allSports.length > 0 && (
                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                         {allSports.map((s) => (
                             <button
