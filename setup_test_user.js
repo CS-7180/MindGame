@@ -1,14 +1,31 @@
 const { createClient } = require('@supabase/supabase-js');
 const dotenv = require('dotenv');
-dotenv.config({ path: '.env.local' });
+const path = require('path');
+const fs = require('fs');
+
+const envPath = path.resolve(process.cwd(), '.env.local');
+if (fs.existsSync(envPath)) {
+    console.log(`Loading env from: ${envPath}`);
+    dotenv.config({ path: envPath });
+} else {
+    console.log('.env.local not found, relying on system environment variables.');
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+if (!supabaseUrl) {
+    console.error('ERROR: NEXT_PUBLIC_SUPABASE_URL is missing.');
+}
+if (!supabaseKey) {
+    console.error('ERROR: SUPABASE_SERVICE_ROLE_KEY is missing.');
+}
+
 if (!supabaseUrl || !supabaseKey) {
-    console.error('Missing Supabase URL or Service Role Key');
     process.exit(1);
 }
+
+console.log('Using Supabase URL:', supabaseUrl);
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
     auth: {
