@@ -25,7 +25,7 @@ export function StreakCard({ streak }: StreakCardProps) {
 
             <div className="text-sm text-slate-500 text-center sm:text-right max-w-sm">
                 <p className="italic">
-                    "These results are based on your self-reported ratings and are not scientifically validated."
+                    &quot;These results are based on your self-reported ratings and are not scientifically validated.&quot;
                 </p>
             </div>
         </div>
