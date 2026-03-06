@@ -3,18 +3,25 @@
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import {
     Brain,
+    Clock,
     Play,
     Plus,
-    Lock,
-    LogOut,
-    Clock,
-    Trash2,
     Settings,
     CheckCircle2,
-    BarChart3
+    LogOut,
+    Trash2,
+    BarChart3,
+    Lock
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
@@ -112,7 +119,7 @@ export default function HomeClient({ displayName, routines, sport, notifications
         if (!deletingRoutineId) return;
         setIsDeleting(true);
         try {
-            const res = await fetch(`/api/routines/${deletingRoutineId}`, {
+            const res = await fetch(`/ api / routines / ${deletingRoutineId} `, {
                 method: 'DELETE'
             });
             const json = await res.json();
@@ -131,7 +138,7 @@ export default function HomeClient({ displayName, routines, sport, notifications
     const handleSetActive = async (routineId: string) => {
         setSettingActiveId(routineId);
         try {
-            const res = await fetch(`/api/routines/${routineId}/active`, {
+            const res = await fetch(`/ api / routines / ${routineId}/active`, {
                 method: 'PATCH'
             });
             const json = await res.json();
@@ -207,19 +214,20 @@ export default function HomeClient({ displayName, routines, sport, notifications
 
                 {/* Sport Selector Tabs */}
                 {allSports.length > 0 && (
-                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                        {allSports.map((s) => (
-                            <button
-                                key={s}
-                                onClick={() => setSelectedSport(s)}
-                                className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-colors ${selectedSport === s
-                                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                                    : "bg-slate-800/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 border border-slate-700/50"
-                                    }`}
-                            >
-                                {s}
-                            </button>
-                        ))}
+                    <div className="flex items-center gap-3 pb-2 pt-2">
+                        <span className="text-sm font-medium text-slate-400">View Sport:</span>
+                        <Select value={selectedSport} onValueChange={setSelectedSport}>
+                            <SelectTrigger className="w-[180px] bg-slate-800/50 border-slate-700/50 text-white focus:ring-indigo-500/50">
+                                <SelectValue placeholder="Select Sport..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-900 border-slate-800">
+                                {allSports.map((s) => (
+                                    <SelectItem key={s} value={s} className="text-slate-200 focus:bg-indigo-500/20 focus:text-white cursor-pointer hover:bg-slate-800">
+                                        {s}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 )}
 
