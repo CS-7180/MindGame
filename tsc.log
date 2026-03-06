@@ -1,0 +1,20 @@
+__tests__/api/coach/templates.test.ts(2,27): error TS2307: Cannot find module '../../../../app/api/coach/templates/route' or its corresponding type declarations.
+__tests__/api/coach/templates.test.ts(3,30): error TS2307: Cannot find module '../../../../lib/supabase/server' or its corresponding type declarations.
+__tests__/api/coach/templates.test.ts(28,38): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates.test.ts(40,32): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates.test.ts(51,38): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates.test.ts(72,38): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates.test.ts(88,49): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates.test.ts(91,48): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates.test.ts(96,55): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates.test.ts(99,48): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(22,38): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(35,38): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(43,57): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(61,38): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(69,57): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(78,45): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(96,40): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(100,38): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(108,57): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.
+__tests__/api/coach/templates/share.test.ts(117,45): error TS2339: Property 'resolves' does not exist on type 'Mock<Procedure>'.

@@ -46,11 +46,30 @@ export default async function HomePage() {
         .eq("athlete_id", user.id)
         .order("created_at", { ascending: false });
 
+    // Fetch pending coach template notifications
+    const { data: notifications } = await supabase
+        .from("template_notifications")
+        .select(`
+            *,
+            coach:profiles!coach_id(display_name),
+            template:coach_templates(
+                *,
+                steps:coach_template_steps(
+                    *,
+                    technique:techniques(*)
+                )
+            )
+        `)
+        .eq("athlete_id", user.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
     return (
         <HomeClient
             displayName={profile?.display_name || user.email?.split("@")[0] || "Athlete"}
             routines={routines || []}
             sport={athleteProfile?.sport || ""}
+            notifications={notifications || []}
         />
     );
 }

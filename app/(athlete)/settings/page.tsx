@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { JoinTeamCard } from "@/components/settings/JoinTeamCard";
+
 export default function SettingsPage() {
     const router = useRouter();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -83,7 +85,12 @@ export default function SettingsPage() {
                 </div>
             </header>
 
-            <main className="p-4 max-w-lg mx-auto space-y-6 pb-12">
+            <main className="p-4 max-w-lg mx-auto space-y-8 pb-12">
+                {/* Join Team Section */}
+                <section>
+                    <JoinTeamCard />
+                </section>
+
                 {/* Privacy Summary */}
                 <section className="pt-4">
                     <div className="flex items-center gap-2 mb-4">

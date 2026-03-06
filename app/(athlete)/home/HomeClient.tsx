@@ -13,10 +13,12 @@ import {
     Clock,
     Trash2,
     Settings,
+    CheckCircle2,
     BarChart3
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
+import { SharedTemplateNotifications } from "@/components/routine/SharedTemplateNotifications";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -49,17 +51,58 @@ interface Routine {
     routine_steps: RoutineStep[];
 }
 
+interface SharedTemplateNotification {
+    id: string;
+    coach: {
+        display_name: string;
+    };
+    template: {
+        id: string;
+        name: string;
+        time_tier: string;
+        coach_note: string;
+        steps: {
+            id: string;
+            technique: {
+                name: string;
+                duration_minutes: number;
+            };
+        }[];
+    };
+}
+
 interface HomeClientProps {
     displayName: string;
     routines: Routine[];
     sport: string;
+    notifications: SharedTemplateNotification[];
 }
 
-export default function HomeClient({ displayName, routines, sport }: HomeClientProps) {
+export default function HomeClient({ displayName, routines, sport, notifications }: HomeClientProps) {
     const router = useRouter();
     const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isActivating, setIsActivating] = useState<string | null>(null);
     const [pendingPostLogId, setPendingPostLogId] = useState<string | null>(null);
+
+    const handleActivateRoutine = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsActivating(id);
+        try {
+            const res = await fetch(`/api/routines/${id}/activate`, {
+                method: 'POST'
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error?.message || "Failed to activate routine");
+
+            toast.success("Routine activated successfully!");
+            router.refresh();
+        } catch (err: unknown) {
+            toast.error("Failed to activate", { description: err instanceof Error ? err.message : "Unknown error" });
+        } finally {
+            setIsActivating(null);
+        }
+    };
 
     useEffect(() => {
         const checkPendingPosts = async () => {
@@ -153,6 +196,9 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                         {sport ? `Ready to dominate your next ${sport} game?` : "Ready to build your mental game?"}
                     </p>
                 </div>
+
+                {/* Shared Template Notifications */}
+                <SharedTemplateNotifications notifications={notifications} />
 
                 {/* Pending Post-Game Reflection Alert */}
                 {pendingPostLogId && (
@@ -261,19 +307,30 @@ export default function HomeClient({ displayName, routines, sport }: HomeClientP
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center gap-2">
                                                         <p className="font-medium text-slate-200 group-hover:text-indigo-300 transition-colors">{routine.name}</p>
-                                                        {routine.is_active && (
+                                                        {routine.is_active ? (
                                                             <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
                                                                 Active
                                                             </span>
+                                                        ) : (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/20 h-8 rounded-full px-3"
+                                                                onClick={(e) => handleActivateRoutine(routine.id, e)}
+                                                                disabled={isActivating === routine.id}
+                                                            >
+                                                                <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                                                                {isActivating === routine.id ? '...' : 'Activate'}
+                                                            </Button>
                                                         )}
                                                     </div>
                                                     <p className="text-xs text-slate-400 mt-1">
                                                         {routine.routine_steps?.length || 0} steps • {routine.source === "recommended" ? "Personalized" : "Custom"}
                                                     </p>
                                                 </div>
-                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <Button
-                                                        variant="ghost"
+                                                            variant="ghost"
                                                         size="icon"
                                                         className="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-8 w-8 rounded-full"
                                                         onClick={(e) => {

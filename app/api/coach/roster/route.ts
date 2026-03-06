@@ -72,7 +72,14 @@ export async function GET() {
         // Build response — ONLY display_name + has_active_routine (AC-12.2)
         const rosterResponse = (roster || []).map(entry => {
             // Supabase join can return object or array depending on relationship type
-            const athleteData = entry.athlete as unknown as { display_name: string | null } | null;
+            let athleteData: { display_name: string | null } | null = null;
+
+            if (Array.isArray(entry.athlete)) {
+                athleteData = entry.athlete[0];
+            } else {
+                athleteData = entry.athlete as unknown as { display_name: string | null };
+            }
+
             return {
                 athlete_id: entry.athlete_id,
                 display_name: athleteData?.display_name || "Unknown",

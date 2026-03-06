@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "../../../../lib/supabase/server";
 import { z } from "zod";
 
-const createRoutineSchema = z.object({
+const createTemplateSchema = z.object({
     name: z.string().min(1, "Name is required").max(100, "Name is too long"),
+    time_tier: z.enum(["quick", "standard", "extended"]).optional(),
+    coach_note: z.string().max(300, "Note is too long").optional(),
     steps: z.array(z.object({
         technique_id: z.string().uuid(),
         step_order: z.number().int().min(0)
@@ -22,16 +24,16 @@ export async function GET() {
             );
         }
 
-        const { data: routines, error } = await supabase
-            .from("routines")
+        const { data: templates, error } = await supabase
+            .from("coach_templates")
             .select(`
                 *,
-                steps:routine_steps(
+                steps:coach_template_steps(
                     *,
                     technique:techniques(*)
                 )
             `)
-            .eq("athlete_id", user.id)
+            .eq("coach_id", user.id)
             .order("created_at", { ascending: false });
 
         if (error) {
@@ -41,7 +43,7 @@ export async function GET() {
             );
         }
 
-        return NextResponse.json({ data: routines, error: null });
+        return NextResponse.json({ data: templates, error: null });
     } catch {
         return NextResponse.json(
             { data: null, error: { message: "Internal server error", code: "INTERNAL_ERROR" } },
@@ -62,29 +64,9 @@ export async function POST(request: Request) {
             );
         }
 
-        // 1. Check strict 5 routine limit
-        const { count, error: countError } = await supabase
-            .from("routines")
-            .select("*", { count: "exact", head: true })
-            .eq("athlete_id", user.id);
-
-        if (countError) {
-            return NextResponse.json(
-                { data: null, error: { message: countError.message, code: "DB_ERROR" } },
-                { status: 500 }
-            );
-        }
-
-        if (count !== null && count >= 5) {
-            return NextResponse.json(
-                { data: null, error: { message: "Maximum of 5 routines reached. Please delete an existing routine.", code: "LIMIT_REACHED" } },
-                { status: 400 }
-            );
-        }
-
-        // 2. Parse and validate request body
+        // Parse and validate request body
         const body = await request.json();
-        const validation = createRoutineSchema.safeParse(body);
+        const validation = createTemplateSchema.safeParse(body);
 
         if (!validation.success) {
             return NextResponse.json(
@@ -93,76 +75,61 @@ export async function POST(request: Request) {
             );
         }
 
-        const { name, steps } = validation.data;
+        const { name, time_tier, coach_note, steps } = validation.data;
 
-        // 3. Fetch athlete's sport from their athlete profile
-        const { data: athleteProfile, error: profileError } = await supabase
-            .from("athlete_profiles")
-            .select("sport")
-            .eq("athlete_id", user.id)
-            .single();
-
-        if (profileError || !athleteProfile?.sport) {
-            return NextResponse.json(
-                { data: null, error: { message: "Could not determine athlete sport. Please complete onboarding.", code: "MISSING_SPORT" } },
-                { status: 400 }
-            );
-        }
-
-        // 4. Insert routine
-        const { data: routine, error: routineError } = await supabase
-            .from("routines")
+        // Insert template
+        const { data: template, error: templateError } = await supabase
+            .from("coach_templates")
             .insert({
-                athlete_id: user.id,
-                name: name,
-                source: "custom",
-                sport: athleteProfile.sport,
+                coach_id: user.id,
+                name,
+                time_tier: time_tier || 'standard',
+                coach_note: coach_note || null
             })
             .select()
             .single();
 
-        if (routineError) {
+        if (templateError) {
             return NextResponse.json(
-                { data: null, error: { message: routineError.message, code: "DB_ERROR" } },
+                { data: null, error: { message: templateError.message, code: "DB_ERROR" } },
                 { status: 500 }
             );
         }
 
-        // 4. Insert steps linking to the new routine
+        // Insert steps linking to the new template
         const stepsToInsert = steps.map(step => ({
-            routine_id: routine.id,
+            template_id: template.id,
             technique_id: step.technique_id,
             step_order: step.step_order
         }));
 
         const { error: stepsError } = await supabase
-            .from("routine_steps")
+            .from("coach_template_steps")
             .insert(stepsToInsert);
 
         if (stepsError) {
-            // Note: In a real system we might want a proper RPC transaction here
-            // or we manually cleanup the routine if steps fail.
-            await supabase.from("routines").delete().eq("id", routine.id);
+            // Delete the template if steps fail
+            await supabase.from("coach_templates").delete().eq("id", template.id);
             return NextResponse.json(
                 { data: null, error: { message: stepsError.message, code: "DB_ERROR" } },
                 { status: 500 }
             );
         }
 
-        // Fetch the fully created routine to return
-        const { data: completeRoutine } = await supabase
-            .from("routines")
+        // Fetch the fully created template to return
+        const { data: completeTemplate } = await supabase
+            .from("coach_templates")
             .select(`
                 *,
-                steps:routine_steps(
+                steps:coach_template_steps(
                     *,
                     technique:techniques(*)
                 )
             `)
-            .eq("id", routine.id)
+            .eq("id", template.id)
             .single();
 
-        return NextResponse.json({ data: completeRoutine, error: null }, { status: 201 });
+        return NextResponse.json({ data: completeTemplate, error: null }, { status: 201 });
 
     } catch {
         return NextResponse.json(

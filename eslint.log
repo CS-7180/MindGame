@@ -1,0 +1,45 @@
+
+C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\app\(coach)\coach\home\page.tsx
+  4:29  error  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\app\(coach)\coach\roster\page.tsx
+   3:10  error  'Card' is defined but never used             @typescript-eslint/no-unused-vars
+   3:16  error  'CardContent' is defined but never used      @typescript-eslint/no-unused-vars
+   3:29  error  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+   3:46  error  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+   3:58  error  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+   3:69  error  'CardFooter' is defined but never used       @typescript-eslint/no-unused-vars
+  57:43  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\app\(coach)\coach\templates\page.tsx
+   5:10  error  'Card' is defined but never used             @typescript-eslint/no-unused-vars
+   5:16  error  'CardContent' is defined but never used      @typescript-eslint/no-unused-vars
+   5:29  error  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+   5:46  error  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+   5:58  error  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+   5:69  error  'CardFooter' is defined but never used       @typescript-eslint/no-unused-vars
+   6:10  error  'Clock' is defined but never used            @typescript-eslint/no-unused-vars
+   6:23  error  'Share2' is defined but never used           @typescript-eslint/no-unused-vars
+   6:31  error  'Trash2' is defined but never used           @typescript-eslint/no-unused-vars
+   7:10  error  'Badge' is defined but never used            @typescript-eslint/no-unused-vars
+  30:10  error  'TemplateList' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\components\coach\TemplateBuilder.tsx
+  195:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\components\coach\TemplateListClient.tsx
+    7:29   error  'CardDescription' is defined but never used                      @typescript-eslint/no-unused-vars
+    8:39   error  'CheckCircle2' is defined but never used                         @typescript-eslint/no-unused-vars
+   12:17   error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   36:18   error  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+   69:18   error  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  103:81   error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  127:37   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  127:59   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  136:63   error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  136:71   error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  136:131  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  136:136  error  'idx' is defined but never used                                  @typescript-eslint/no-unused-vars
+
+Γ£û 32 problems (32 errors, 0 warnings)
+

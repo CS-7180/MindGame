@@ -2,17 +2,48 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Guided Routine Execution Flow', () => {
     test('should guide the athlete through the routine step-by-step', async ({ page }) => {
-        // 0. Log in first (Requires seeded DB user for local testing)
-        await page.goto('/login');
-        await page.fill('input[type="email"]', 'athlete@example.com');
+        // 0. Sign up a new athlete
+        await page.goto('/signup');
+        const uniqueEmail = `athlete_exec_${Date.now()}@example.com`;
+        await page.fill('input[type="email"]', uniqueEmail);
         await page.fill('input[type="password"]', 'password123');
-        await page.click('button:has-text("Sign in")');
-        // Wait for redirect to home
-        await page.waitForURL('**/home');
+        await page.click('text="Athlete"');
+        await page.click('button:has-text("Create Account")');
 
-        // Note: For a robust E2E test, we would normally intercept the API 
-        // to mock a routine, or ensure one is built prior to this test.
-        // We assume the user has at least 1 routine created from US-02.
+        // Wait for redirect and ensure we are logged in
+        await page.waitForURL('**/onboarding**');
+
+        // Step 1: Sport
+        await page.click('[data-testid="sport-basketball"]');
+        await page.click('[data-testid="onboarding-next"]');
+
+        // Step 2: Level
+        await page.click('[data-testid="level-college"]');
+        await page.click('[data-testid="onboarding-next"]');
+
+        // Step 3: Symptoms
+        await page.click('[data-testid="symptom-overthinking"]');
+        await page.click('[data-testid="onboarding-next"]');
+
+        // Step 4: Time
+        await page.click('[data-testid="time-5min"]');
+        await page.click('[data-testid="onboarding-complete"]');
+
+        // Wait for redirect to result, then go to home
+        await page.waitForURL('**/onboarding/result');
+        await page.goto('/home');
+
+        // 0.5. Create a routine first so we have one to execute
+        await page.goto('/routine/builder');
+        await page.locator('[data-testid^="technique-item-"]').first().click();
+        const nameInput = page.getByPlaceholder(/Give your routine a name/i);
+        await nameInput.fill('Execution Test Routine', { force: true });
+        await expect(nameInput).toHaveValue('Execution Test Routine');
+        const saveBtn = page.getByRole('button', { name: /save routine/i });
+        await expect(saveBtn).toBeEnabled();
+        await saveBtn.scrollIntoViewIfNeeded();
+        await saveBtn.click();
+        await page.goto('/home');
 
         // 1. Start the active routine from the home dashboard
         const startButton = page.getByTestId('start-routine');
@@ -24,13 +55,11 @@ test.describe('Guided Routine Execution Flow', () => {
         await expect(page.locator('text=Total Time Left')).toBeVisible();
 
         // 3. Verify Technique Instructions (AC-03.2)
-        // The instruction text should be visible (e.g., "Inhale for 4 counts...")
         const instructionText = page.locator('p.text-xl.sm\\:text-2xl');
         await expect(instructionText).toBeVisible();
         await expect(instructionText.innerText()).not.toBe('');
 
         // 4. Test Pause and Resume (AC-03.4)
-        // Check if the timer is ticking (Play button isn't showing, meaning it's running)
         const pauseResumeBtn = page.locator('button:has(.lucide-pause), button:has(.lucide-play)');
         await pauseResumeBtn.click(); // Pause it
 
@@ -60,6 +89,6 @@ test.describe('Guided Routine Execution Flow', () => {
 
         // Click to return to home (or proceed to log)
         await page.getByRole('button', { name: /Back to Home/i }).click();
-        await expect(page).toHaveURL('**/home');
+        await expect(page).toHaveURL(/\/home/);
     });
 });
