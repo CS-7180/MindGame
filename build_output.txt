@@ -1,0 +1,45 @@
+  Γû▓ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/19) ...
+   Generating static pages (4/19) 
+   Generating static pages (9/19) 
+   Generating static pages (14/19) 
+ Γ£ô Generating static pages (19/19)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+Γöî Γùï /                                    44.8 kB         151 kB
+Γö£ Γùï /_not-found                          873 B          88.2 kB
+Γö£ ╞Æ /api/logs/pre                        0 B                0 B
+Γö£ ╞Æ /api/onboarding                      0 B                0 B
+Γö£ ╞Æ /api/routines                        0 B                0 B
+Γö£ ╞Æ /api/routines/[id]                   0 B                0 B
+Γö£ ╞Æ /api/techniques                      0 B                0 B
+Γö£ ╞Æ /api/templates                       0 B                0 B
+Γö£ ╞Æ /auth/callback                       0 B                0 B
+Γö£ Γùï /coach/home                          149 B          87.5 kB
+Γö£ ╞Æ /home                                8.27 kB         186 kB
+Γö£ Γùï /log/pre                             54.4 kB         169 kB
+Γö£ Γùï /login                               2.97 kB         165 kB
+Γö£ Γùï /onboarding                          5.46 kB         158 kB
+Γö£ Γùï /onboarding/result                   3.17 kB         101 kB
+Γö£ ╞Æ /routine/builder                     27.6 kB         145 kB
+Γö£ ╞Æ /routine/execute/[routineId]         3.5 kB          110 kB
+Γöö Γùï /signup                              3.45 kB         173 kB
++ First Load JS shared by all            87.3 kB
+  Γö£ chunks/117-5aa8678c342a70f4.js       31.7 kB
+  Γö£ chunks/fd9d1056-eabcefd8a17f0848.js  53.6 kB
+  Γöö other shared chunks (total)          1.96 kB
+
+
+╞Æ Middleware                             74.8 kB
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

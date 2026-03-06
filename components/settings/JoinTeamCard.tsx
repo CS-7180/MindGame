@@ -35,8 +35,8 @@ export function JoinTeamCard() {
             setJoinedCoach(json.data.coach_name);
             toast.success(`Succesfully joined ${json.data.coach_name}'s team!`);
             setCode("");
-        } catch (err: any) {
-            toast.error(err.message || "An error occurred");
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "An error occurred");
         } finally {
             setIsLoading(false);
         }

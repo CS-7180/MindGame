@@ -1,0 +1,33 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ e2e\routine-builder.spec.ts:6:9 ΓÇ║ Routine Builder User Flow ΓÇ║ should allow an athlete to create and save a new routine
+[1A[2K  1) [chromium] ΓÇ║ e2e\routine-builder.spec.ts:6:9 ΓÇ║ Routine Builder User Flow ΓÇ║ should allow an athlete to create and save a new routine 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/\/home/[39m
+    Received string:  [31m"http://localhost:3000/routine/builder"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 5000ms[22m
+    [2m    9 ├ù unexpected value "http://localhost:3000/routine/builder"[22m
+
+
+      75 |
+      76 |         // 7. Verify success and redirection (e.g., to dashboard or home)
+    > 77 |         await expect(page).toHaveURL(/\/home/);
+         |                            ^
+      78 |
+      79 |         // 8. Attempt to create a Second Routine
+      80 |         await page.goto('/routine/builder');
+        at C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\e2e\routine-builder.spec.ts:77:28
+
+    Error Context: test-results\routine-builder-Routine-Bu-c91f1-eate-and-save-a-new-routine-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ e2e\routine-builder.spec.ts:6:9 ΓÇ║ Routine Builder User Flow ΓÇ║ should allow an athlete to create and save a new routine 
+
+[36m  Serving HTML report at http://localhost:59171. Press Ctrl+C to quit.[39m

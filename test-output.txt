@@ -1,0 +1,35 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ e2e\routine-builder.spec.ts:6:9 ΓÇ║ Routine Builder User Flow ΓÇ║ should allow an athlete to create and save a new routine
+[1A[2K  1) [chromium] ΓÇ║ e2e\routine-builder.spec.ts:6:9 ΓÇ║ Routine Builder User Flow ΓÇ║ should allow an athlete to create and save a new routine 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.bg-indigo-500\\/10')
+    Expected substring: [32m"Estimated Time:"[39m
+    Error: strict mode violation: locator('.bg-indigo-500\\/10') resolved to 2 elements:
+        1) <div class="flex items-center text-xs text-indigo-300 font-medium px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20">ΓÇª</div> aka getByText('min').nth(2)
+        2) <div class="flex items-center text-xs text-indigo-300 font-medium px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20">ΓÇª</div> aka getByText('min').nth(3)
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 5000ms[22m
+    [2m  - waiting for locator('.bg-indigo-500\\/10')[22m
+
+
+      63 |         // Note: We'd normally calculate the expected time here based on the chosen techniques
+      64 |         const timeBadge = page.locator('.bg-indigo-500\\/10');
+    > 65 |         await expect(timeBadge).toContainText('Estimated Time:');
+         |                                 ^
+      66 |
+      67 |         // 4. Set routine name
+      68 |         const nameInput = page.getByPlaceholder(/Give your routine a name/i);
+        at C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\e2e\routine-builder.spec.ts:65:33
+
+    Error Context: test-results\routine-builder-Routine-Bu-c91f1-eate-and-save-a-new-routine-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ e2e\routine-builder.spec.ts:6:9 ΓÇ║ Routine Builder User Flow ΓÇ║ should allow an athlete to create and save a new routine 
+
+[36m  Serving HTML report at http://localhost:57605. Press Ctrl+C to quit.[39m

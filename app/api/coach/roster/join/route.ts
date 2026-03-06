@@ -46,7 +46,7 @@ export async function POST(req: Request) {
         }
 
         // 4. Check if already on roster
-        const { data: existing, error: checkError } = await supabase
+        const { data: existing } = await supabase
             .from("coach_roster")
             .select("id")
             .eq("coach_id", coachProfile.id)
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
             error: null
         });
 
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { data: null, error: { message: "Internal server error", code: "INTERNAL_ERROR" } },
             { status: 500 }

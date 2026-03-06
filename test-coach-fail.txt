@@ -1,0 +1,46 @@
+
+Running 1 test using 1 worker
+
+PAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+Starting coach flow test...
+PAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+Navigated to /coach/templates
+PAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+Navigated to /coach/templates/new
+Filling template details...
+Adding technique...
+Verifying step addition...
+Saving template...
+Template saved.
+Sharing template...
+PAGE LOG: Failed to load resource: the server responded with a status of 400 (Bad Request)
+  Γ£ÿ  1 [chromium] ΓÇ║ e2e\coach-flow.spec.ts:19:9 ΓÇ║ Coach Routine Templates Flow ΓÇ║ should allow a coach to create a template and share it (10.6s)
+
+
+  1) [chromium] ΓÇ║ e2e\coach-flow.spec.ts:19:9 ΓÇ║ Coach Routine Templates Flow ΓÇ║ should allow a coach to create a template and share it 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('text="Template Shared"')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('text="Template Shared"')[22m
+
+
+      72 |
+      73 |         // Wait for share success
+    > 74 |         await expect(page.locator('text="Template Shared"')).toBeVisible();
+         |                                                              ^
+      75 |         console.log('Template shared.');
+      76 |     });
+      77 | });
+        at C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\e2e\coach-flow.spec.ts:74:62
+
+    Error Context: test-results\coach-flow-Coach-Routine-T-8c4a3-ate-a-template-and-share-it-chromium\error-context.md
+
+  1 failed
+    [chromium] ΓÇ║ e2e\coach-flow.spec.ts:19:9 ΓÇ║ Coach Routine Templates Flow ΓÇ║ should allow a coach to create a template and share it 

@@ -1,0 +1,34 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ e2e\routine-execution.spec.ts:4:9 ΓÇ║ Guided Routine Execution Flow ΓÇ║ should guide the athlete through the routine step-by-step
+[1A[2K  1) [chromium] ΓÇ║ e2e\routine-execution.spec.ts:4:9 ΓÇ║ Guided Routine Execution Flow ΓÇ║ should guide the athlete through the routine step-by-step 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText(/Routine saved successfully!/i)
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText(/Routine saved successfully!/i)[22m
+
+
+      43 |         await expect(saveBtn).toBeEnabled();
+      44 |         await saveBtn.click({ force: true });
+    > 45 |         await expect(page.getByText(/Routine saved successfully!/i)).toBeVisible();
+         |                                                                      ^
+      46 |         await page.goto('/home');
+      47 |
+      48 |         // 1. Start the active routine from the home dashboard
+        at C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\e2e\routine-execution.spec.ts:45:70
+
+    Error Context: test-results\routine-execution-Guided-R-033a6-gh-the-routine-step-by-step-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ e2e\routine-execution.spec.ts:4:9 ΓÇ║ Guided Routine Execution Flow ΓÇ║ should guide the athlete through the routine step-by-step 
+
+[36m  Serving HTML report at http://localhost:58860. Press Ctrl+C to quit.[39m

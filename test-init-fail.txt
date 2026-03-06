@@ -1,0 +1,111 @@
+
+Running 3 tests using 3 workers
+
+[1A[2K[1/3] [chromium] ΓÇ║ e2e\routine-execution.spec.ts:4:9 ΓÇ║ Guided Routine Execution Flow ΓÇ║ should guide the athlete through the routine step-by-step
+[1A[2K[2/3] [chromium] ΓÇ║ e2e\routine-builder.spec.ts:6:9 ΓÇ║ Routine Builder User Flow ΓÇ║ should allow an athlete to create and save a new routine
+[1A[2K[3/3] [chromium] ΓÇ║ e2e\coach-flow.spec.ts:19:9 ΓÇ║ Coach Routine Templates Flow ΓÇ║ should allow a coach to create a template and share it
+[1A[2K[chromium] ΓÇ║ e2e\coach-flow.spec.ts:19:9 ΓÇ║ Coach Routine Templates Flow ΓÇ║ should allow a coach to create a template and share it
+PAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+
+[1A[2KStarting coach flow test...
+
+[1A[2KPAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+
+[1A[2KNavigated to /coach/templates
+
+[1A[2KPAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+
+[1A[2KNavigated to /coach/templates/new
+
+[1A[2KFilling template details...
+
+[1A[2KAdding technique...
+
+[1A[2KVerifying step addition...
+
+[1A[2KSaving template...
+
+[1A[2K  1) [chromium] ΓÇ║ e2e\routine-execution.spec.ts:4:9 ΓÇ║ Guided Routine Execution Flow ΓÇ║ should guide the athlete through the routine step-by-step 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText(/Routine saved successfully!/i)
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText(/Routine saved successfully!/i)[22m
+
+
+      44 |         await saveBtn.scrollIntoViewIfNeeded();
+      45 |         await saveBtn.click();
+    > 46 |         await expect(page.getByText(/Routine saved successfully!/i)).toBeVisible();
+         |                                                                      ^
+      47 |         await page.goto('/home');
+      48 |
+      49 |         // 1. Start the active routine from the home dashboard
+        at C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\e2e\routine-execution.spec.ts:46:70
+
+    Error Context: test-results\routine-execution-Guided-R-033a6-gh-the-routine-step-by-step-chromium\error-context.md
+
+
+[1A[2K  2) [chromium] ΓÇ║ e2e\routine-builder.spec.ts:6:9 ΓÇ║ Routine Builder User Flow ΓÇ║ should allow an athlete to create and save a new routine 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Routine saved successfully!')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Routine saved successfully!')[22m
+
+
+      75 |
+      76 |         // 7. Verify success and redirection (e.g., to dashboard or home)
+    > 77 |         await expect(page.getByText('Routine saved successfully!')).toBeVisible();
+         |                                                                     ^
+      78 |         await expect(page).toHaveURL(/\/home/);
+      79 |
+      80 |         // 8. Attempt to create a Second Routine
+        at C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\e2e\routine-builder.spec.ts:77:69
+
+    Error Context: test-results\routine-builder-Routine-Bu-c91f1-eate-and-save-a-new-routine-chromium\error-context.md
+
+
+[1A[2K  3) [chromium] ΓÇ║ e2e\coach-flow.spec.ts:19:9 ΓÇ║ Coach Routine Templates Flow ΓÇ║ should allow a coach to create a template and share it 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('text="Template saved successfully!"')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('text="Template saved successfully!"')[22m
+
+
+      62 |         // Wait for redirect to templates list and toast success
+      63 |         await expect(page).toHaveURL(/\/coach\/templates/);
+    > 64 |         await expect(page.locator('text="Template saved successfully!"')).toBeVisible();
+         |                                                                           ^
+      65 |         console.log('Template saved.');
+      66 |
+      67 |         // 7. Share with Team
+        at C:\Users\VGoli\OneDrive - Blue Moon Industries, Incorporated\Documents\CS7180\Project 2\MindGame\e2e\coach-flow.spec.ts:64:75
+
+    Error Context: test-results\coach-flow-Coach-Routine-T-8c4a3-ate-a-template-and-share-it-chromium\error-context.md
+
+
+[1A[2K  3 failed
+    [chromium] ΓÇ║ e2e\coach-flow.spec.ts:19:9 ΓÇ║ Coach Routine Templates Flow ΓÇ║ should allow a coach to create a template and share it 
+    [chromium] ΓÇ║ e2e\routine-builder.spec.ts:6:9 ΓÇ║ Routine Builder User Flow ΓÇ║ should allow an athlete to create and save a new routine 
+    [chromium] ΓÇ║ e2e\routine-execution.spec.ts:4:9 ΓÇ║ Guided Routine Execution Flow ΓÇ║ should guide the athlete through the routine step-by-step 
+
+[36m  Serving HTML report at http://localhost:51873. Press Ctrl+C to quit.[39m

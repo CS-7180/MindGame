@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Share2, X, Check, LayoutTemplate } from "lucide-react";
+import { Clock, X, Check, LayoutTemplate } from "lucide-react";
 import { toast } from "sonner";
 
 interface TemplateStep {
@@ -52,8 +52,8 @@ export function SharedTemplateNotifications({ notifications: initialNotification
             toast.success("Template saved! It's now in your routines.");
             setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
             router.refresh();
-        } catch (err: any) {
-            toast.error(err.message);
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "Failed to save template");
         } finally {
             setActionId(null);
         }
@@ -70,8 +70,8 @@ export function SharedTemplateNotifications({ notifications: initialNotification
 
             setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
             toast.info("Notification dismissed");
-        } catch (err: any) {
-            toast.error(err.message);
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "Failed to dismiss notification");
         } finally {
             setActionId(null);
         }

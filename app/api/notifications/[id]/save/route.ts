@@ -96,7 +96,7 @@ export async function POST(
         }
 
         // 4. Copy steps
-        const stepsToInsert = notification.template.steps.map((step: any) => ({
+        const stepsToInsert = notification.template.steps.map((step: { technique_id: string; step_order: number }) => ({
             routine_id: routine.id,
             technique_id: step.technique_id,
             step_order: step.step_order

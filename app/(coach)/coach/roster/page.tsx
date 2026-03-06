@@ -55,7 +55,7 @@ async function getRosterData() {
         if (Array.isArray(entry.athlete)) {
             athleteData = entry.athlete[0];
         } else {
-            athleteData = entry.athlete as any;
+            athleteData = entry.athlete as unknown as { display_name: string | null };
         }
 
         return {

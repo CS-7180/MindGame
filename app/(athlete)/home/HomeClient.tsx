@@ -49,11 +49,31 @@ interface Routine {
     routine_steps: RoutineStep[];
 }
 
+interface SharedTemplateNotification {
+    id: string;
+    coach: {
+        display_name: string;
+    };
+    template: {
+        id: string;
+        name: string;
+        time_tier: string;
+        coach_note: string;
+        steps: {
+            id: string;
+            technique: {
+                name: string;
+                duration_minutes: number;
+            };
+        }[];
+    };
+}
+
 interface HomeClientProps {
     displayName: string;
     routines: Routine[];
     sport: string;
-    notifications: any[];
+    notifications: SharedTemplateNotification[];
 }
 
 export default function HomeClient({ displayName, routines, sport, notifications }: HomeClientProps) {
