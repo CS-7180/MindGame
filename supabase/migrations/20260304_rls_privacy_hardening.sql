@@ -40,8 +40,8 @@ CREATE POLICY "athlete_own_games" ON public.games
 DROP POLICY IF EXISTS "athlete_own_push_subs" ON public.push_subscriptions;
 CREATE POLICY "athlete_own_push_subs" ON public.push_subscriptions
     FOR ALL
-    USING (auth.uid() = athlete_id)
-    WITH CHECK (auth.uid() = athlete_id);
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 -- routines: only owner can read/write their own rows
 DROP POLICY IF EXISTS "athlete_own_routines" ON public.routines;
@@ -84,6 +84,7 @@ CREATE POLICY "athlete_own_notifications" ON public.template_notifications
 --   - routines.is_active for rostered athletes (not names, not sources, not logs)
 
 -- Coach can read display_name of athletes on their roster
+DROP POLICY IF EXISTS "coach_read_rostered_athlete_profiles" ON public.profiles;
 CREATE POLICY "coach_read_rostered_athlete_profiles" ON public.profiles
     FOR SELECT
     USING (
@@ -95,6 +96,7 @@ CREATE POLICY "coach_read_rostered_athlete_profiles" ON public.profiles
     );
 
 -- Coach can check if rostered athletes have active routines
+DROP POLICY IF EXISTS "coach_read_rostered_athlete_routines" ON public.routines;
 CREATE POLICY "coach_read_rostered_athlete_routines" ON public.routines
     FOR SELECT
     USING (
@@ -166,7 +168,7 @@ BEGIN
     DELETE FROM public.games WHERE athlete_id = calling_user_id;
 
     -- 5. Delete push subscriptions
-    DELETE FROM public.push_subscriptions WHERE athlete_id = calling_user_id;
+    DELETE FROM public.push_subscriptions WHERE user_id = calling_user_id;
 
     -- 6. Delete template notifications
     DELETE FROM public.template_notifications WHERE athlete_id = calling_user_id;

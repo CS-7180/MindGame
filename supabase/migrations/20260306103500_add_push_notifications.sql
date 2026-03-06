@@ -1,5 +1,5 @@
--- Create games table for scheduling reminders
-CREATE TABLE public.games (
+-- Create games table for scheduling reminders IF NOT EXISTS
+CREATE TABLE IF NOT EXISTS public.games (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     athlete_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     sport TEXT NOT NULL,
@@ -15,11 +15,11 @@ CREATE TABLE public.games (
 );
 
 -- Index for the reminder cron
-CREATE INDEX idx_games_reminder ON public.games(reminder_time) WHERE reminder_sent = false;
-CREATE INDEX idx_games_athlete ON public.games(athlete_id);
+CREATE INDEX IF NOT EXISTS idx_games_reminder ON public.games(reminder_time) WHERE reminder_sent = false;
+CREATE INDEX IF NOT EXISTS idx_games_athlete ON public.games(athlete_id);
 
--- Create push_subscriptions table for Web Push
-CREATE TABLE public.push_subscriptions (
+-- Create push_subscriptions table for Web Push IF NOT EXISTS
+CREATE TABLE IF NOT EXISTS public.push_subscriptions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     endpoint TEXT NOT NULL UNIQUE,
@@ -28,13 +28,14 @@ CREATE TABLE public.push_subscriptions (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_push_subscriptions_user ON public.push_subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON public.push_subscriptions(user_id);
 
 -- Enable RLS
 ALTER TABLE public.games ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Games RLS Policies
+DROP POLICY IF EXISTS "Athletes can manage their own games" ON public.games;
 CREATE POLICY "Athletes can manage their own games"
     ON public.games
     FOR ALL
@@ -43,6 +44,7 @@ CREATE POLICY "Athletes can manage their own games"
     WITH CHECK (athlete_id = auth.uid());
 
 -- Push Subscriptions RLS Policies
+DROP POLICY IF EXISTS "Users can manage their own push subscriptions" ON public.push_subscriptions;
 CREATE POLICY "Users can manage their own push subscriptions"
     ON public.push_subscriptions
     FOR ALL
