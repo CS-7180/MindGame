@@ -58,6 +58,8 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+      - name: Start Supabase Local Stack
+        run: npx supabase start
       - name: Build app
         run: npm run build
       - name: Run E2E tests
