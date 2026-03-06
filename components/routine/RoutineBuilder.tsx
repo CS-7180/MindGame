@@ -139,11 +139,13 @@ function SortableStepItem({ step, onRemove }: { step: BuilderStep, onRemove: (id
 export function RoutineBuilder({
     initialTechniques,
     currentRoutinesCount = 0,
-    defaultSport = 'Unspecified'
+    defaultSport = 'Unspecified',
+    isSportLocked = false
 }: {
     initialTechniques: Technique[],
     currentRoutinesCount?: number,
-    defaultSport?: string
+    defaultSport?: string,
+    isSportLocked?: boolean
 }) {
     const router = useRouter()
     const [routineName, setRoutineName] = useState('')
@@ -327,18 +329,25 @@ export function RoutineBuilder({
                                 onChange={(e) => setRoutineName(e.target.value)}
                             />
                             <div className="w-1/3">
-                                <Select value={sport} onValueChange={setSport}>
-                                    <SelectTrigger className="h-14 bg-slate-950/50 border-white/10 text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl">
-                                        <SelectValue placeholder="Select Sport" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-slate-900 border-white/10">
-                                        {AVAILABLE_SPORTS.map((s) => (
-                                            <SelectItem key={s} value={s} className="text-slate-200 focus:bg-indigo-500/20 focus:text-white cursor-pointer hover:bg-indigo-500/20">
-                                                {s}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                {isSportLocked ? (
+                                    <div className="h-14 bg-slate-950/30 border border-white/5 text-slate-300 rounded-xl px-4 flex items-center justify-between opacity-80 cursor-not-allowed">
+                                        <span className="truncate">{sport}</span>
+                                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-white/10 bg-white/5 text-slate-400">Locked</Badge>
+                                    </div>
+                                ) : (
+                                    <Select value={sport} onValueChange={setSport}>
+                                        <SelectTrigger className="h-14 bg-slate-950/50 border-white/10 text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl">
+                                            <SelectValue placeholder="Select Sport" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-slate-900 border-white/10">
+                                            {AVAILABLE_SPORTS.map((s) => (
+                                                <SelectItem key={s} value={s} className="text-slate-200 focus:bg-indigo-500/20 focus:text-white cursor-pointer hover:bg-indigo-500/20">
+                                                    {s}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
                             </div>
                         </div>
                         <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 w-full sm:w-auto">

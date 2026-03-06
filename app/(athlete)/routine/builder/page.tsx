@@ -35,6 +35,8 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
 
     const defaultSport = initialSport || athleteProfile?.sport || 'Unspecified';
 
+    const isSportLocked = !!initialSport;
+
     if (error || !techniques || countError !== null) {
         return (
             <div className="container mx-auto py-8 text-center text-red-500">
@@ -58,6 +60,7 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
                     initialTechniques={techniques as Technique[]}
                     currentRoutinesCount={currentRoutinesCount || 0}
                     defaultSport={defaultSport}
+                    isSportLocked={isSportLocked}
                 />
             </div>
         </div>

@@ -7,7 +7,7 @@ export const metadata = {
     description: "Review your past pre-game mental logs",
 };
 
-export default async function HistoryPage() {
+export default async function HistoryPage({ searchParams }: { searchParams: { sport?: string } }) {
     const supabase = await createClient();
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -47,6 +47,7 @@ export default async function HistoryPage() {
             <main className="max-w-xl mx-auto space-y-6">
                 <HistoryList
                     initialLogs={logs || []}
+                    initialSport={searchParams.sport}
                 />
             </main>
         </div>

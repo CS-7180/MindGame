@@ -63,27 +63,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // 1. Check strict 5 routine limit
-        const { count, error: countError } = await supabase
-            .from("routines")
-            .select("*", { count: "exact", head: true })
-            .eq("athlete_id", user.id);
-
-        if (countError) {
-            return NextResponse.json(
-                { data: null, error: { message: countError.message, code: "DB_ERROR" } },
-                { status: 500 }
-            );
-        }
-
-        if (count !== null && count >= 5) {
-            return NextResponse.json(
-                { data: null, error: { message: "Maximum of 5 routines reached. Please delete an existing routine.", code: "LIMIT_REACHED" } },
-                { status: 400 }
-            );
-        }
-
-        // 2. Parse and validate request body
+        // 1. Parse and validate request body first to get the sport
         const body = await request.json();
         const validation = createRoutineSchema.safeParse(body);
 
@@ -95,6 +75,27 @@ export async function POST(request: Request) {
         }
 
         const { name, sport, steps } = validation.data;
+
+        // 2. Check strict 5 routine limit PER SPORT
+        const { count, error: countError } = await supabase
+            .from("routines")
+            .select("*", { count: "exact", head: true })
+            .eq("athlete_id", user.id)
+            .eq("sport", sport);
+
+        if (countError) {
+            return NextResponse.json(
+                { data: null, error: { message: countError.message, code: "DB_ERROR" } },
+                { status: 500 }
+            );
+        }
+
+        if (count !== null && count >= 5) {
+            return NextResponse.json(
+                { data: null, error: { message: `Maximum of 5 routines reached for ${sport}. Please delete an existing routine.`, code: "LIMIT_REACHED" } },
+                { status: 400 }
+            );
+        }
 
         // Deactivate any existing active routines for this athlete and sport
         const { error: deactivateError } = await supabase
