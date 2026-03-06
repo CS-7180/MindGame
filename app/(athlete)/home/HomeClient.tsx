@@ -300,6 +300,7 @@ export default function HomeClient({ displayName, routines, sport, notifications
                                     {routines.map((routine) => (
                                         <Card
                                             key={routine.id}
+                                            data-testid={`routine-card-${routine.name.replace(/\s+/g, '-').toLowerCase()}`}
                                             className="border-white/5 bg-slate-900/40 backdrop-blur-md hover:bg-slate-800/60 hover:border-white/10 transition-all cursor-pointer shadow-sm group"
                                             onClick={() => router.push(`/routine/execute/${routine.id}`)}
                                         >
