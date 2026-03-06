@@ -17,6 +17,10 @@ export async function getSubscription() {
 }
 
 export async function subscribeToNotifications() {
+  if (!VAPID_PUBLIC_KEY) {
+    throw new Error("Push notifications are not configured: VAPID public key is missing.");
+  }
+
   const registration = await registerServiceWorker();
   
   // Wait for the service worker to be ready
