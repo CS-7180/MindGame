@@ -193,7 +193,7 @@ export function RoutineExecution({ routine }: RoutineExecutionProps) {
                 {/* Background ambient glow based on state */}
                 <div className={`absolute inset-0 blur-[150px] opacity-20 transition-colors duration-1000 -z-10 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-indigo-600'}`} />
 
-                <div className="text-center space-y-8 w-full">
+                <div className="text-center space-y-8 w-full" data-testid="step-display">
                     {/* Category Badge */}
                     <div className="inline-block px-4 py-1.5 rounded-full bg-slate-800 text-indigo-300 text-sm font-medium tracking-wide border border-slate-700">
                         {technique.category}
