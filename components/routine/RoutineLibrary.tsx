@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Clock, Download, Loader2 } from 'lucide-react'
-import { RoutineWithSteps } from '@/types/index'
+import { RoutineWithSteps, RoutineStepWithTechnique } from '@/types/index'
 import { TIME_TIERS, getTierForDuration, TimeTierId } from '@/lib/constants'
 import { toast } from 'sonner'
 import {
@@ -22,9 +22,10 @@ import {
 interface RoutineLibraryProps {
     currentRoutinesCount: number;
     userRoutineTitles?: string[];
+    selectedSport?: string;
 }
 
-export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [] }: RoutineLibraryProps) {
+export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [], selectedSport = 'Unspecified' }: RoutineLibraryProps) {
     const router = useRouter()
     const [templates, setTemplates] = useState<RoutineWithSteps[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -57,7 +58,7 @@ export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [] }:
         setIsCopying(template.id)
         try {
             // Re-format steps to match builder schema
-            const stepsPayload = template.steps.map(s => ({
+            const stepsPayload = template.steps.map((s: RoutineStepWithTechnique) => ({
                 technique_id: s.technique_id,
                 step_order: s.step_order
             }))
@@ -67,6 +68,7 @@ export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [] }:
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: template.name, // Keep the same name
+                    sport: selectedSport, // Assign to the currently selected sport
                     steps: stepsPayload
                 })
             })
@@ -96,7 +98,7 @@ export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [] }:
     // Determine the total time and tier for each template
     const templatesWithTime = templates
         .map(t => {
-            const totalMin = t.steps.reduce((acc, step) => acc + step.technique.duration_minutes, 0)
+            const totalMin = t.steps.reduce((acc: number, step: RoutineStepWithTechnique) => acc + step.technique.duration_minutes, 0)
             const tier = getTierForDuration(totalMin)
             return { ...t, totalMin, tier }
         })
@@ -162,7 +164,7 @@ export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [] }:
                             <CardContent className="flex-1 pb-4">
                                 {/* Preview Steps list */}
                                 <div className="space-y-2">
-                                    {template.steps.slice(0, 3).map((step, idx) => (
+                                    {template.steps.slice(0, 3).map((step: RoutineStepWithTechnique, idx: number) => (
                                         <div key={idx} className="flex items-center text-sm text-slate-300 bg-slate-800/50 px-3 py-2 rounded-md">
                                             <span className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[10px] mr-3 font-semibold text-slate-300">
                                                 {step.step_order + 1}

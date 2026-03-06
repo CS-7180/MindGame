@@ -115,9 +115,18 @@ function SortableStepItem({ step, onRemove }: { step: BuilderStep, onRemove: (id
 // ----------------------------------------------------------------------
 // Main Builder Component
 // ----------------------------------------------------------------------
-export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: { initialTechniques: Technique[], currentRoutinesCount?: number }) {
+export function RoutineBuilder({
+    initialTechniques,
+    currentRoutinesCount = 0,
+    defaultSport = 'Unspecified'
+}: {
+    initialTechniques: Technique[],
+    currentRoutinesCount?: number,
+    defaultSport?: string
+}) {
     const router = useRouter()
     const [routineName, setRoutineName] = useState('')
+    const [sport, setSport] = useState(defaultSport)
     const [steps, setSteps] = useState<BuilderStep[]>([])
     const [isSaving, setIsSaving] = useState(false)
     const [showLimitDialog, setShowLimitDialog] = useState(false)
@@ -174,6 +183,10 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
             toast.error('Please enter a name for your routine.')
             return
         }
+        if (!sport.trim()) {
+            toast.error('Please enter a sport for your routine.')
+            return
+        }
         if (steps.length === 0) {
             toast.error('Please add at least one technique to your routine.')
             return
@@ -186,6 +199,7 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: routineName,
+                    sport: sport,
                     steps: steps.map((step, index) => ({
                         technique_id: step.technique.id,
                         step_order: index
@@ -241,7 +255,7 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
                                             {category}
                                         </h3>
                                         <div className="space-y-3">
-                                            {techs.map(tech => (
+                                            {(techs as Technique[]).map((tech: Technique) => (
                                                 <div
                                                     key={tech.id}
                                                     data-testid={`technique-item-${tech.id}`}
@@ -284,12 +298,18 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
             <div className="xl:col-span-8 space-y-4">
                 <Card className="h-[calc(100vh-14rem)] flex flex-col border-white/10 bg-slate-900/40 backdrop-blur-xl shadow-2xl rounded-3xl relative overflow-hidden">
                     <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 pt-6 px-8 border-b border-white/5 bg-slate-950/40 z-10">
-                        <div className="flex-1 w-full max-w-xl">
+                        <div className="flex-1 w-full max-w-xl flex gap-3">
                             <Input
-                                placeholder="Give your routine a name (e.g., Final Pre-Game Focus)"
-                                className="text-xl font-bold h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all w-full"
+                                placeholder="Routine Name (e.g., Final Focus)"
+                                className="text-xl font-bold h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all w-2/3"
                                 value={routineName}
                                 onChange={(e) => setRoutineName(e.target.value)}
+                            />
+                            <Input
+                                placeholder="Sport (e.g., Soccer)"
+                                className="text-lg font-medium h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all w-1/3"
+                                value={sport}
+                                onChange={(e) => setSport(e.target.value)}
                             />
                         </div>
                         <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 w-full sm:w-auto">

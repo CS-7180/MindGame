@@ -48,6 +48,7 @@ interface Routine {
     name: string;
     source: string;
     is_active: boolean;
+    sport: string;
     routine_steps: RoutineStep[];
 }
 
@@ -82,27 +83,13 @@ export default function HomeClient({ displayName, routines, sport, notifications
     const router = useRouter();
     const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isActivating, setIsActivating] = useState<string | null>(null);
+    const [settingActiveId, setSettingActiveId] = useState<string | null>(null);
     const [pendingPostLogId, setPendingPostLogId] = useState<string | null>(null);
+    const [selectedSport, setSelectedSport] = useState<string>(sport || 'Unspecified');
 
-    const handleActivateRoutine = async (id: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        setIsActivating(id);
-        try {
-            const res = await fetch(`/api/routines/${id}/activate`, {
-                method: 'POST'
-            });
-            const json = await res.json();
-            if (!res.ok) throw new Error(json.error?.message || "Failed to activate routine");
+    const allSports = Array.from(new Set([sport, ...routines.map(r => r.sport)])).filter(Boolean);
+    const filteredRoutines = routines.filter(r => r.sport === selectedSport);
 
-            toast.success("Routine activated successfully!");
-            router.refresh();
-        } catch (err: unknown) {
-            toast.error("Failed to activate", { description: err instanceof Error ? err.message : "Unknown error" });
-        } finally {
-            setIsActivating(null);
-        }
-    };
 
     useEffect(() => {
         const checkPendingPosts = async () => {
@@ -141,6 +128,24 @@ export default function HomeClient({ displayName, routines, sport, notifications
         }
     };
 
+    const handleSetActive = async (routineId: string) => {
+        setSettingActiveId(routineId);
+        try {
+            const res = await fetch(`/api/routines/${routineId}/active`, {
+                method: 'PATCH'
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error?.message || "Failed to set active routine");
+
+            toast.success("Routine set to active!");
+            router.refresh();
+        } catch (err: unknown) {
+            toast.error("Failed to update status", { description: err instanceof Error ? err.message : "Unknown error" });
+        } finally {
+            setSettingActiveId(null);
+        }
+    };
+
     const handleLogout = async () => {
         const supabase = createClient();
         await supabase.auth.signOut();
@@ -148,7 +153,7 @@ export default function HomeClient({ displayName, routines, sport, notifications
         router.refresh();
     };
 
-    const activeRoutine = routines.find((r) => r.is_active);
+    const activeRoutine = filteredRoutines.find((r) => r.is_active);
     const totalTime = activeRoutine
         ? activeRoutine.routine_steps.reduce((sum, s) => sum + (s.techniques?.duration_minutes || 0), 0)
         : 0;
@@ -193,12 +198,30 @@ export default function HomeClient({ displayName, routines, sport, notifications
                         Welcome back, {displayName} 👋
                     </h1>
                     <p className="text-slate-400 mt-1">
-                        {sport ? `Ready to dominate your next ${sport} game?` : "Ready to build your mental game?"}
+                        Ready to dominate your next game?
                     </p>
                 </div>
 
                 {/* Shared Template Notifications */}
                 <SharedTemplateNotifications notifications={notifications} />
+
+                {/* Sport Selector Tabs */}
+                {allSports.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                        {allSports.map((s) => (
+                            <button
+                                key={s}
+                                onClick={() => setSelectedSport(s)}
+                                className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-colors ${selectedSport === s
+                                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                                    : "bg-slate-800/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 border border-slate-700/50"
+                                    }`}
+                            >
+                                {s}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Pending Post-Game Reflection Alert */}
                 {pendingPostLogId && (
@@ -260,14 +283,14 @@ export default function HomeClient({ displayName, routines, sport, notifications
                             <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
                                 <Plus className="h-6 w-6 text-slate-500" />
                             </div>
-                            <h3 className="font-semibold text-white mb-2">No Routine Yet</h3>
+                            <h3 className="font-semibold text-white mb-2">No Routine Yet for {selectedSport}</h3>
                             <p className="text-sm text-slate-400 mb-4">
                                 Build your first pre-game mental routine
                             </p>
                             <Button
                                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white"
                                 data-testid="build-routine"
-                                onClick={() => router.push("/routine/builder")}
+                                onClick={() => router.push(`/routine/builder?sport=${encodeURIComponent(selectedSport)}`)}
                             >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Build Routine
@@ -288,16 +311,16 @@ export default function HomeClient({ displayName, routines, sport, notifications
 
                     <TabsContent value="my-routines" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
                         {/* Saved Routines */}
-                        {routines.length > 0 && (
+                        {filteredRoutines.length > 0 && (
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="font-semibold text-white">Your Routines</h3>
+                                    <h3 className="font-semibold text-white">Your {selectedSport} Routines</h3>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-slate-400">{routines.length}/5 Saved</span>
+                                        <span className="text-xs text-slate-400">{filteredRoutines.length}/5 Saved</span>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 gap-2">
-                                    {routines.map((routine) => (
+                                    {filteredRoutines.map((routine) => (
                                         <Card
                                             key={routine.id}
                                             data-testid={`routine-card-${routine.name.replace(/\s+/g, '-').toLowerCase()}`}
@@ -317,11 +340,11 @@ export default function HomeClient({ displayName, routines, sport, notifications
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/20 h-8 rounded-full px-3"
-                                                                onClick={(e) => handleActivateRoutine(routine.id, e)}
-                                                                disabled={isActivating === routine.id}
+                                                                onClick={(e) => { e.stopPropagation(); handleSetActive(routine.id); }}
+                                                                disabled={settingActiveId === routine.id}
                                                             >
                                                                 <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                                                                {isActivating === routine.id ? '...' : 'Activate'}
+                                                                {settingActiveId === routine.id ? '...' : 'Activate'}
                                                             </Button>
                                                         )}
                                                     </div>
@@ -330,8 +353,22 @@ export default function HomeClient({ displayName, routines, sport, notifications
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button
+                                                    {!routine.is_active && (
+                                                        <Button
                                                             variant="ghost"
+                                                            size="sm"
+                                                            className="text-indigo-400 font-medium hover:text-indigo-300 hover:bg-indigo-500/10 mr-2"
+                                                            disabled={settingActiveId === routine.id}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleSetActive(routine.id);
+                                                            }}
+                                                        >
+                                                            {settingActiveId === routine.id ? "Setting..." : "Set Active"}
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        variant="ghost"
                                                         size="icon"
                                                         className="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-8 w-8 rounded-full"
                                                         onClick={(e) => {
@@ -358,7 +395,7 @@ export default function HomeClient({ displayName, routines, sport, notifications
                             <div className="grid grid-cols-2 gap-3">
                                 <Card
                                     className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
-                                    onClick={() => router.push("/routine/builder")}
+                                    onClick={() => router.push(`/routine/builder?sport=${encodeURIComponent(selectedSport)}`)}
                                 >
                                     <CardContent className="p-4 text-center">
                                         <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-500/10 flex items-center justify-center">
@@ -417,8 +454,9 @@ export default function HomeClient({ displayName, routines, sport, notifications
 
                     <TabsContent value="library" className="focus-visible:outline-none focus-visible:ring-0">
                         <RoutineLibrary
-                            currentRoutinesCount={routines.length}
-                            userRoutineTitles={routines.map(r => r.name)}
+                            currentRoutinesCount={filteredRoutines.length}
+                            userRoutineTitles={filteredRoutines.map(r => r.name)}
+                            selectedSport={selectedSport}
                         />
                     </TabsContent>
                 </Tabs>

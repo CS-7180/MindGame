@@ -3,7 +3,10 @@ import { redirect } from 'next/navigation'
 import { Technique } from '@/types'
 import { RoutineBuilder } from '@/components/routine/RoutineBuilder'
 
-export default async function RoutineBuilderPage() {
+export default async function RoutineBuilderPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+    const searchParams = await props.searchParams;
+    const initialSport = searchParams.sport as string | undefined;
+
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -18,12 +21,19 @@ export default async function RoutineBuilderPage() {
         .order('category')
         .order('name')
 
-    // Count user's current customs routines (not templates)
     const { count: currentRoutinesCount, error: countError } = await supabase
         .from('routines')
         .select('*', { count: 'exact', head: true })
         .eq('athlete_id', user.id)
         .eq('is_template', false)
+
+    const { data: athleteProfile } = await supabase
+        .from('athlete_profiles')
+        .select('sport')
+        .eq('athlete_id', user.id)
+        .single()
+
+    const defaultSport = initialSport || athleteProfile?.sport || 'Unspecified';
 
     if (error || !techniques || countError !== null) {
         return (
@@ -47,6 +57,7 @@ export default async function RoutineBuilderPage() {
                 <RoutineBuilder
                     initialTechniques={techniques as Technique[]}
                     currentRoutinesCount={currentRoutinesCount || 0}
+                    defaultSport={defaultSport}
                 />
             </div>
         </div>

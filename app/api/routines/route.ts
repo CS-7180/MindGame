@@ -4,6 +4,7 @@ import { z } from "zod";
 
 const createRoutineSchema = z.object({
     name: z.string().min(1, "Name is required").max(100, "Name is too long"),
+    sport: z.string().min(1, "Sport is required"),
     steps: z.array(z.object({
         technique_id: z.string().uuid(),
         step_order: z.number().int().min(0)
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
             );
         }
 
-        const { name, steps } = validation.data;
+        const { name, sport, steps } = validation.data;
 
         // 3. Fetch athlete's sport from their athlete profile
         const { data: athleteProfile, error: profileError } = await supabase
@@ -115,8 +116,8 @@ export async function POST(request: Request) {
             .insert({
                 athlete_id: user.id,
                 name: name,
+                sport: sport,
                 source: "custom",
-                sport: athleteProfile.sport,
             })
             .select()
             .single();
