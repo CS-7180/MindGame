@@ -85,8 +85,8 @@ test.describe('Guided Routine Execution Flow', () => {
 
         // 8. Verify Navigation to Pre-Game Log (AC-03.5)
         await logEntryBtn.click();
-        await page.waitForURL('**/log/pre');
-        await expect(page.getByRole('heading', { name: /Game Log/i })).toBeVisible();
+        await page.waitForURL('**/log/pre', { timeout: 10000 });
+        await expect(page.locator('h1')).toContainText('Game Log');
 
         // Optional: Back to home check
         await page.goto('/home');

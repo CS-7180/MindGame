@@ -11,9 +11,9 @@ export default async function PreGameLogPage() {
     }
 
     const { data: profile } = await supabase
-        .from("profiles")
+        .from("athlete_profiles")
         .select("sport")
-        .eq("id", user.id)
+        .eq("athlete_id", user.id)
         .single();
 
     return <PreGameLogForm sport={profile?.sport} />;

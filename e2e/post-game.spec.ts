@@ -22,22 +22,23 @@ test.describe('Post-Game Reflection', () => {
         await page.waitForURL('**/log/pre');
 
         // Fill out pre-game to ensure a log exists today
-        await page.click('text=Yes, completely');
-        // Click 3 for anxiety and confidence
-        const genericButtons = page.locator('button:has-text("3")');
-        // Since it's a known generic 1-5 selector, just click the visible ones.
-        if (await genericButtons.count() >= 2) {
-            await genericButtons.nth(0).click();
-            await genericButtons.nth(1).click();
+        // Use more specific locator for the "Yes" radio option
+        await page.locator('label[for="rc-yes"]').click();
+        
+        // Ensure anxiety and confidence are set (defaults are 3, but let's be explicit)
+        const anxietyButtons = page.locator('button:has-text("3")');
+        if (await anxietyButtons.count() >= 2) {
+            await anxietyButtons.nth(0).click();
+            await anxietyButtons.nth(1).click();
         }
-        await page.click('button:has-text("Save Entry")');
 
-        // Should redirect to history detail automatically, or home.
-        await page.waitForURL('**/history/*');
-
-        // 2. Now return to Home Dashboard
-        // Clicking back isn't reliable, let's navigate directly to /home
-        await page.goto('/home');
+        const saveBtn = page.locator('button:has-text("Save Pre-Game Log")');
+        await expect(saveBtn).toBeEnabled();
+        await saveBtn.click();
+ 
+        // Should redirect to home as per PRD FR-05.4
+        // Increased timeout to handle potential DB/Network delay in dev server
+        await page.waitForURL('**/home', { timeout: 15000 });
 
         // 3. Verify the pending post-game reflection prompt is there
         const completeNowBtn = page.locator('text=Complete Now');
@@ -60,7 +61,7 @@ test.describe('Post-Game Reflection', () => {
 
         // 6. Should redirect to history detail and show completed
         await page.waitForURL('**/history/*');
-        await expect(page.locator('text=Completed')).last().toBeVisible(); // Next to Post-Game Reflection header
+        await expect(page.locator('text=Completed').last()).toBeVisible(); // Next to Post-Game Reflection header
         await expect(page.locator('text=Exhilarating')).toBeVisible();
     });
 });

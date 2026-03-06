@@ -372,15 +372,7 @@ export function PreGameLogForm({ sport }: { sport?: string | null }) {
                         />
 
                         {/* ── Submit & Cancel ── */}
-                        <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-slate-800/50">
-                            <Button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full sm:w-auto h-11 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/25"
-                                data-testid="submit-pre-game-log"
-                            >
-                                {isSubmitting ? "Saving..." : "Save Pre-Game Log"}
-                            </Button>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 border-t border-slate-800/50">
                             <Button
                                 type="button"
                                 variant="ghost"
@@ -389,6 +381,14 @@ export function PreGameLogForm({ sport }: { sport?: string | null }) {
                                 className="w-full sm:w-auto px-8 text-slate-400 hover:text-white hover:bg-slate-800"
                             >
                                 Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full sm:w-auto h-11 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/25"
+                                data-testid="submit-pre-game-log"
+                            >
+                                {isSubmitting ? "Saving..." : "Save Pre-Game Log"}
                             </Button>
                         </div>
                     </form>

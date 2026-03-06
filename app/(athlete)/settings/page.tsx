@@ -25,6 +25,7 @@ import {
     EyeOff,
     Trash2,
     AlertTriangle,
+    Bell,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -145,6 +146,35 @@ export default function SettingsPage() {
                                         Your data never leaves your private account.
                                     </p>
                                 </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </section>
+
+                {/* Notifications Section */}
+                <section className="pt-4">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Bell className="h-5 w-5 text-indigo-400" />
+                        <h2 className="text-lg font-bold text-white">Notifications</h2>
+                    </div>
+
+                    <Card className="border-slate-800 bg-slate-900/40 backdrop-blur-sm overflow-hidden">
+                        <CardContent className="p-5 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-white">Game Reminders</p>
+                                    <p className="text-xs text-slate-400 mt-0.5">
+                                        Configure push notifications for upcoming games
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-600"
+                                    onClick={() => router.push("/settings/notifications")}
+                                >
+                                    Manage
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>

@@ -1,0 +1,2 @@
+-- Migration cleared. User seeding is now handled by setup_test_user.js 
+-- to ensure correct password hashing and metadata initialization.

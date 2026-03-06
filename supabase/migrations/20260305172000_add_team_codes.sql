@@ -53,11 +53,13 @@ WHERE role = 'coach' AND (team_code IS NULL OR team_code = '');
 -- 6. Add RLS policy for team_code visibility
 -- Coaches should be able to see their own team_code
 -- Athletes will need to query by team_code to find a coach, but we usually handle that in the API
+DROP POLICY IF EXISTS "Coaches can view their own team_code" ON public.profiles;
 CREATE POLICY "Coaches can view their own team_code" ON public.profiles
     FOR SELECT
     USING (auth.uid() = id);
 
 -- Allow athletes to select from profiles if they know the team_code (needed for joining)
+DROP POLICY IF EXISTS "Allow public lookup by team_code" ON public.profiles;
 CREATE POLICY "Allow public lookup by team_code" ON public.profiles
     FOR SELECT
     USING (team_code IS NOT NULL);
