@@ -101,11 +101,13 @@ export default function HomeClient({ displayName, routines, sport, notifications
     useEffect(() => {
         const checkPendingPosts = async () => {
             try {
-                const res = await fetch('/api/logs/pending-post');
+                const res = await fetch(`/api/logs/pending-post?sport=${encodeURIComponent(selectedSport)}`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.pendingLog) {
                         setPendingPostLogId(data.pendingLog.id);
+                    } else {
+                        setPendingPostLogId(null);
                     }
                 }
             } catch (err) {
@@ -113,7 +115,7 @@ export default function HomeClient({ displayName, routines, sport, notifications
             }
         };
         checkPendingPosts();
-    }, []);
+    }, [selectedSport]);
 
     const handleDeleteRoutine = async () => {
         if (!deletingRoutineId) return;

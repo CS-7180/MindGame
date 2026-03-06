@@ -4,8 +4,10 @@ import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const sport = searchParams.get('sport');
         const cookieStore = cookies();
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,13 +35,19 @@ export async function GET() {
         const today = localISOTime.split('T')[0];
 
         // Find a log for today that has pre_logged_at but NO post_logged_at
-        const { data, error } = await supabase
+        let query = supabase
             .from('game_logs')
             .select('*')
             .eq('athlete_id', session.user.id)
             .eq('log_date', today)
             .not('pre_logged_at', 'is', null)
-            .is('post_logged_at', null)
+            .is('post_logged_at', null);
+
+        if (sport && sport !== 'Unspecified') {
+            query = query.eq('sport', sport);
+        }
+
+        const { data, error } = await query
             .order('created_at', { ascending: false })
             .limit(1)
             .single();
