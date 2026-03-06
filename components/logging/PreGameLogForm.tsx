@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -38,6 +39,7 @@ const preGameLogSchema = z.object({
         .max(200, "Notes must be 200 characters or fewer")
         .optional()
         .or(z.literal("")),
+    sport: z.string().min(1, "Please specify a sport"),
 });
 
 type PreGameLogFormValues = z.infer<typeof preGameLogSchema>;
@@ -58,7 +60,7 @@ const CONFIDENCE_LABELS: Record<number, string> = {
     5: "Very high",
 };
 
-export function PreGameLogForm() {
+export function PreGameLogForm({ sport }: { sport?: string | null }) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -70,6 +72,7 @@ export function PreGameLogForm() {
             pre_anxiety_level: 3,
             pre_confidence_level: 3,
             pre_notes: "",
+            sport: sport || "",
         },
     });
 
@@ -124,7 +127,9 @@ export function PreGameLogForm() {
                     <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25">
                         <Brain className="h-5 w-5 text-white" />
                     </div>
-                    <h1 className="font-bold text-white text-lg">Pre-Game Log</h1>
+                    <h1 className="font-bold text-white text-lg">
+                        Pre-{sport ? <span className="text-indigo-400">{sport}</span> : ""} Game Log
+                    </h1>
                 </div>
             </header>
 
@@ -136,6 +141,30 @@ export function PreGameLogForm() {
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        {/* ── Sport ── */}
+                        <FormField
+                            control={form.control}
+                            name="sport"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-white text-base font-semibold">
+                                        Sport <span className="text-red-500">*</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="e.g. Tennis, Basketball, Soccer"
+                                            className="bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-500 max-w-md focus-visible:ring-indigo-500"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormDescription className="text-slate-400">
+                                        What sport are you playing today?
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         {/* ── Routine Completed ── */}
                         <FormField
                             control={form.control}
@@ -143,7 +172,7 @@ export function PreGameLogForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-white text-base font-semibold">
-                                        Did you complete your routine?
+                                        Did you complete your routine? <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormControl>
                                         <RadioGroup
@@ -202,7 +231,7 @@ export function PreGameLogForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-white text-base font-semibold">
-                                        Anxiety Level
+                                        Anxiety Level <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormDescription className="text-slate-400">
                                         How anxious are you feeling right now?
@@ -235,8 +264,8 @@ export function PreGameLogForm() {
                                                         type="button"
                                                         onClick={() => field.onChange(n)}
                                                         className={`w-8 h-8 rounded-full text-xs font-bold transition-all ${field.value === n
-                                                                ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                                                                : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
+                                                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+                                                            : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
                                                             }`}
                                                     >
                                                         {n}
@@ -261,7 +290,7 @@ export function PreGameLogForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-white text-base font-semibold">
-                                        Confidence Level
+                                        Confidence Level <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormDescription className="text-slate-400">
                                         How confident do you feel about your performance?
@@ -294,8 +323,8 @@ export function PreGameLogForm() {
                                                         type="button"
                                                         onClick={() => field.onChange(n)}
                                                         className={`w-8 h-8 rounded-full text-xs font-bold transition-all ${field.value === n
-                                                                ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                                                                : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
+                                                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+                                                            : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
                                                             }`}
                                                     >
                                                         {n}
@@ -342,15 +371,26 @@ export function PreGameLogForm() {
                             )}
                         />
 
-                        {/* ── Submit ── */}
-                        <Button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/25"
-                            data-testid="submit-pre-game-log"
-                        >
-                            {isSubmitting ? "Saving..." : "Save Pre-Game Log"}
-                        </Button>
+                        {/* ── Submit & Cancel ── */}
+                        <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-slate-800/50">
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full sm:w-auto h-11 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/25"
+                                data-testid="submit-pre-game-log"
+                            >
+                                {isSubmitting ? "Saving..." : "Save Pre-Game Log"}
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => router.back()}
+                                disabled={isSubmitting}
+                                className="w-full sm:w-auto px-8 text-slate-400 hover:text-white hover:bg-slate-800"
+                            >
+                                Cancel
+                            </Button>
+                        </div>
                     </form>
                 </Form>
             </main>

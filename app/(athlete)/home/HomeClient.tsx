@@ -13,7 +13,8 @@ import {
     Clock,
     Trash2,
     Settings,
-    CheckCircle2
+    CheckCircle2,
+    BarChart3
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
@@ -28,7 +29,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface RoutineStep {
@@ -82,6 +83,7 @@ export default function HomeClient({ displayName, routines, sport, notifications
     const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isActivating, setIsActivating] = useState<string | null>(null);
+    const [pendingPostLogId, setPendingPostLogId] = useState<string | null>(null);
 
     const handleActivateRoutine = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -101,6 +103,23 @@ export default function HomeClient({ displayName, routines, sport, notifications
             setIsActivating(null);
         }
     };
+
+    useEffect(() => {
+        const checkPendingPosts = async () => {
+            try {
+                const res = await fetch('/api/logs/pending-post');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.pendingLog) {
+                        setPendingPostLogId(data.pendingLog.id);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to check pending posts:", err);
+            }
+        };
+        checkPendingPosts();
+    }, []);
 
     const handleDeleteRoutine = async () => {
         if (!deletingRoutineId) return;
@@ -180,6 +199,31 @@ export default function HomeClient({ displayName, routines, sport, notifications
 
                 {/* Shared Template Notifications */}
                 <SharedTemplateNotifications notifications={notifications} />
+
+                {/* Pending Post-Game Reflection Alert */}
+                {pendingPostLogId && (
+                    <Card className="border-amber-500/50 bg-amber-500/10 backdrop-blur-sm shadow-xl animate-in slide-in-from-top-2 duration-300">
+                        <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-amber-500/20">
+                                    <Brain className="h-5 w-5 text-amber-400" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-white">Post-Game Reflection Pending</h3>
+                                    <p className="text-sm text-amber-200/80">
+                                        How did your game go today? Take a minute to reflect.
+                                    </p>
+                                </div>
+                            </div>
+                            <Button
+                                className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shadow-lg shadow-amber-500/25 whitespace-nowrap"
+                                onClick={() => router.push(`/post-game/${pendingPostLogId}`)}
+                            >
+                                Complete Now
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Active Routine Card */}
                 {activeRoutine ? (
@@ -331,6 +375,28 @@ export default function HomeClient({ displayName, routines, sport, notifications
                                             <Brain className="h-5 w-5 text-purple-400" />
                                         </div>
                                         <p className="text-sm font-medium text-slate-300">Pre-Game Log</p>
+                                    </CardContent>
+                                </Card>
+                                <Card
+                                    className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
+                                    onClick={() => router.push("/history")}
+                                >
+                                    <CardContent className="p-4 text-center">
+                                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                            <Clock className="h-5 w-5 text-emerald-400" />
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-300">Routine History</p>
+                                    </CardContent>
+                                </Card>
+                                <Card
+                                    className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
+                                    onClick={() => router.push("/correlation")}
+                                >
+                                    <CardContent className="p-4 text-center">
+                                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                                            <BarChart3 className="h-5 w-5 text-blue-400" />
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-300">View Insights</p>
                                     </CardContent>
                                 </Card>
                             </div>
