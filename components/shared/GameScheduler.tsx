@@ -70,8 +70,8 @@ export function GameScheduler() {
       }
 
       toast.success("Game scheduled successfully!");
-      router.push("/home");
       router.refresh();
+      router.push("/home");
     } catch (error) {
       console.error(error);
       toast.error("An error occurred. Please try again.");
