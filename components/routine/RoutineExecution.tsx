@@ -10,9 +10,10 @@ import { toast } from 'sonner'
 
 interface RoutineExecutionProps {
     routine: RoutineWithSteps
+    sport?: string
 }
 
-export function RoutineExecution({ routine }: RoutineExecutionProps) {
+export function RoutineExecution({ routine, sport }: RoutineExecutionProps) {
     const router = useRouter()
 
     // Memoize sorted steps so the reference is stable across renders
@@ -129,7 +130,7 @@ export function RoutineExecution({ routine }: RoutineExecutionProps) {
     if (!isLoaded) return <div className="min-h-screen flex items-center justify-center text-white">Loading routine...</div>
 
     if (isCompleted) {
-        return <RoutineCompletion routineName={routine.name} />
+        return <RoutineCompletion routineName={routine.name} sport={sport} />
     }
 
     const currentStep = sortedSteps[currentStepIndex]

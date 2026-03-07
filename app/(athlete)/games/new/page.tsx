@@ -5,7 +5,10 @@ export const metadata = {
   description: "Schedule your next game and set mental routine reminders.",
 };
 
-export default function NewGamePage() {
+export default function NewGamePage({ searchParams }: { searchParams: { sport?: string } }) {
+  const defaultSport = searchParams.sport || "";
+  const isSportLocked = !!searchParams.sport;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-xl mx-auto space-y-8">
@@ -17,7 +20,7 @@ export default function NewGamePage() {
             Tell us when you play so we can prompt your routine.
           </p>
         </div>
-        <GameScheduler />
+        <GameScheduler defaultSport={defaultSport} isSportLocked={isSportLocked} />
       </div>
     </div>
   );

@@ -24,19 +24,24 @@ interface GameLog {
 
 interface HistoryListProps {
     initialLogs: GameLog[];
+    initialSport?: string;
 }
 
-export function HistoryList({ initialLogs }: HistoryListProps) {
+export function HistoryList({ initialLogs, initialSport }: HistoryListProps) {
     const router = useRouter();
     const [logs] = useState<GameLog[]>(initialLogs);
     const [filterCompleted, setFilterCompleted] = useState<string>("all");
+    const [filterSport, setFilterSport] = useState<string>(initialSport || "all");
     const [searchDate, setSearchDate] = useState("");
+
+    const sports = ["all", ...Array.from(new Set(logs.map(l => l.sport)))];
 
     // Filtering logic
     const filteredLogs = logs.filter(log => {
         const matchCompleted = filterCompleted === "all" || log.routine_completed === filterCompleted;
+        const matchSport = filterSport === "all" || log.sport === filterSport;
         const matchDate = !searchDate || log.log_date.includes(searchDate);
-        return matchCompleted && matchDate;
+        return matchCompleted && matchSport && matchDate;
     }).sort((a, b) => {
         const dateA = new Date(a.pre_logged_at || a.log_date).getTime();
         const dateB = new Date(b.pre_logged_at || b.log_date).getTime();
@@ -59,7 +64,7 @@ export function HistoryList({ initialLogs }: HistoryListProps) {
                 <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => router.push("/home")}
+                    onClick={() => router.push(`/home${filterSport !== 'all' ? `?sport=${encodeURIComponent(filterSport)}` : ''}`)}
                     className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full"
                 >
                     <ArrowLeft className="h-5 w-5" />
@@ -71,7 +76,7 @@ export function HistoryList({ initialLogs }: HistoryListProps) {
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
                     <Input
@@ -82,6 +87,18 @@ export function HistoryList({ initialLogs }: HistoryListProps) {
                         onChange={(e) => setSearchDate(e.target.value)}
                     />
                 </div>
+                <Select value={filterSport} onValueChange={setFilterSport}>
+                    <SelectTrigger className="bg-slate-900/50 border-slate-800 text-white">
+                        <SelectValue placeholder="Filter by sport" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                        {sports.map((sport) => (
+                            <SelectItem key={sport} value={sport}>
+                                {sport === "all" ? "All Sports" : sport}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
                 <Select value={filterCompleted} onValueChange={setFilterCompleted}>
                     <SelectTrigger className="bg-slate-900/50 border-slate-800 text-white">
                         <SelectValue placeholder="Filter by routine" />

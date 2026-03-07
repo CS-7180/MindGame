@@ -19,12 +19,12 @@ test.describe('Post-Game Reflection', () => {
         const preGameCard = page.locator('text=Pre-Game Log');
         await expect(preGameCard).toBeVisible();
         await preGameCard.click();
-        await page.waitForURL('**/log/pre');
+        await page.waitForURL('**/log/pre*');
 
         // Fill out pre-game to ensure a log exists today
         // Use more specific locator for the "Yes" radio option
         await page.locator('label[for="rc-yes"]').click();
-        
+
         // Ensure anxiety and confidence are set (defaults are 3, but let's be explicit)
         const anxietyButtons = page.locator('button:has-text("3")');
         if (await anxietyButtons.count() >= 2) {
@@ -35,7 +35,7 @@ test.describe('Post-Game Reflection', () => {
         const saveBtn = page.locator('button:has-text("Save Pre-Game Log")');
         await expect(saveBtn).toBeEnabled();
         await saveBtn.click();
- 
+
         // Should redirect to home as per PRD FR-05.4
         // Increased timeout to handle potential DB/Network delay in dev server
         await page.waitForURL('**/home', { timeout: 15000 });

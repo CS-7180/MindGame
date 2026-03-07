@@ -70,8 +70,23 @@ function OnboardingContent() {
         router.push(`/onboarding?step=${step}`);
     };
 
-    const handleSkip = () => {
-        router.push("/home");
+    const handleSkip = async () => {
+        setLoading(true);
+        const response = await fetch("/api/onboarding", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "skip" }),
+        });
+
+        if (response.ok) {
+            router.push("/home");
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            toast.error("Failed to skip setup", {
+                description: errorData.error?.message || "Please check your internet connection and try again."
+            });
+            setLoading(false);
+        }
     };
 
     const handleComplete = async () => {
@@ -182,11 +197,18 @@ function OnboardingContent() {
                                 <Button
                                     variant="ghost"
                                     onClick={handleSkip}
+                                    disabled={loading}
                                     className="text-slate-400 hover:text-white hover:bg-slate-800"
                                     data-testid="onboarding-skip"
                                 >
-                                    <SkipForward className="h-4 w-4 mr-2" />
-                                    Skip Setup
+                                    {loading ? (
+                                        "Skipping..."
+                                    ) : (
+                                        <>
+                                            <SkipForward className="h-4 w-4 mr-2" />
+                                            Skip Setup
+                                        </>
+                                    )}
                                 </Button>
                                 <Button
                                     onClick={() => goToStep(2)}

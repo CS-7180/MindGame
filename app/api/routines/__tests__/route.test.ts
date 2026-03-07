@@ -27,8 +27,9 @@ describe('Routines API', () => {
     describe('POST /api/routines', () => {
         it('should return 400 if user already has 5 routines', async () => {
             // Setup mock
-            const mockEq = vi.fn().mockResolvedValue({ count: 5, error: null })
-            const mockSelect = vi.fn().mockReturnValue({ eq: mockEq })
+            const mockEq2 = vi.fn().mockResolvedValue({ count: 5, error: null })
+            const mockEq1 = vi.fn().mockReturnValue({ eq: mockEq2 })
+            const mockSelect = vi.fn().mockReturnValue({ eq: mockEq1 })
             const mockFrom = vi.fn().mockReturnValue({ select: mockSelect })
 
                 ; (createClient as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -39,7 +40,7 @@ describe('Routines API', () => {
             // Create dummy request
             const request = new Request('http://localhost/api/routines', {
                 method: 'POST',
-                body: JSON.stringify({ name: 'Test', steps: [{ technique_id: 'test-id', step_order: 0 }] })
+                body: JSON.stringify({ name: 'Test', sport: 'Soccer', steps: [{ technique_id: '123e4567-e89b-12d3-a456-426614174000', step_order: 0 }] })
             })
 
             const response = await POST(request)

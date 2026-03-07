@@ -51,6 +51,7 @@ export default function OnboardingResultPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 name: `My ${sport || "Pre-Game"} Routine`,
+                sport: sport || "Unspecified",
                 source: "recommended",
                 steps: recommended.map((t, index) => ({
                     technique_id: t.id,

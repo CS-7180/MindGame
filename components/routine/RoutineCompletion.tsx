@@ -4,8 +4,17 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, ArrowRight } from 'lucide-react'
 
-export function RoutineCompletion({ routineName }: { routineName: string }) {
+interface RoutineCompletionProps {
+    routineName: string;
+    sport?: string;
+}
+
+export function RoutineCompletion({ routineName, sport }: RoutineCompletionProps) {
     const router = useRouter()
+
+    const preGameLogUrl = sport
+        ? `/log/pre?sport=${encodeURIComponent(sport)}`
+        : '/log/pre'
 
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-6 relative overflow-hidden">
@@ -33,7 +42,7 @@ export function RoutineCompletion({ routineName }: { routineName: string }) {
                     <Button
                         size="lg"
                         className="w-full h-14 rounded-full text-lg font-bold bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.3)]"
-                        onClick={() => router.push('/log/pre')}
+                        onClick={() => router.push(preGameLogUrl)}
                     >
                         Log Pre-Game Entry <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
