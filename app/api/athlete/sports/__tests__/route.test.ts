@@ -14,7 +14,7 @@ describe('Athlete Sports API', () => {
         vi.clearAllMocks();
     });
 
-    const setupMockSupabase = (fetchData: any = { sports: [] }, fetchError = null, updateError = null) => {
+    const setupMockSupabase = (fetchData: Record<string, unknown> = { sports: [] }, fetchError: Error | null = null, updateError: Error | null = null) => {
         const mockEqUpdate = vi.fn().mockResolvedValue({ error: updateError });
         const mockUpdate = vi.fn().mockReturnValue({ eq: mockEqUpdate });
 
@@ -81,7 +81,7 @@ describe('Athlete Sports API', () => {
         });
 
         it('should return 500 if update fails', async () => {
-            setupMockSupabase({ sports: ['Soccer'] }, null, { message: 'DB Error' });
+            setupMockSupabase({ sports: ['Soccer'] }, null, new Error('DB Error'));
 
             const request = new Request('http://localhost/api/athlete/sports', {
                 method: 'POST',

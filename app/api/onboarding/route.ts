@@ -46,7 +46,7 @@ export async function POST(request: Request) {
             );
         }
 
-        const updatePayload: any = {
+        const updatePayload: Record<string, unknown> = {
             athlete_id: user.id,
             onboarding_complete: true,
             updated_at: new Date().toISOString(),
