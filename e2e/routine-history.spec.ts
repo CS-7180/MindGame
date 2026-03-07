@@ -12,15 +12,15 @@ test.describe('Routine History and Entry Review', () => {
         await page.waitForURL('**/home');
 
         // 1. Navigate to History from Home
-        const historyCard = page.locator('text=Routine History');
+        const historyCard = page.locator('text=History Tracker');
         await expect(historyCard).toBeVisible();
         await historyCard.click();
 
         // Wait to be on history page
-        await page.waitForURL('**/history');
+        await page.waitForURL('**/history*');
 
         // 2. Verify History List loads (AC-11.1)
-        await expect(page.locator('h1:has-text("Routine History")')).toBeVisible();
+        await expect(page.locator('h1')).toContainText('History');
 
         // 3. Check for elements or "No history found"
         // Either they have history cards, or they see the empty state.
@@ -48,7 +48,7 @@ test.describe('Routine History and Entry Review', () => {
             // For now, just verifying the detail view is enough for AC-11.2
 
             // Check for post-game section header
-            await expect(page.getByText('Post-Game Reflection')).toBeVisible();
+            await expect(page.getByText('Post-Game Reflection', { exact: true })).toBeVisible();
         }
     });
 });

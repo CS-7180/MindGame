@@ -34,25 +34,27 @@ test.describe('Guided Routine Execution Flow', () => {
         const saveRecommendedBtn = page.getByTestId('save-routine');
         await expect(saveRecommendedBtn).toBeVisible();
         await saveRecommendedBtn.click();
-        
+
         // Wait for automatic redirect to home
         await page.waitForURL('**/home', { timeout: 10000 });
-        
+
         // 0.6. Ensure a routine is active
         // If no routine is active, try to activate the first one found
-        const activeRoutineCard = page.getByTestId('active-routine');
-        const isAlreadyActive = await activeRoutineCard.isVisible();
-        
+        const activeRoutineCard = page.getByTestId('start-routine');
+        let isAlreadyActive = false;
+        try {
+            await expect(activeRoutineCard).toBeVisible({ timeout: 5000 });
+            isAlreadyActive = true;
+        } catch {
+            isAlreadyActive = false;
+        }
+
         if (!isAlreadyActive) {
             console.log("No active routine found, attempting to activate...");
-            const activateBtn = page.getByRole('button', { name: /Activate/i }).first();
-            try {
-                await expect(activateBtn).toBeVisible({ timeout: 5000 });
-            } catch {
-                console.log("Activate button not found, reloading page...");
-                await page.reload();
-                await expect(activateBtn).toBeVisible({ timeout: 10000 });
-            }
+            const routineCard = page.locator('.group').first();
+            await routineCard.hover();
+            const activateBtn = page.getByRole('button', { name: /Set Active/i }).first();
+            await expect(activateBtn).toBeVisible({ timeout: 5000 });
             await activateBtn.click();
             await expect(activeRoutineCard).toBeVisible({ timeout: 10000 });
         }
@@ -64,7 +66,7 @@ test.describe('Guided Routine Execution Flow', () => {
 
         // 2. Verify Execution UI loads (AC-03.1, AC-03.3)
         await expect(page.getByTestId('step-display')).toBeVisible();
-        
+
         // 3. Complete all steps (AC-03.4)
         // We know the recommended routine has multiple steps
         let nextBtn = page.getByRole('button', { name: /Next Step/i });
