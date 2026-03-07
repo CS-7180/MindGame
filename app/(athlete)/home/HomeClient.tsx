@@ -14,6 +14,7 @@ import {
     Lock,
     Activity,
     Calendar,
+    CalendarPlus,
     ChevronRight,
     Target,
     Trophy,
@@ -454,6 +455,14 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                             <Activity className="h-5 w-5 text-blue-400" />
                                         </div>
                                         <p className="text-sm font-medium text-slate-200">Insights</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-slate-800 bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer group" onClick={() => router.push(`/games/new?sport=${encodeURIComponent(selectedSport)}`)}>
+                                    <CardContent className="p-4 flex flex-col items-center text-center">
+                                        <div className="w-10 h-10 rounded-full bg-slate-800 group-hover:bg-slate-700 flex items-center justify-center mb-2 transition-colors">
+                                            <CalendarPlus className="h-5 w-5 text-amber-400" />
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-200">Schedule Game</p>
                                     </CardContent>
                                 </Card>
                             </div>
