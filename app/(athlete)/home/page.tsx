@@ -53,6 +53,17 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
         .eq("athlete_id", user.id)
         .order("log_date", { ascending: false });
 
+    // Fetch upcoming games for contextual hero card
+    const today = new Date().toISOString().split("T")[0];
+    const { data: upcomingGames } = await supabase
+        .from("games")
+        .select("id, sport, game_date, game_time, reminder_offset_mins")
+        .eq("athlete_id", user.id)
+        .gte("game_date", today)
+        .order("game_date", { ascending: true })
+        .order("game_time", { ascending: true })
+        .limit(10);
+
     // Build sports list from profile + routines (backward compat)
     const profileSports: string[] = athleteProfile?.sports?.length
         ? athleteProfile.sports
@@ -67,6 +78,7 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
             sports={allSports}
             defaultSport={searchParams.sport || allSports[0] || ""}
             gameLogs={gameLogs || []}
+            upcomingGames={upcomingGames || []}
         />
     );
 }

@@ -20,6 +20,9 @@ import {
     Trophy,
     Edit3,
     TrendingUp,
+    Info,
+    X,
+    Clock,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
@@ -83,17 +86,26 @@ const SPORT_EMOJIS: Record<string, string> = {
 const PRESET_SPORTS = ["Soccer", "Basketball", "Tennis", "Baseball", "Football", "Track"];
 
 const getTheme = (sport: string) => {
-    const s = sport?.toLowerCase() || '';
-    if (s === 'soccer') return { text: 'text-emerald-400', bg: 'bg-emerald-500', from: 'from-emerald-500', to: 'to-emerald-700', border: 'border-emerald-500/50', light: 'bg-emerald-500/10', ring: 'ring-emerald-500/40' };
-    if (s === 'basketball') return { text: 'text-orange-400', bg: 'bg-orange-500', from: 'from-orange-500', to: 'to-orange-700', border: 'border-orange-500/50', light: 'bg-orange-500/10', ring: 'ring-orange-500/40' };
-    if (s === 'tennis') return { text: 'text-yellow-400', bg: 'bg-yellow-500', from: 'from-yellow-400', to: 'to-yellow-600', border: 'border-yellow-500/50', light: 'bg-yellow-500/10', ring: 'ring-yellow-500/40' };
-    if (s === 'baseball') return { text: 'text-blue-400', bg: 'bg-blue-500', from: 'from-blue-500', to: 'to-blue-700', border: 'border-blue-500/50', light: 'bg-blue-500/10', ring: 'ring-blue-500/40' };
-    if (s === 'football') return { text: 'text-red-400', bg: 'bg-red-500', from: 'from-red-500', to: 'to-red-700', border: 'border-red-500/50', light: 'bg-red-500/10', ring: 'ring-red-500/40' };
-    if (s === 'track') return { text: 'text-cyan-400', bg: 'bg-cyan-500', from: 'from-cyan-500', to: 'to-cyan-700', border: 'border-cyan-500/50', light: 'bg-cyan-500/10', ring: 'ring-cyan-500/40' };
-    return { text: 'text-indigo-400', bg: 'bg-indigo-500', from: 'from-indigo-500', to: 'to-purple-600', border: 'border-indigo-500/50', light: 'bg-indigo-500/10', ring: 'ring-indigo-500/40' };
+    const themes: Record<string, { from: string; to: string; text: string; light: string; border: string; bg: string; ring: string }> = {
+        soccer: { from: 'from-emerald-600', to: 'to-emerald-500', text: 'text-emerald-400', light: 'bg-emerald-500/10', border: 'border-emerald-500/20', bg: 'bg-emerald-500', ring: 'ring-emerald-500/40' },
+        basketball: { from: 'from-orange-600', to: 'to-orange-500', text: 'text-orange-400', light: 'bg-orange-500/10', border: 'border-orange-500/20', bg: 'bg-orange-500', ring: 'ring-orange-500/40' },
+        tennis: { from: 'from-yellow-600', to: 'to-yellow-500', text: 'text-yellow-400', light: 'bg-yellow-500/10', border: 'border-yellow-500/20', bg: 'bg-yellow-500', ring: 'ring-yellow-500/40' },
+        baseball: { from: 'from-red-600', to: 'to-red-500', text: 'text-red-400', light: 'bg-red-500/10', border: 'border-red-500/20', bg: 'bg-red-500', ring: 'ring-red-500/40' },
+        football: { from: 'from-amber-700', to: 'to-amber-600', text: 'text-amber-400', light: 'bg-amber-500/10', border: 'border-amber-500/20', bg: 'bg-red-500', ring: 'ring-red-500/40' },
+        track: { from: 'from-sky-600', to: 'to-sky-500', text: 'text-sky-400', light: 'bg-sky-500/10', border: 'border-sky-500/20', bg: 'bg-cyan-500', ring: 'ring-cyan-500/40' },
+    };
+    return themes[sport?.toLowerCase()] || { from: 'from-indigo-600', to: 'to-indigo-500', text: 'text-indigo-400', light: 'bg-indigo-500/10', border: 'border-indigo-500/20', bg: 'bg-indigo-500', ring: 'ring-indigo-500/40' };
 };
 
 const getEmoji = (sport: string) => SPORT_EMOJIS[sport?.toLowerCase()] || "🏆";
+
+interface UpcomingGame {
+    id: string;
+    sport: string;
+    game_date: string;
+    game_time: string;
+    reminder_offset_mins: number;
+}
 
 interface HomeClientProps {
     displayName: string;
@@ -101,9 +113,10 @@ interface HomeClientProps {
     sports: string[];
     defaultSport: string;
     gameLogs: GameLog[];
+    upcomingGames: UpcomingGame[];
 }
 
-export default function HomeClient({ displayName, routines, sports: initialSports, defaultSport, gameLogs }: HomeClientProps) {
+export default function HomeClient({ displayName, routines, sports: initialSports, defaultSport, gameLogs, upcomingGames }: HomeClientProps) {
     const router = useRouter();
     const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -114,9 +127,11 @@ export default function HomeClient({ displayName, routines, sports: initialSport
     const [showAddSport, setShowAddSport] = useState(false);
     const [customSportInput, setCustomSportInput] = useState("");
     const [addingSport, setAddingSport] = useState(false);
+    const [guidanceDismissed, setGuidanceDismissed] = useState(false);
 
     const handleSportChange = (newSport: string) => {
         setSelectedSport(newSport);
+        setGuidanceDismissed(false);
         router.replace(`/home?sport=${encodeURIComponent(newSport)}`, { scroll: false });
     };
 
@@ -153,6 +168,44 @@ export default function HomeClient({ displayName, routines, sports: initialSport
     const completedCount = sportLogs.filter(l => l.routine_completed === 'fully' || l.routine_completed === 'partially').length;
     const completionRate = sportLogs.length > 0 ? Math.round((completedCount / sportLogs.length) * 100) : 0;
     const theme = getTheme(selectedSport);
+
+    // ── Game context for hero card ──
+    const sportGames = upcomingGames.filter(g => g.sport === selectedSport);
+    const nextGame = sportGames[0] || null;
+
+    const getGameContext = () => {
+        if (!nextGame) return { isGameDay: false, hoursUntil: null, gameLabel: null };
+        const now = new Date();
+        const gameDateTime = new Date(`${nextGame.game_date}T${nextGame.game_time}`);
+        const diffMs = gameDateTime.getTime() - now.getTime();
+        const hoursUntil = Math.max(0, Math.round(diffMs / (1000 * 60 * 60)));
+        const isToday = nextGame.game_date === now.toISOString().split('T')[0];
+        const isTomorrow = (() => {
+            const tmrw = new Date(now);
+            tmrw.setDate(tmrw.getDate() + 1);
+            return nextGame.game_date === tmrw.toISOString().split('T')[0];
+        })();
+        const daysUntil = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+        const gameLabel = isToday ? `Today at ${nextGame.game_time}` : isTomorrow ? `Tomorrow at ${nextGame.game_time}` : `in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
+        return { isGameDay: isToday && diffMs > 0, hoursUntil, gameLabel, daysUntil };
+    };
+
+    const gameContext = getGameContext();
+
+    // ── Guidance banner message ──
+    const getGuidanceMessage = () => {
+        if (pendingPostLogId) return { icon: '⚠️', text: 'You have a pending post-game reflection — take a minute to reflect on your last game.' };
+        if (gameContext.isGameDay && activeRoutine) return { icon: '🎯', text: `You have a game today — start your routine to get in the zone.` };
+        if (gameContext.isGameDay && !activeRoutine) return { icon: '🎯', text: `Game day! Build a routine to prepare mentally.` };
+        if (nextGame && !gameContext.isGameDay) return { icon: '📅', text: `Next game ${gameContext.gameLabel} — review your routine or schedule practice.` };
+        if (activeRoutine && !nextGame) return { icon: '💡', text: 'No games scheduled — schedule your next game to stay on track.' };
+        if (!activeRoutine && filteredRoutines.length === 0) return { icon: '🏗️', text: 'Get started by building your first mental routine for this sport.' };
+        if (!activeRoutine && filteredRoutines.length > 0) return { icon: '⚡', text: 'Set one of your routines as active to use it on game day.' };
+        return null;
+    };
+
+    const activeRoutine = filteredRoutines.find((r) => r.is_active);
+    const guidance = getGuidanceMessage();
 
     useEffect(() => {
         if (!selectedSport) return;
@@ -213,7 +266,6 @@ export default function HomeClient({ displayName, routines, sports: initialSport
         router.refresh();
     };
 
-    const activeRoutine = filteredRoutines.find((r) => r.is_active);
     const totalTime = activeRoutine
         ? activeRoutine.routine_steps.reduce((sum, s) => sum + (s.techniques?.duration_minutes || 0), 0)
         : 0;
@@ -353,21 +405,32 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                 <p className="text-3xl font-bold text-white">{completionRate}%</p>
                                 <p className="text-xs text-slate-500 mt-1">Routine adherence</p>
                             </div>
-                            {lastGame && (
-                                <div className={`px-3 py-1.5 rounded-lg ${theme.light} border ${theme.border} text-center`}>
-                                    <p className={`text-xs ${theme.text} font-semibold uppercase tracking-wider`}>Last Game</p>
-                                    <p className="text-sm font-bold text-white mt-0.5">Confidence: {lastGame.pre_confidence_level ?? '-'}/10</p>
-                                </div>
-                            )}
+                            <div className="flex flex-col items-end gap-2">
+                                {lastGame && (
+                                    <div className={`px-3 py-1.5 rounded-lg ${theme.light} border ${theme.border} text-center`}>
+                                        <p className={`text-xs ${theme.text} font-semibold uppercase tracking-wider`}>Last Game</p>
+                                        <p className="text-sm font-bold text-white mt-0.5">Confidence: {lastGame.pre_confidence_level ?? '-'}/10</p>
+                                    </div>
+                                )}
+                                {nextGame && (
+                                    <div className={`px-3 py-1.5 rounded-lg ${gameContext.isGameDay ? 'bg-amber-500/15 border-amber-500/30' : theme.light + ' border ' + theme.border} text-center`}>
+                                        <p className={`text-xs ${gameContext.isGameDay ? 'text-amber-400' : theme.text} font-semibold uppercase tracking-wider flex items-center gap-1`}>
+                                            <Clock className="h-3 w-3" />
+                                            {gameContext.isGameDay ? 'Game Day' : 'Next Game'}
+                                        </p>
+                                        <p className="text-sm font-bold text-white mt-0.5">{gameContext.gameLabel}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         {activeRoutine ? (
                             <Button
-                                className={`w-full bg-gradient-to-r ${theme.from} ${theme.to} text-white font-bold h-12 shadow-lg hover:opacity-90 transition-opacity`}
+                                className={`w-full bg-gradient-to-r ${gameContext.isGameDay ? 'from-amber-600 to-orange-500' : theme.from + ' ' + theme.to} text-white font-bold h-12 shadow-lg hover:opacity-90 transition-opacity`}
                                 data-testid="start-routine"
                                 onClick={() => router.push(`/routine/execute/${activeRoutine.id}`)}
                             >
                                 <Play className="h-5 w-5 mr-2 fill-current" />
-                                Start Routine
+                                {gameContext.isGameDay ? 'Start Pre-Game Routine' : 'Start Routine'}
                             </Button>
                         ) : (
                             <Button
@@ -421,9 +484,36 @@ export default function HomeClient({ displayName, routines, sports: initialSport
 
                     {/* ── OVERVIEW TAB ── */}
                     <TabsContent value="overview" className="space-y-6 mt-5 focus-visible:outline-none focus-visible:ring-0">
+                        {/* ── Contextual Guidance Banner ── */}
+                        {guidance && !guidanceDismissed && (
+                            <div className="relative rounded-xl bg-slate-800/50 border border-slate-700/50 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <button
+                                    onClick={() => setGuidanceDismissed(true)}
+                                    className="absolute top-2 right-2 p-1 rounded-full hover:bg-slate-700/50 text-slate-500 hover:text-slate-300 transition-colors"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                                <div className="flex items-start gap-3 pr-6">
+                                    <span className="text-lg mt-0.5">{guidance.icon}</span>
+                                    <div>
+                                        <p className="text-sm font-medium text-slate-200 leading-relaxed">{guidance.text}</p>
+                                        <p className="text-xs text-slate-500 mt-1">Suggested next step</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Quick Actions */}
                         <div className="space-y-3">
-                            <h3 className="font-semibold text-white tracking-tight">Quick Actions</h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-semibold text-white tracking-tight">Quick Actions</h3>
+                                <div className="group relative">
+                                    <Info className="h-3.5 w-3.5 text-slate-500 cursor-help" />
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-300 w-56 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-20 shadow-xl">
+                                        These are always available. Follow the suggested step above for the best mental prep flow.
+                                    </div>
+                                </div>
+                            </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <Card className="border-slate-800 bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer group" onClick={() => router.push(`/routine/builder?sport=${encodeURIComponent(selectedSport)}`)}>
                                     <CardContent className="p-4 flex flex-col items-center text-center">
