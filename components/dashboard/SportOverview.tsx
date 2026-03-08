@@ -110,6 +110,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
     const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
     const [showBuilder, setShowBuilder] = useState(false);
     const [editingRoutine, setEditingRoutine] = useState<Routine | null>(null);
+    const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
 
     // Refresh state gracefully after mutationses = routines.filter(r => r.sport === selectedSport);
     const filteredRoutines = routines.filter(r => r.sport === selectedSport);
@@ -342,11 +343,14 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-white">Routine Manager</h2>
-                        {activeRoutine && (
-                            <Button size="sm" variant="outline" className="border-slate-800 hover:bg-slate-800 text-slate-300 h-8" onClick={() => { setShowTemplateLibrary(false); setIsCreateDialogOpen(true); }}>
-                                <Plus className="h-4 w-4 mr-1" /> Create Routine
+                        <div className="flex items-center gap-2">
+                            <Button size="sm" variant="outline" className="border-slate-800 hover:bg-slate-800 text-slate-300 h-8" onClick={() => setIsManageDialogOpen(true)}>
+                                My Routines
                             </Button>
-                        )}
+                            <Button size="sm" className={`bg-gradient-to-r ${theme.from} ${theme.to} text-white h-8`} onClick={() => { setShowTemplateLibrary(false); setIsCreateDialogOpen(true); }}>
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Active Routine Preview */}
@@ -390,42 +394,6 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                             <Button size="sm" className={`bg-gradient-to-r ${theme.from} ${theme.to} text-white`} onClick={() => { setShowTemplateLibrary(false); setIsCreateDialogOpen(true); }}>
                                 <Plus className="h-4 w-4 mr-1" /> Build Routine
                             </Button>
-                        </div>
-                    )}
-
-                    {/* Routines List */}
-                    {filteredRoutines.length > 0 && (
-                        <div className="space-y-3">
-                            <h3 className="text-sm font-semibold text-slate-300">Other Routines ({filteredRoutines.length})</h3>
-                            <div className="space-y-2">
-                                {filteredRoutines.filter(r => !r.is_active).map((routine) => (
-                                    <Card key={routine.id} className="border-slate-800/60 bg-slate-900/50 hover:bg-slate-800/60 transition-all cursor-pointer group" onClick={() => router.push(`/routine/execute/${routine.id}`)}>
-                                        <CardContent className="p-3 flex items-center justify-between">
-                                            <div>
-                                                <p className="font-medium text-sm text-slate-200">{routine.name}</p>
-                                                <p className="text-xs text-slate-500 mt-0.5">{routine.routine_steps?.length || 0} steps</p>
-                                            </div>
-                                            <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                                <Button
-                                                    variant="secondary" size="sm"
-                                                    className={`bg-slate-800 hover:bg-slate-700 text-xs h-7`}
-                                                    disabled={settingActiveId === routine.id}
-                                                    onClick={(e) => { e.stopPropagation(); handleSetActive(routine.id); }}
-                                                >
-                                                    {settingActiveId === routine.id ? "Setting..." : "Set Active"}
-                                                </Button>
-                                                <Button
-                                                    variant="ghost" size="icon"
-                                                    className="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-7 w-7 rounded-full"
-                                                    onClick={(e) => { e.stopPropagation(); setDeletingRoutineId(routine.id); }}
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
                         </div>
                     )}
                 </div>
@@ -486,6 +454,74 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                 </div>
 
             </div>
+
+            {/* Manage Routines Dialog */}
+            <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
+                <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-md p-0 overflow-hidden">
+                    <div className="p-6">
+                        <DialogHeader>
+                            <DialogTitle>My Routines</DialogTitle>
+                            <DialogDescription className="text-slate-400">
+                                Manage your mental routines for {selectedSport}.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="mt-4 max-h-[60vh] overflow-y-auto space-y-3 pr-2">
+                            {filteredRoutines.length === 0 ? (
+                                <p className="text-slate-500 text-sm text-center py-4">No routines found.</p>
+                            ) : (
+                                filteredRoutines.map((routine) => (
+                                    <Card key={routine.id} className={`border-slate-800 bg-slate-900 transition-all ${routine.is_active ? `border-${theme.from}/50 bg-slate-800/30` : ''}`}>
+                                        <CardContent className="p-4 flex flex-col gap-3">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="font-semibold text-slate-200 text-base">{routine.name}</p>
+                                                    <p className="text-xs text-slate-500 mt-0.5">{routine.routine_steps?.length || 0} steps</p>
+                                                </div>
+                                                {routine.is_active && (
+                                                    <span className={`px-2 py-0.5 rounded-full ${theme.light} text-[10px] font-bold ${theme.text} uppercase tracking-wider border ${theme.border}`}>
+                                                        Active
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2 justify-end">
+                                                {!routine.is_active && (
+                                                    <Button
+                                                        variant="secondary" size="sm"
+                                                        className="bg-slate-800 hover:bg-slate-700 text-xs h-8"
+                                                        disabled={settingActiveId === routine.id}
+                                                        onClick={() => handleSetActive(routine.id)}
+                                                    >
+                                                        {settingActiveId === routine.id ? "Setting..." : "Set Active"}
+                                                    </Button>
+                                                )}
+                                                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white h-8 px-2" onClick={() => {
+                                                    setIsManageDialogOpen(false);
+                                                    setEditingRoutine(routine);
+                                                    setShowBuilder(true);
+                                                    setIsCreateDialogOpen(true);
+                                                }}>
+                                                    <Edit3 className="h-4 w-4 mr-1" /> Edit
+                                                </Button>
+                                                <Button
+                                                    variant="ghost" size="icon"
+                                                    className="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-8 w-8 rounded-full"
+                                                    onClick={() => {
+                                                        setIsManageDialogOpen(false);
+                                                        setDeletingRoutineId(routine.id);
+                                                    }}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!deletingRoutineId} onOpenChange={(open) => !open && !isDeleting && setDeletingRoutineId(null)}>
