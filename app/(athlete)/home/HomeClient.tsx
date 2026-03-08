@@ -78,6 +78,16 @@ interface UpcomingGame {
     created_at?: string;
 }
 
+interface Technique {
+    id: string;
+    name: string;
+    category: string;
+    duration_minutes: number;
+    instruction: string;
+    slug: string;
+    created_at: string | null;
+}
+
 interface HomeClientProps {
     displayName: string;
     routines: Routine[];
@@ -86,9 +96,10 @@ interface HomeClientProps {
     gameLogs: GameLog[];
     upcomingGames: UpcomingGame[];
     pastGames: UpcomingGame[];
+    techniques: Technique[];
 }
 
-export default function HomeClient({ displayName, routines, sports: initialSports, defaultSport, gameLogs, upcomingGames, pastGames }: HomeClientProps) {
+export default function HomeClient({ displayName, routines, sports: initialSports, defaultSport, gameLogs, upcomingGames, pastGames, techniques }: HomeClientProps) {
     const router = useRouter();
 
     // Core root state
@@ -354,6 +365,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                 gameLogs={gameLogs}
                                 upcomingGames={sportUpcomingGames}
                                 pastGames={sportPastGames}
+                                techniques={techniques}
                                 onSelectGame={setSelectedGameId}
                             />
                         )}

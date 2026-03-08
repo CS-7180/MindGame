@@ -64,6 +64,12 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
         .order("game_time", { ascending: true })
         .limit(15);
 
+    // Fetch techniques for routine building
+    const { data: techniques } = await supabase
+        .from("techniques")
+        .select("*")
+        .order("name", { ascending: true });
+
     // Fetch past games for history and sidebar
     const { data: pastGames } = await supabase
         .from("games")
@@ -90,6 +96,7 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
             gameLogs={gameLogs || []}
             upcomingGames={upcomingGames || []}
             pastGames={pastGames || []}
+            techniques={techniques || []}
         />
     );
 }

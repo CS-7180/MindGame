@@ -138,19 +138,33 @@ function SortableStepItem({ step, onRemove }: { step: BuilderStep, onRemove: (id
 // ----------------------------------------------------------------------
 export function RoutineBuilder({
     initialTechniques,
+    initialRoutine,
     currentRoutinesCount = 0,
     defaultSport = 'Unspecified',
-    isSportLocked = false
+    isSportLocked = false,
+    onSaved
 }: {
     initialTechniques: Technique[],
+    initialRoutine?: any,
     currentRoutinesCount?: number,
     defaultSport?: string,
-    isSportLocked?: boolean
+    isSportLocked?: boolean,
+    onSaved?: (routineId: string) => void
 }) {
     const router = useRouter()
-    const [routineName, setRoutineName] = useState('')
-    const [sport, setSport] = useState(defaultSport)
-    const [steps, setSteps] = useState<BuilderStep[]>([])
+    const [routineName, setRoutineName] = useState(initialRoutine?.name || '')
+    const [sport, setSport] = useState(initialRoutine?.sport || defaultSport)
+
+    // Parse initial routine steps if provided
+    const [steps, setSteps] = useState<BuilderStep[]>(() => {
+        if (!initialRoutine?.routine_steps) return [];
+        return initialRoutine.routine_steps
+            .sort((a: any, b: any) => a.step_order - b.step_order)
+            .map((rs: any) => ({
+                id: crypto.randomUUID(),
+                technique: rs.technique || rs.techniques
+            }));
+    });
     const [isSaving, setIsSaving] = useState(false)
     const [showLimitDialog, setShowLimitDialog] = useState(false)
 
@@ -197,7 +211,7 @@ export function RoutineBuilder({
     }
 
     const handleSaveRoutine = async () => {
-        if (currentRoutinesCount >= 5) {
+        if (!initialRoutine && currentRoutinesCount >= 5) {
             setShowLimitDialog(true);
             return;
         }
@@ -217,8 +231,11 @@ export function RoutineBuilder({
 
         setIsSaving(true)
         try {
-            const response = await fetch('/api/routines', {
-                method: 'POST',
+            const url = initialRoutine ? `/api/routines/${initialRoutine.id}` : '/api/routines';
+            const method = initialRoutine ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: routineName,
@@ -236,9 +253,14 @@ export function RoutineBuilder({
                 throw new Error(result.error?.message || 'Failed to save routine')
             }
 
-            toast.success("Routine saved successfully!")
-            router.push('/home') // Redirect to dashboard/home
-            router.refresh()
+            toast.success(initialRoutine ? "Routine updated successfully!" : "Routine saved successfully!")
+
+            if (onSaved) {
+                onSaved(result.data.id);
+            } else {
+                router.push('/home') // Redirect to dashboard/home if standalone
+                router.refresh()
+            }
         } catch (error: unknown) {
             toast.error(error instanceof Error ? error.message : "Unknown error")
         } finally {
@@ -403,7 +425,13 @@ export function RoutineBuilder({
                     <div className="px-8 py-5 border-t border-white/5 bg-slate-950/60 flex items-center justify-between gap-4 z-10 backdrop-blur-md">
                         <Button
                             variant="ghost"
-                            onClick={() => router.back()}
+                            onClick={() => {
+                                if (onSaved) {
+                                    onSaved(""); // empty string signals cancel/back if we have a callback
+                                } else {
+                                    router.back();
+                                }
+                            }}
                             className="text-slate-400 hover:text-white hover:bg-slate-800 transition-colors px-5 rounded-xl text-sm font-medium h-11"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
@@ -415,7 +443,7 @@ export function RoutineBuilder({
                         >
                             {isSaving ? 'Saving...' : (
                                 <span className="flex items-center">
-                                    <Save className="mr-2 h-4 w-4" /> Save Routine
+                                    <Save className="mr-2 h-4 w-4" /> {initialRoutine ? 'Save Edits' : 'Save Routine'}
                                 </span>
                             )}
                         </Button>
