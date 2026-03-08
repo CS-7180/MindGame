@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    Brain, Plus, Trash2, Calendar, ChevronRight, Edit3, CheckCircle2, AlertCircle, Play
+    Brain, Plus, Trash2, Calendar, ChevronRight, ChevronLeft, Edit3, CheckCircle2, AlertCircle, Play
 } from "lucide-react";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
 import {
@@ -488,17 +488,27 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
             </AlertDialog>
 
             {/* Create Routine Dialog */}
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogContent className={`bg-slate-900 border-slate-800 text-white ${showTemplateLibrary ? 'max-w-4xl' : 'sm:max-w-md'}`}>
+            <Dialog open={isCreateDialogOpen} onOpenChange={(open) => {
+                if (!open) setShowTemplateLibrary(false);
+                setIsCreateDialogOpen(open);
+            }}>
+                <DialogContent className={`bg-slate-900 border-slate-800 text-white transition-all duration-300 ${showTemplateLibrary ? 'max-w-4xl' : 'sm:max-w-md'}`}>
                     <DialogHeader>
-                        <DialogTitle>{showTemplateLibrary ? "Template Library" : "Create Routine"}</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2">
+                            {showTemplateLibrary && (
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-white hover:bg-slate-800 -ml-2" onClick={() => setShowTemplateLibrary(false)}>
+                                    <ChevronLeft className="h-5 w-5" />
+                                </Button>
+                            )}
+                            {showTemplateLibrary ? "Template Library" : "Create Routine"}
+                        </DialogTitle>
                         <DialogDescription className="text-slate-400">
-                            {showTemplateLibrary ? "Browse and use pre-built mental routines." : "Choose how you want to start building your mental routine for " + selectedSport + "."}
+                            {showTemplateLibrary ? "Browse and use pre-built mental routines." : `Choose how you want to start building your mental routine for ${selectedSport}.`}
                         </DialogDescription>
                     </DialogHeader>
 
                     {showTemplateLibrary ? (
-                        <div className="pt-4 max-h-[70vh] overflow-y-auto pr-2">
+                        <div className="pt-2 max-h-[70vh] overflow-y-auto pr-2">
                             <RoutineLibrary
                                 currentRoutinesCount={filteredRoutines.length}
                                 userRoutineTitles={filteredRoutines.map(r => r.name)}
@@ -506,9 +516,6 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                                 isDialog={true}
                                 onClose={() => setIsCreateDialogOpen(false)}
                             />
-                            <div className="mt-6 flex justify-end">
-                                <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800" onClick={() => setShowTemplateLibrary(false)}>Back</Button>
-                            </div>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-4 py-6">
