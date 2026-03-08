@@ -8,6 +8,7 @@ import { Dispatch, SetStateAction } from "react";
 interface UpcomingGame {
     id: string;
     sport: string;
+    game_name: string;
     game_date: string;
     game_time: string;
     reminder_offset_mins: number;
@@ -62,8 +63,8 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
                 <button
                     onClick={() => onSelectGame(null)}
                     className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${selectedGameId === null
-                            ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
-                            : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                        ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                         }`}
                 >
                     <Trophy className="h-4 w-4" />
@@ -88,8 +89,8 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
                                         key={game.id}
                                         onClick={() => onSelectGame(game.id)}
                                         className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all ${isSelected
-                                                ? 'bg-indigo-500/15 text-white border border-indigo-500/30'
-                                                : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                                            ? 'bg-indigo-500/15 text-white border border-indigo-500/30'
+                                            : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                                             }`}
                                     >
                                         <div className={`p-1.5 rounded-md ${isToday ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-500'}`}>
@@ -97,11 +98,10 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className={`text-xs font-semibold truncate ${isToday ? 'text-amber-400' : ''}`}>
-                                                {dateLabel}
+                                                {game.game_name}
                                             </p>
-                                            <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                                                <Clock className="h-3 w-3" />
-                                                {game.game_time.substring(0, 5)}
+                                            <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 mt-0.5">
+                                                <Calendar className="h-3 w-3" /> {dateLabel} • <Clock className="h-3 w-3" /> {game.game_time.substring(0, 5)}
                                             </p>
                                         </div>
                                         {isSelected && (
@@ -128,8 +128,8 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
                                         key={game.id}
                                         onClick={() => onSelectGame(game.id)}
                                         className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all ${isSelected
-                                                ? 'bg-indigo-500/15 text-white border border-indigo-500/30'
-                                                : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-300'
+                                            ? 'bg-indigo-500/15 text-white border border-indigo-500/30'
+                                            : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-300'
                                             }`}
                                     >
                                         <div className="p-1.5 rounded-md bg-slate-800/50 text-slate-600">
@@ -137,11 +137,10 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-xs font-medium truncate text-slate-400">
-                                                {dateLabel}
+                                                {game.game_name}
                                             </p>
                                             <p className="text-[11px] text-slate-600 flex items-center gap-1 mt-0.5">
-                                                <Clock className="h-3 w-3" />
-                                                {game.game_time.substring(0, 5)}
+                                                <Calendar className="h-3 w-3" /> {dateLabel} • <Clock className="h-3 w-3" /> {game.game_time.substring(0, 5)}
                                             </p>
                                         </div>
                                     </button>

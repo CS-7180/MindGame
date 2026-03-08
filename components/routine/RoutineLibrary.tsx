@@ -23,9 +23,11 @@ interface RoutineLibraryProps {
     currentRoutinesCount: number;
     userRoutineTitles?: string[];
     selectedSport?: string;
+    isDialog?: boolean;
+    onClose?: () => void;
 }
 
-export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [], selectedSport = 'Unspecified' }: RoutineLibraryProps) {
+export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [], selectedSport = 'Unspecified', isDialog = false, onClose }: RoutineLibraryProps) {
     const router = useRouter()
     const [templates, setTemplates] = useState<RoutineWithSteps[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -80,6 +82,7 @@ export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [], s
 
             toast.success("Routine added to your list!")
             router.refresh() // refresh server data in parent
+            onClose?.()
         } catch (err: unknown) {
             toast.error("Failed to copy", { description: err instanceof Error ? err.message : "Unknown error" })
         } finally {
@@ -110,10 +113,12 @@ export function RoutineLibrary({ currentRoutinesCount, userRoutineTitles = [], s
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Template Library</h2>
-                <p className="text-slate-400">Browse and add pre-built mental routines to your collection.</p>
-            </div>
+            {!isDialog && (
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Template Library</h2>
+                    <p className="text-slate-400">Browse and add pre-built mental routines to your collection.</p>
+                </div>
+            )}
 
             {/* Tier Filters */}
             <div className="flex flex-wrap gap-2">

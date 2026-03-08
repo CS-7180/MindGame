@@ -118,7 +118,7 @@ export function RoutineExecution({ routine, sport }: RoutineExecutionProps) {
             setIsCompleted(true)
             localStorage.removeItem(storageKey)
         }
-    }, [currentStepIndex, totalSteps, sortedSteps, storageKey])
+    }, [currentStepIndex, totalSteps, storageKey])
 
     const continueToNextStep = () => {
         const nextIdx = currentStepIndex + 1

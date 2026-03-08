@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -52,9 +52,7 @@ const RECOMMENDATIONS: Record<string, string> = {
     'Mental Check-in': 'Self-awareness is the first step to conquering nerves and finding your flow state.',
 };
 
-export default function InlineRoutineExecution({ routine, sport, onComplete }: InlineRoutineExecutionProps) {
-    const router = useRouter();
-
+export default function InlineRoutineExecution({ routine, onComplete }: Omit<InlineRoutineExecutionProps, 'sport'>) {
     const sortedSteps = useMemo(
         () => [...routine.steps].sort((a, b) => a.step_order - b.step_order),
         [routine.steps]
@@ -192,7 +190,7 @@ export default function InlineRoutineExecution({ routine, sport, onComplete }: I
                         <CheckCircle className="h-8 w-8 text-emerald-400" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-1">Routine Complete!</h3>
-                    <p className="text-sm text-slate-400 mb-4">You're mentally prepared for the game.</p>
+                    <p className="text-sm text-slate-400 mb-4">You&apos;re mentally prepared for the game.</p>
                     <Button
                         variant="ghost"
                         size="sm"
@@ -302,8 +300,8 @@ export default function InlineRoutineExecution({ routine, sport, onComplete }: I
                     </Button>
                     <Button
                         className={`flex-1 h-12 rounded-xl font-semibold text-sm transition-all ${timeLeft === 0
-                                ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20 shadow-lg'
-                                : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20 shadow-lg'
+                            ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20 shadow-lg'
+                            : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20 shadow-lg'
                             } text-white`}
                         onClick={handleNextStep}
                     >

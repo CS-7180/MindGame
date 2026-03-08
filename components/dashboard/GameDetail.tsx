@@ -12,6 +12,7 @@ import {
     Lock,
     CheckCircle2,
     AlertTriangle,
+    Trophy,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import InlineRoutineExecution from "./InlineRoutineExecution";
@@ -23,6 +24,7 @@ import PostGameForm from "@/components/post-game/PostGameForm";
 interface UpcomingGame {
     id: string;
     sport: string;
+    game_name: string;
     game_date: string;
     game_time: string;
     reminder_offset_mins: number;
@@ -226,8 +228,12 @@ export default function GameDetail({ gameId, sport, upcomingGames, pastGames, ro
                                         </span>
                                     )}
                                 </div>
-                                <h1 className="text-xl font-bold text-white">{sport} Game</h1>
+                                <h1 className="text-xl font-bold text-white">{game.game_name}</h1>
                                 <div className="flex items-center gap-3 mt-2 text-sm text-slate-400">
+                                    <span className="flex items-center gap-1.5">
+                                        <Trophy className="h-4 w-4 text-indigo-400" />
+                                        {sport}
+                                    </span>
                                     <span className="flex items-center gap-1.5">
                                         <Calendar className="h-4 w-4" />
                                         {dateLabel}
@@ -255,7 +261,6 @@ export default function GameDetail({ gameId, sport, upcomingGames, pastGames, ro
                 {inlineRoutine ? (
                     <InlineRoutineExecution
                         routine={inlineRoutine}
-                        sport={sport}
                         onComplete={() => setRoutineCompleted(true)}
                     />
                 ) : (

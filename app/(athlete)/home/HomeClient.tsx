@@ -64,23 +64,14 @@ const SPORT_EMOJIS: Record<string, string> = {
 
 const PRESET_SPORTS = ["Soccer", "Basketball", "Tennis", "Baseball", "Football", "Track"];
 
-const getTheme = (sport: string) => {
-    const themes: Record<string, { from: string; to: string; text: string; light: string; border: string; bg: string; ring: string }> = {
-        soccer: { from: 'from-emerald-600', to: 'to-emerald-500', text: 'text-emerald-400', light: 'bg-emerald-500/10', border: 'border-emerald-500/20', bg: 'bg-emerald-500', ring: 'ring-emerald-500/40' },
-        basketball: { from: 'from-orange-600', to: 'to-orange-500', text: 'text-orange-400', light: 'bg-orange-500/10', border: 'border-orange-500/20', bg: 'bg-orange-500', ring: 'ring-orange-500/40' },
-        tennis: { from: 'from-yellow-600', to: 'to-yellow-500', text: 'text-yellow-400', light: 'bg-yellow-500/10', border: 'border-yellow-500/20', bg: 'bg-yellow-500', ring: 'ring-yellow-500/40' },
-        baseball: { from: 'from-red-600', to: 'to-red-500', text: 'text-red-400', light: 'bg-red-500/10', border: 'border-red-500/20', bg: 'bg-red-500', ring: 'ring-red-500/40' },
-        football: { from: 'from-amber-700', to: 'to-amber-600', text: 'text-amber-400', light: 'bg-amber-500/10', border: 'border-amber-500/20', bg: 'bg-red-500', ring: 'ring-red-500/40' },
-        track: { from: 'from-sky-600', to: 'to-sky-500', text: 'text-sky-400', light: 'bg-sky-500/10', border: 'border-sky-500/20', bg: 'bg-cyan-500', ring: 'ring-cyan-500/40' },
-    };
-    return themes[sport?.toLowerCase()] || { from: 'from-indigo-600', to: 'to-indigo-500', text: 'text-indigo-400', light: 'bg-indigo-500/10', border: 'border-indigo-500/20', bg: 'bg-indigo-500', ring: 'ring-indigo-500/40' };
-};
+
 
 const getEmoji = (sport: string) => SPORT_EMOJIS[sport?.toLowerCase()] || "🏆";
 
 interface UpcomingGame {
     id: string;
     sport: string;
+    game_name: string;
     game_date: string;
     game_time: string;
     reminder_offset_mins: number;
@@ -136,8 +127,8 @@ export default function HomeClient({ displayName, routines, sports: initialSport
             setCustomSportInput("");
             handleSportChange(sportName.trim());
             toast.success("Sport added!");
-        } catch (error: any) {
-            toast.error(error.message || "Failed to add sport.");
+        } catch (error: Error | unknown) {
+            toast.error(error instanceof Error ? error.message : "Failed to add sport.");
         } finally {
             setAddingSport(false);
         }
@@ -318,8 +309,6 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                             </button>
                             {sportUpcomingGames.slice(0, 5).map((game) => {
                                 const isToday = game.game_date === new Date().toISOString().split('T')[0];
-                                const d = new Date(game.game_date + 'T00:00:00');
-                                const label = isToday ? 'Today' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
                                 return (
                                     <button
                                         key={game.id}
@@ -331,7 +320,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                                 : 'text-slate-400 bg-slate-800 hover:text-white'
                                             }`}
                                     >
-                                        {label} · {game.game_time.substring(0, 5)}
+                                        <span className="font-semibold">{game.game_name.length > 15 ? game.game_name.substring(0, 15) + '...' : game.game_name}</span> · {game.game_time.substring(0, 5)}
                                     </button>
                                 );
                             })}
@@ -364,6 +353,8 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                 routines={routines}
                                 gameLogs={gameLogs}
                                 upcomingGames={sportUpcomingGames}
+                                pastGames={sportPastGames}
+                                onSelectGame={setSelectedGameId}
                             />
                         )}
                     </div>

@@ -50,9 +50,9 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { sport, game_date, game_time, reminder_offset_mins } = body;
+        const { sport, game_date, game_time, reminder_offset_mins, game_name } = body;
 
-        if (!sport || !game_date || !game_time) {
+        if (!sport || !game_date || !game_time || !game_name) {
             return NextResponse.json(
                 { data: null, error: { message: "Missing required fields", code: "MISSING_FIELDS" } },
                 { status: 400 }
@@ -64,6 +64,7 @@ export async function POST(req: Request) {
             .insert({
                 athlete_id: user.id,
                 sport,
+                game_name,
                 game_date,
                 game_time,
                 reminder_offset_mins: reminder_offset_mins || 45
@@ -72,6 +73,7 @@ export async function POST(req: Request) {
             .single();
 
         if (error) {
+            console.error("Supabase insert error details:", error);
             return NextResponse.json(
                 { data: null, error: { message: error.message, code: "DB_ERROR" } },
                 { status: 500 }

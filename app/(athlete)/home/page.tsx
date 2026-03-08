@@ -57,7 +57,7 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
     const today = new Date().toISOString().split("T")[0];
     const { data: upcomingGames } = await supabase
         .from("games")
-        .select("id, sport, game_date, game_time, reminder_offset_mins, created_at")
+        .select("id, sport, game_name, game_date, game_time, reminder_offset_mins, created_at")
         .eq("athlete_id", user.id)
         .gte("game_date", today)
         .order("game_date", { ascending: true })
@@ -67,7 +67,7 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
     // Fetch past games for history and sidebar
     const { data: pastGames } = await supabase
         .from("games")
-        .select("id, sport, game_date, game_time, reminder_offset_mins, created_at")
+        .select("id, sport, game_name, game_date, game_time, reminder_offset_mins, created_at")
         .eq("athlete_id", user.id)
         .lt("game_date", today)
         .order("game_date", { ascending: false })

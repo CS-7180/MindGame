@@ -31,6 +31,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 const formSchema = z.object({
   sport: z.string().min(2, { message: "Sport name is required." }),
+  game_name: z.string().min(2, { message: "Game name is required." }),
   game_date: z.string().min(1, { message: "Date is required." }),
   game_time: z.string().min(1, { message: "Time is required." }),
   reminder_offset_mins: z.string(),
@@ -111,6 +112,22 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
                     ) : (
                       <Input placeholder="e.g. Basketball, Soccer" className="bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600" {...field} />
                     )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="game_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-300">
+                    Game Name <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Practice Match vs Eagles" className="bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
