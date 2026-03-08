@@ -17,6 +17,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -88,6 +95,8 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
     const [isDeleting, setIsDeleting] = useState(false);
     const [settingActiveId, setSettingActiveId] = useState<string | null>(null);
     const [pendingPostLogId, setPendingPostLogId] = useState<string | null>(null);
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
 
     const filteredRoutines = routines.filter(r => r.sport === selectedSport);
     const sportLogs = gameLogs.filter(l => l.sport === selectedSport).sort((a, b) => new Date(b.log_date).getTime() - new Date(a.log_date).getTime());
@@ -295,7 +304,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                                     <Brain className="h-8 w-8 text-slate-500 mb-2" />
                                     <p className="text-sm font-medium text-white">No Active Routine</p>
                                     <p className="text-xs text-slate-400 mt-1 mb-4">Build a routine to prep for games.</p>
-                                    <Button size="sm" variant="secondary" className="w-full" onClick={() => router.push(`/routine/builder?sport=${encodeURIComponent(selectedSport)}`)}>
+                                    <Button size="sm" variant="secondary" className="w-full" onClick={() => { setShowTemplateLibrary(false); setIsCreateDialogOpen(true); }}>
                                         <Plus className="h-4 w-4 mr-1" /> Create Routine
                                     </Button>
                                 </CardContent>
@@ -317,7 +326,14 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
 
                 {/* Routines Manager */}
                 <div className="space-y-6">
-                    <h2 className="text-lg font-semibold text-white">Routine Manager</h2>
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-white">Routine Manager</h2>
+                        {activeRoutine && (
+                            <Button size="sm" variant="outline" className="border-slate-800 hover:bg-slate-800 text-slate-300 h-8" onClick={() => { setShowTemplateLibrary(false); setIsCreateDialogOpen(true); }}>
+                                <Plus className="h-4 w-4 mr-1" /> Create Routine
+                            </Button>
+                        )}
+                    </div>
 
                     {/* Active Routine Preview */}
                     {activeRoutine ? (
@@ -353,7 +369,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                     ) : (
                         <div className="rounded-xl border border-dashed border-slate-700 p-6 text-center bg-slate-900/40">
                             <p className="text-slate-400 text-sm mb-3">No active routine for <span className="text-white font-medium">{selectedSport}</span></p>
-                            <Button size="sm" className={`bg-gradient-to-r ${theme.from} ${theme.to} text-white`} onClick={() => router.push(`/routine/builder?sport=${encodeURIComponent(selectedSport)}`)}>
+                            <Button size="sm" className={`bg-gradient-to-r ${theme.from} ${theme.to} text-white`} onClick={() => { setShowTemplateLibrary(false); setIsCreateDialogOpen(true); }}>
                                 <Plus className="h-4 w-4 mr-1" /> Build Routine
                             </Button>
                         </div>
@@ -394,10 +410,6 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                             </div>
                         </div>
                     )}
-
-                    <div className="pt-4">
-                        <RoutineLibrary currentRoutinesCount={filteredRoutines.length} userRoutineTitles={filteredRoutines.map(r => r.name)} selectedSport={selectedSport} />
-                    </div>
                 </div>
 
                 {/* Recent Games */}
@@ -474,6 +486,59 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Create Routine Dialog */}
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogContent className={`bg-slate-900 border-slate-800 text-white ${showTemplateLibrary ? 'max-w-4xl' : 'sm:max-w-md'}`}>
+                    <DialogHeader>
+                        <DialogTitle>{showTemplateLibrary ? "Template Library" : "Create Routine"}</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            {showTemplateLibrary ? "Browse and use pre-built mental routines." : "Choose how you want to start building your mental routine for " + selectedSport + "."}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {showTemplateLibrary ? (
+                        <div className="pt-4 max-h-[70vh] overflow-y-auto pr-2">
+                            <RoutineLibrary
+                                currentRoutinesCount={filteredRoutines.length}
+                                userRoutineTitles={filteredRoutines.map(r => r.name)}
+                                selectedSport={selectedSport}
+                                isDialog={true}
+                                onClose={() => setIsCreateDialogOpen(false)}
+                            />
+                            <div className="mt-6 flex justify-end">
+                                <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800" onClick={() => setShowTemplateLibrary(false)}>Back</Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-4 py-6">
+                            <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:border-indigo-500/50 transition-all cursor-pointer group" onClick={() => router.push(`/routine/builder?sport=${encodeURIComponent(selectedSport)}`)}>
+                                <CardContent className="p-5 flex items-center gap-4">
+                                    <div className="bg-slate-900 p-3 rounded-full group-hover:bg-indigo-500/10 transition-colors">
+                                        <Plus className="h-6 w-6 text-indigo-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-white text-lg">Build from Scratch</h3>
+                                        <p className="text-sm text-slate-400">Create a completely custom routine step-by-step.</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:border-indigo-500/50 transition-all cursor-pointer group" onClick={() => setShowTemplateLibrary(true)}>
+                                <CardContent className="p-5 flex items-center gap-4">
+                                    <div className="bg-slate-900 p-3 rounded-full group-hover:bg-indigo-500/10 transition-colors">
+                                        <Brain className="h-6 w-6 text-indigo-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-white text-lg">Use Template</h3>
+                                        <p className="text-sm text-slate-400">Start with a pre-built routine for {selectedSport}.</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
