@@ -128,6 +128,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
     const [customSportInput, setCustomSportInput] = useState("");
     const [addingSport, setAddingSport] = useState(false);
     const [guidanceDismissed, setGuidanceDismissed] = useState(false);
+    const [activeTab, setActiveTab] = useState("overview");
 
     const handleSportChange = (newSport: string) => {
         setSelectedSport(newSport);
@@ -194,14 +195,52 @@ export default function HomeClient({ displayName, routines, sports: initialSport
 
     // ── Guidance banner message ──
     const getGuidanceMessage = () => {
-        if (pendingPostLogId) return { icon: '⚠️', text: 'You have a pending post-game reflection — take a minute to reflect on your last game.' };
-        if (gameContext.isGameDay && activeRoutine) return { icon: '🎯', text: `You have a game today — start your routine to get in the zone.` };
-        if (gameContext.isGameDay && !activeRoutine) return { icon: '🎯', text: `Game day! Build a routine to prepare mentally.` };
-        if (nextGame && !gameContext.isGameDay) return { icon: '📅', text: `Next game ${gameContext.gameLabel} — review your routine or schedule practice.` };
-        if (activeRoutine && !nextGame) return { icon: '💡', text: 'No games scheduled — schedule your next game to stay on track.' };
-        if (!activeRoutine && filteredRoutines.length === 0) return { icon: '🏗️', text: 'Get started by building your first mental routine for this sport.' };
-        if (!activeRoutine && filteredRoutines.length > 0) return { icon: '⚡', text: 'Set one of your routines as active to use it on game day.' };
-        return null;
+        if (pendingPostLogId) return {
+            icon: '⚠️',
+            text: 'You have a pending post-game reflection.',
+            actionLabel: 'Log Post-Game Entry',
+            actionPath: `/post-game/${pendingPostLogId}`
+        };
+
+        if (gameContext.isGameDay && activeRoutine) return {
+            icon: '🎯',
+            text: 'You have a game today.',
+            actionLabel: 'Execute Routine',
+            actionPath: `/routine/execution?id=${activeRoutine.id}`
+        };
+        if (gameContext.isGameDay && !activeRoutine) return {
+            icon: '🎯',
+            text: 'Game day!',
+            actionLabel: 'Create Routine',
+            actionPath: `/routine/builder?sport=${encodeURIComponent(selectedSport)}`
+        };
+
+        if (!activeRoutine && filteredRoutines.length === 0) return {
+            icon: '🏗️',
+            text: 'Get started by building your first mental routine.',
+            actionLabel: 'Create Routine',
+            actionPath: `/routine/builder?sport=${encodeURIComponent(selectedSport)}`
+        };
+        if (!activeRoutine && filteredRoutines.length > 0) return {
+            icon: '⚡',
+            text: 'You have routines for this sport, but none are active.',
+            actionLabel: 'Set Active Routine',
+            actionPath: '#set_tab_routines'
+        };
+
+        if (nextGame) return {
+            icon: '📅',
+            text: `Next game ${gameContext.gameLabel}.`,
+            actionLabel: 'Review Your Routine',
+            actionPath: '#set_tab_routines'
+        };
+
+        return {
+            icon: '💡',
+            text: 'No games scheduled to track.',
+            actionLabel: 'Schedule Game',
+            actionPath: `/games/new?sport=${encodeURIComponent(selectedSport)}`
+        };
     };
 
     const activeRoutine = filteredRoutines.find((r) => r.is_active);
@@ -469,7 +508,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                 )}
 
                 {/* ── Inner Tabs ── */}
-                <Tabs defaultValue="overview" className="w-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" id="home-tabs">
                     <TabsList className="grid w-full grid-cols-3 bg-slate-900 border border-slate-800 p-1">
                         <TabsTrigger value="overview" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white data-[state=inactive]:text-slate-400 transition-all text-sm">
                             Overview
@@ -489,15 +528,36 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                             <div className="relative rounded-xl bg-slate-800/50 border border-slate-700/50 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                 <button
                                     onClick={() => setGuidanceDismissed(true)}
-                                    className="absolute top-2 right-2 p-1 rounded-full hover:bg-slate-700/50 text-slate-500 hover:text-slate-300 transition-colors"
+                                    className="absolute top-2 right-2 p-1 rounded-full hover:bg-slate-700/50 text-slate-500 hover:text-slate-300 transition-colors shrink-0"
                                 >
                                     <X className="h-3.5 w-3.5" />
                                 </button>
-                                <div className="flex items-start gap-3 pr-6">
-                                    <span className="text-lg mt-0.5">{guidance.icon}</span>
-                                    <div className="pt-0.5 pr-4">
+                                <div className="flex items-start gap-3 pr-4">
+                                    <span className="text-lg mt-0.5 block shrink-0">{guidance.icon}</span>
+                                    <div className="pt-0.5 flex-1 min-w-0">
                                         <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider mb-0.5">Suggested Next Step</p>
-                                        <p className="text-sm text-slate-200 leading-snug">{guidance.text}</p>
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-1">
+                                            <p className="text-sm text-slate-200 leading-snug">{guidance.text}</p>
+                                            {guidance.actionLabel && (
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    className="bg-indigo-500 hover:bg-indigo-600 text-white border-0 self-start sm:self-auto shadow-md h-8 text-xs font-semibold px-3 shrink-0"
+                                                    onClick={() => {
+                                                        if (guidance.actionPath === '#set_tab_routines') {
+                                                            setActiveTab("routines");
+                                                            const el = document.getElementById('home-tabs');
+                                                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                        } else if (guidance.actionPath) {
+                                                            router.push(guidance.actionPath);
+                                                        }
+                                                    }}
+                                                >
+                                                    {guidance.actionLabel}
+                                                    <ChevronRight className="h-3 w-3 ml-1" />
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
