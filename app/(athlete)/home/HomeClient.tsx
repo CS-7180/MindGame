@@ -206,7 +206,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
             icon: '🎯',
             text: 'You have a game today.',
             actionLabel: 'Execute Routine',
-            actionPath: `/routine/execution?id=${activeRoutine.id}`
+            actionPath: `/routine/execute/${activeRoutine.id}`
         };
         if (gameContext.isGameDay && !activeRoutine) return {
             icon: '🎯',
