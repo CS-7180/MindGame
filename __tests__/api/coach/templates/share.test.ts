@@ -120,6 +120,9 @@ describe('Coach Templates Share API', () => {
                     }
                     if (table === 'template_notifications') {
                         return {
+                            select: vi.fn().mockReturnValue({
+                                eq: vi.fn().mockResolvedValue({ data: [], error: null })
+                            }),
                             insert: insertMock
                         }
                     }

@@ -50,7 +50,7 @@ test.describe('Coach Routine Templates Flow', () => {
 
         // Use dispatchEvent to bypass the PointerSensor's distance activation constraint
         // that might capture the click event in headless environments
-        await technique.click({ position: { x: 5, y: 5 } });
+        await technique.click({ force: true, position: { x: 5, y: 5 } });
 
         // Wait for state update (technique being added to the builder)
         console.log('Verifying step addition...');
@@ -73,7 +73,7 @@ test.describe('Coach Routine Templates Flow', () => {
         await page.route('**/api/coach/templates/*/share', async route => {
             await route.fulfill({
                 status: 200,
-                json: { data: { success: true, count: 1 }, error: null }
+                json: { data: { success: true, count: 1, sharedCount: 1 }, error: null }
             });
         });
 
@@ -82,8 +82,8 @@ test.describe('Coach Routine Templates Flow', () => {
         await shareButton.scrollIntoViewIfNeeded();
         await shareButton.click();
 
-        // Wait for share success
-        await expect(page.locator('text="Template Shared"')).toBeVisible();
+        // Wait for share success toast
+        await expect(page.locator('text=/sent to 1/i')).toBeVisible({ timeout: 10000 });
         console.log('Template shared.');
     });
 });

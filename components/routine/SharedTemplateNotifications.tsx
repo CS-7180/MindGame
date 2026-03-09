@@ -53,9 +53,15 @@ export function SharedTemplateNotifications({ notifications: initialNotification
 
             if (!res.ok) throw new Error(json.error?.message || "Failed to save template");
 
-            toast.success("Template saved! Let's customize it.");
+            // The API now returns template data — navigate to the builder to customize
+            const templateData = json.data.template;
+            const defaultSport = json.data.default_sport;
+            const notifId = json.data.notification_id;
+
+            toast.success("Opening template for customization...");
             setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-            router.push(`/routine/builder?edit=${json.data.routine_id}`);
+            // Pass template info via URL params so the builder can load it
+            router.push(`/routine/builder?fromTemplate=${templateData.id}&notificationId=${notifId}&sport=${encodeURIComponent(defaultSport)}`);
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : "Failed to save template");
         } finally {

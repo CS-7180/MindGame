@@ -154,6 +154,7 @@ export function RoutineBuilder({
     defaultSport = 'Unspecified',
     isSportLocked = false,
     athleteSports,
+    notificationId,
     onSaved
 }: {
     initialTechniques: Technique[];
@@ -162,6 +163,7 @@ export function RoutineBuilder({
     defaultSport?: string;
     isSportLocked?: boolean;
     athleteSports?: string[];
+    notificationId?: string;
     onSaved?: (routineId: string) => void;
 }) {
     // Use athlete's enrolled sports if available, otherwise fall back to all sports
@@ -226,7 +228,9 @@ export function RoutineBuilder({
     }
 
     const handleSaveRoutine = async () => {
-        if (!initialRoutine && currentRoutinesCount >= 5) {
+        // Only check limit for brand-new routines (not edits)
+        const isEditing = initialRoutine?.id;
+        if (!isEditing && currentRoutinesCount >= 5) {
             setShowLimitDialog(true);
             return;
         }
@@ -246,8 +250,9 @@ export function RoutineBuilder({
 
         setIsSaving(true)
         try {
-            const url = initialRoutine ? `/api/routines/${initialRoutine.id}` : '/api/routines';
-            const method = initialRoutine ? 'PUT' : 'POST';
+            // If editing an existing routine (has id), use PUT; otherwise POST
+            const url = isEditing ? `/api/routines/${initialRoutine!.id}` : '/api/routines';
+            const method = isEditing ? 'PUT' : 'POST';
 
             const response = await fetch(url, {
                 method,
@@ -268,7 +273,16 @@ export function RoutineBuilder({
                 throw new Error(result.error?.message || 'Failed to save routine')
             }
 
-            toast.success(initialRoutine ? "Routine updated successfully!" : "Routine saved successfully!")
+            // If this was from a coach template notification, mark it as saved
+            if (notificationId) {
+                await fetch(`/api/notifications/${notificationId}/complete`, {
+                    method: 'POST',
+                }).catch(() => {
+                    // Non-critical: notification status update can fail silently
+                });
+            }
+
+            toast.success(isEditing ? "Routine updated successfully!" : "Routine saved successfully!")
 
             if (onSaved) {
                 onSaved(result.data.id);

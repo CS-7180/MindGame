@@ -18,7 +18,7 @@ export async function POST(
 
         const { id: notificationId } = params;
 
-        // 1. Fetch notification and verify ownership
+        // 1. Fetch notification and verify ownership — accept both "pending" and "saving"
         const { data: notification, error: notifError } = await supabase
             .from("template_notifications")
             .select(`
@@ -30,7 +30,7 @@ export async function POST(
             `)
             .eq("id", notificationId)
             .eq("athlete_id", user.id)
-            .eq("status", "pending")
+            .in("status", ["pending", "saving"])
             .single();
 
         if (notifError || !notification) {
@@ -70,75 +70,22 @@ export async function POST(
             );
         }
 
-        // 2. Check routine limit (max 5 PER SPORT)
-        const { count, error: countError } = await supabase
-            .from("routines")
-            .select("*", { count: "exact", head: true })
-            .eq("athlete_id", user.id)
-            .eq("sport", targetSport);
-
-        if (countError) {
-            return NextResponse.json(
-                { data: null, error: { message: countError.message, code: "DB_ERROR" } },
-                { status: 500 }
-            );
-        }
-
-        if (count !== null && count >= 5) {
-            return NextResponse.json(
-                { data: null, error: { message: `Maximum of 5 routines reached for ${targetSport}. Please delete one before saving this template.`, code: "LIMIT_REACHED" } },
-                { status: 400 }
-            );
-        }
-
-        // 4. Create personal routine from template
-        const { data: routine, error: routineError } = await supabase
-            .from("routines")
-            .insert({
-                athlete_id: user.id,
-                name: notification.template.name,
-                sport: targetSport,
-                source: "coach_template",
-                coach_template_id: notification.template_id,
-                is_active: false // Do not activate by default
-            })
-            .select()
-            .single();
-
-        if (routineError) {
-            return NextResponse.json(
-                { data: null, error: { message: routineError.message, code: "DB_ERROR" } },
-                { status: 500 }
-            );
-        }
-
-        // 4. Copy steps
-        const stepsToInsert = notification.template.steps.map((step: { technique_id: string; step_order: number }) => ({
-            routine_id: routine.id,
-            technique_id: step.technique_id,
-            step_order: step.step_order
-        }));
-
-        const { error: stepsError } = await supabase
-            .from("routine_steps")
-            .insert(stepsToInsert);
-
-        if (stepsError) {
-            // Cleanup
-            await supabase.from("routines").delete().eq("id", routine.id);
-            return NextResponse.json(
-                { data: null, error: { message: stepsError.message, code: "DB_ERROR" } },
-                { status: 500 }
-            );
-        }
-
-        // 5. Update notification status
+        // 2. Mark notification as "saving" so athlete can re-click without error
         await supabase
             .from("template_notifications")
-            .update({ status: "saved" })
+            .update({ status: "saving" })
             .eq("id", notificationId);
 
-        return NextResponse.json({ data: { routine_id: routine.id }, error: null });
+        // Return template data so the builder can open without creating a routine yet.
+        // The routine will be created by the standard builder save flow.
+        return NextResponse.json({
+            data: {
+                template: notification.template,
+                notification_id: notificationId,
+                default_sport: targetSport,
+            },
+            error: null
+        });
     } catch {
         return NextResponse.json(
             { data: null, error: { message: "Internal server error", code: "INTERNAL_ERROR" } },
