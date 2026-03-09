@@ -231,7 +231,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
 
     // ── MAIN DASHBOARD (1+ SPORTS) ──
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 flex flex-col font-sans text-slate-50 selection:bg-indigo-500/30 overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 flex flex-col font-sans text-slate-50 selection:bg-indigo-500/30 overflow-x-hidden">
             {/* Header */}
             <header className="px-6 py-4 flex items-center justify-between border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="flex items-center gap-3">
