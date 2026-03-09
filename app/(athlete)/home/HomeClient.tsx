@@ -231,9 +231,9 @@ export default function HomeClient({ displayName, routines, sports: initialSport
 
     // ── MAIN DASHBOARD (1+ SPORTS) ──
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 flex flex-col font-sans text-slate-50 selection:bg-indigo-500/30 overflow-x-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 flex flex-col font-sans text-slate-50 selection:bg-indigo-500/30">
             {/* Header */}
-            <header className="px-6 py-4 flex items-center justify-between border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+            <header className="px-6 py-4 flex items-center justify-between border-b border-slate-800/60 bg-slate-950/95 backdrop-blur-md fixed top-0 left-0 right-0 z-50">
                 <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.3)]">
                         <Brain className="h-6 w-6 text-white" />
@@ -294,7 +294,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
             </header>
 
             {/* Main Layout */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 pt-[65px]">
                 {/* Left Panel: Game Sidebar (hidden on small screens, can implement a mobile drawer later) */}
                 <div className="hidden md:block">
                     <GameSidebar
