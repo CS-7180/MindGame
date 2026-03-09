@@ -23,14 +23,16 @@ test.describe('Routine History and Entry Review', () => {
         // 2. Verify History List loads (AC-11.1)
         await expect(page.locator('h1')).toContainText('History');
 
-        // 3. Check for elements or "No history found"
-        // Either they have history cards, or they see the empty state.
+        // 3. Check for elements or empty state
         const noHistory = page.locator('text=No history found');
         const historyCards = page.locator('.group').first();
 
         if (await noHistory.isVisible()) {
-            // Test empty state
-            await expect(page.locator('text=Try adjusting your filters.')).toBeVisible();
+            // Test empty state — in CI with fresh DB, logs.length === 0
+            // so it shows "You haven't recorded any entries yet."
+            // With existing logs but filtered to nothing, it shows "Try adjusting your filters."
+            const emptyMessage = page.locator('text=/haven.*recorded|adjusting your filters/i');
+            await expect(emptyMessage).toBeVisible();
         } else {
             // Test populated state
             await expect(historyCards).toBeVisible();

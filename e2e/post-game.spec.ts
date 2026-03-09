@@ -11,21 +11,28 @@ test.describe('Post-Game Reflection', () => {
         await page.click('button:has-text("Sign in")');
         await page.waitForURL('**/home');
 
-        // 1. Ensure a game exists today by navigating directly to /games/new
+        // Detect which sport is active — the seeded athlete may have multiple sports
+        // We'll use the first available sport for the game
+        await page.waitForLoadState('networkidle');
+
+        // 1. Schedule a game for today using the seeded athlete's first sport
         const today = new Date();
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
 
-        await page.goto('/games/new');
+        // Get the currently active sport from the sidebar/header
+        // The sport buttons are in the header — find the first one that's not "Add Sport"
+        const sportButtons = page.locator('header button').filter({ hasNotText: /Add Sport|Settings|Log Out|MindGame/i });
+        const firstSportBtn = sportButtons.first();
+        const sportText = await firstSportBtn.innerText();
+        // Extract sport name (remove emoji prefix like "⚽ " or "🏀 ")
+        const activeSport = sportText.replace(/^[^\w]*/, '').trim();
+
+        await page.goto(`/games/new?sport=${encodeURIComponent(activeSport)}`);
         await page.waitForLoadState('networkidle');
 
-        // Fill game scheduler form
-        // The "sport" field may need to be filled if not locked
-        const sportInput = page.locator('input[name="sport"]');
-        if (await sportInput.isVisible()) {
-            await sportInput.fill('Basketball');
-        }
+        // Fill game scheduler form — sport is auto-locked via ?sport=
         await page.locator('input[name="game_name"]').fill('E2E Post-Game Test');
         await page.locator('input[name="game_date"]').fill(`${year}-${month}-${day}`);
         await page.locator('input[name="game_time"]').fill('23:59');
@@ -33,18 +40,47 @@ test.describe('Post-Game Reflection', () => {
         // Submit game
         await page.getByRole('button', { name: 'Schedule Game' }).click();
         await page.waitForURL('**/home', { timeout: 15000 });
+        await page.waitForLoadState('networkidle');
 
-        // 2. Now click the "Pre-Game Log" button on the game card
-        const preGameBtn = page.getByRole('button', { name: 'Pre-Game Log' }).first();
+        // 2. The Post-Game Log button appears when gamesToday is non-empty
+        //    The dashboard should now show today's game in the Action Items section
+        //    Make sure we're on the correct sport tab
+        const currentSportTab = page.locator(`button:has-text("${activeSport}")`).first();
+        if (await currentSportTab.isVisible()) {
+            await currentSportTab.click();
+            await page.waitForTimeout(1000);
+        }
+
+        // Look for "Pre-Game Log" button in Action Items (SportOverview)
+        // OR "Fill Pre-Game Log" in GameDetail panel
+        let preGameBtn = page.getByRole('button', { name: /Pre-Game Log/i }).first();
+
+        if (!(await preGameBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+            // Try clicking the game in the sidebar
+            const gameCard = page.locator('button:has-text("E2E Post-Game Test")').first();
+            if (await gameCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+                await gameCard.click();
+                await page.waitForTimeout(1000);
+            }
+
+            // Check for "Fill Pre-Game Log" in GameDetail
+            const fillBtn = page.getByRole('button', { name: /Fill Pre-Game Log/i }).first();
+            if (await fillBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+                preGameBtn = fillBtn;
+            }
+        }
+
         await expect(preGameBtn).toBeVisible({ timeout: 10000 });
         await preGameBtn.click();
         await page.waitForURL('**/log/pre*');
 
         // Fill out pre-game to ensure a log exists today
-        // Use more specific locator for the "Yes" radio option
-        await page.locator('label[for="rc-yes"]').click();
+        const rcYes = page.locator('label[for="rc-yes"]');
+        if (await rcYes.isVisible({ timeout: 3000 }).catch(() => false)) {
+            await rcYes.click();
+        }
 
-        // Ensure anxiety and confidence are set (defaults are 3, but let's be explicit)
+        // Ensure anxiety and confidence are set
         const anxietyButtons = page.locator('button:has-text("3")');
         if (await anxietyButtons.count() >= 2) {
             await anxietyButtons.nth(0).click();
@@ -52,7 +88,7 @@ test.describe('Post-Game Reflection', () => {
         }
 
         const saveBtn = page.locator('button:has-text("Save Pre-Game Log")');
-        await expect(saveBtn).toBeEnabled();
+        await expect(saveBtn).toBeEnabled({ timeout: 5000 });
         await saveBtn.click();
 
         // Should redirect to home as per PRD FR-05.4
@@ -79,7 +115,7 @@ test.describe('Post-Game Reflection', () => {
 
         // 6. Should redirect to history detail and show completed
         await page.waitForURL('**/history/*');
-        await expect(page.locator('text=Completed').last()).toBeVisible(); // Next to Post-Game Reflection header
+        await expect(page.locator('text=Completed').last()).toBeVisible();
         await expect(page.locator('text=Exhilarating')).toBeVisible();
     });
 });

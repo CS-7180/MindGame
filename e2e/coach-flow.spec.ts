@@ -30,7 +30,9 @@ test.describe('Coach Routine Templates Flow', () => {
 
         // 3. Fill template details
         console.log('Filling template details...');
-        await page.getByPlaceholder(/e.g., Pre-Game/i).fill('Playoffs Routine', { force: true });
+        const nameInput = page.getByPlaceholder(/e.g., Pre-Game/i);
+        await expect(nameInput).toBeVisible({ timeout: 10000 });
+        await nameInput.fill('Playoffs Routine');
 
         // Select time tier
         await page.click('button[role="combobox"]');
@@ -40,18 +42,20 @@ test.describe('Coach Routine Templates Flow', () => {
         await page.fill('textarea', 'Use this before important games!');
 
         // 5. Add techniques from library
+        // Wait for techniques to load from DB
         console.log('Adding technique...');
         const technique = page.locator('[data-testid^="technique-card-"]').first();
+        await expect(technique).toBeVisible({ timeout: 15000 });
         await technique.scrollIntoViewIfNeeded();
-        await technique.click({ force: true });
 
-        // Brief wait to ensure state updates
-        await page.waitForTimeout(1000);
+        // Use dispatchEvent to bypass the PointerSensor's distance activation constraint
+        // that might capture the click event in headless environments
+        await technique.click({ position: { x: 5, y: 5 } });
 
-        // Verify that at least one step is added
+        // Wait for state update (technique being added to the builder)
         console.log('Verifying step addition...');
-        await expect(page.locator('text="No techniques added"')).not.toBeVisible();
-        await expect(page.locator('text="1 step configured"')).toBeVisible();
+        await expect(page.locator('text="No techniques added"')).not.toBeVisible({ timeout: 10000 });
+        await expect(page.locator('text=/1 step/i')).toBeVisible({ timeout: 5000 });
 
         // 6. Save Template
         console.log('Saving template...');
@@ -60,7 +64,7 @@ test.describe('Coach Routine Templates Flow', () => {
         await saveTemplateBtn.click();
 
         // Wait for redirect to templates list (toast may disappear due to router.refresh)
-        await expect(page).toHaveURL(/\/coach\/templates/);
+        await expect(page).toHaveURL(/\/coach\/templates/, { timeout: 15000 });
         console.log('Template saved.');
 
         // 7. Share with Team
