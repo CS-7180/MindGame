@@ -89,7 +89,7 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
 
       toast.success("Game scheduled successfully!");
       router.refresh();
-      router.push("/home");
+      router.push(`/home?sport=${encodeURIComponent(form.getValues("sport"))}`);
     } catch (error) {
       console.error(error);
       toast.error("An error occurred. Please try again.");
@@ -223,7 +223,7 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
                 type="button"
                 variant="outline"
                 className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white py-6 rounded-xl"
-                onClick={() => router.push("/home")}
+                onClick={() => router.push(`/home?sport=${encodeURIComponent(form.getValues("sport"))}`)}
                 disabled={loading}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
