@@ -583,7 +583,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                             <div className="pt-2 max-h-[75vh] overflow-y-auto mt-4">
                                 <RoutineBuilder
                                     initialTechniques={techniques}
-                                    initialRoutine={editingRoutine}
+                                    initialRoutine={editingRoutine || undefined}
                                     currentRoutinesCount={filteredRoutines.length}
                                     defaultSport={selectedSport}
                                     isSportLocked={true}
