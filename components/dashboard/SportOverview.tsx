@@ -155,7 +155,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
         ? (sportLogs.reduce((acc, l) => acc + (l.pre_confidence_level || 0), 0) / sportLogs.filter(l => l.pre_confidence_level != null).length).toFixed(1)
         : '-';
 
-    const completedCount = sportLogs.filter(l => l.routine_completed === 'fully' || l.routine_completed === 'partially').length;
+    const completedCount = sportLogs.filter(l => l.routine_completed === 'yes' || l.routine_completed === 'partial').length;
     const adherence = sportLogs.length > 0 ? Math.round((completedCount / sportLogs.length) * 100) : 0;
 
     // To-Do Logic
@@ -217,7 +217,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                             <CardContent className="p-4 flex flex-col items-center justify-center text-center h-full">
                                 <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Avg Confidence</p>
                                 <p className="text-3xl font-bold text-white flex items-baseline gap-1">
-                                    {avgConf} <span className="text-sm text-slate-500 font-normal">/10</span>
+                                    {avgConf} <span className="text-sm text-slate-500 font-normal">/5</span>
                                 </p>
                             </CardContent>
                         </Card>
@@ -241,7 +241,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                                         <LineChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                                             <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                                            <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} domain={[0, 10]} />
+                                            <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} domain={[0, 5]} />
                                             <Tooltip
                                                 contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', color: '#f8fafc' }}
                                                 itemStyle={{ fontSize: '13px' }}
