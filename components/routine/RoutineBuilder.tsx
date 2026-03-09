@@ -150,7 +150,6 @@ interface InitialRoutine {
 export function RoutineBuilder({
     initialTechniques,
     initialRoutine,
-    currentRoutinesCount = 0,
     defaultSport = 'Unspecified',
     isSportLocked = false,
     athleteSports,
@@ -159,7 +158,6 @@ export function RoutineBuilder({
 }: {
     initialTechniques: Technique[];
     initialRoutine?: InitialRoutine;
-    currentRoutinesCount?: number;
     defaultSport?: string;
     isSportLocked?: boolean;
     athleteSports?: string[];
@@ -230,10 +228,6 @@ export function RoutineBuilder({
     const handleSaveRoutine = async () => {
         // Only check limit for brand-new routines (not edits)
         const isEditing = initialRoutine?.id;
-        if (!isEditing && currentRoutinesCount >= 5) {
-            setShowLimitDialog(true);
-            return;
-        }
 
         if (!routineName.trim()) {
             toast.error('Please enter a name for your routine.')
@@ -270,6 +264,11 @@ export function RoutineBuilder({
             const result = await response.json()
 
             if (!response.ok) {
+                // Show the limit dialog if the API reports per-sport limit reached
+                if (result.error?.code === 'LIMIT_REACHED') {
+                    setShowLimitDialog(true);
+                    return;
+                }
                 throw new Error(result.error?.message || 'Failed to save routine')
             }
 

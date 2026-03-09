@@ -24,11 +24,6 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
         .order('category')
         .order('name')
 
-    const { count: currentRoutinesCount, error: countError } = await supabase
-        .from('routines')
-        .select('*', { count: 'exact', head: true })
-        .eq('athlete_id', user.id)
-        .eq('is_template', false)
 
     const { data: athleteProfile } = await supabase
         .from('athlete_profiles')
@@ -105,7 +100,7 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
 
     const isSportLocked = !!initialSport && !fromTemplateId;
 
-    if (error || !techniques || countError !== null) {
+    if (error || !techniques) {
         return (
             <div className="container mx-auto py-8 text-center text-red-500">
                 Failed to load data. Please try again later.
@@ -127,7 +122,6 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
                 <RoutineBuilder
                     initialTechniques={techniques as Technique[]}
                     initialRoutine={editingRoutine || templateRoutine}
-                    currentRoutinesCount={currentRoutinesCount || 0}
                     defaultSport={defaultSport}
                     isSportLocked={isSportLocked}
                     athleteSports={athleteSports}
