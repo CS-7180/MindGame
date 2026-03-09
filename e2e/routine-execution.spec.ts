@@ -38,56 +38,97 @@ test.describe('Guided Routine Execution Flow', () => {
         // Wait for automatic redirect to home
         await page.waitForURL('**/home', { timeout: 10000 });
 
-        // 0.6. Ensure a routine is active
-        // If no routine is active, try to activate the first one found
-        const activeRoutineCard = page.getByTestId('start-routine');
-        let isAlreadyActive = false;
-        try {
-            await expect(activeRoutineCard).toBeVisible({ timeout: 5000 });
-            isAlreadyActive = true;
-        } catch {
-            isAlreadyActive = false;
-        }
+        // 0.5. Schedule a game for today by navigating directly to /games/new
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
 
-        if (!isAlreadyActive) {
-            console.log("No active routine found, attempting to activate...");
-            const routineCard = page.locator('.group').first();
-            await routineCard.hover();
+        await page.goto(`/games/new?sport=Basketball`);
+        await page.waitForLoadState('networkidle');
+
+        // Fill game scheduler form
+        await page.locator('input[name="game_name"]').fill('E2E Test Game');
+        await page.locator('input[name="game_date"]').fill(`${year}-${month}-${day}`);
+        await page.locator('input[name="game_time"]').fill('23:59');
+
+        // Submit the form - the submit button says "Schedule Game"
+        await page.getByRole('button', { name: 'Schedule Game' }).click();
+
+        // Wait for redirect back to home
+        await page.waitForURL('**/home', { timeout: 15000 });
+
+        // 0.7. Ensure a routine is active
+        // After onboarding + saving a recommended routine, it should already be active.
+        // But if not, activate it via the "My Routines" dialog.
+        let routineButton = page.getByRole('button', { name: /Routine/i }).first();
+        try {
+            await expect(routineButton).toBeVisible({ timeout: 5000 });
+        } catch {
+            // Routine button not visible - need to activate a routine
+            console.log("No Routine button found, attempting to activate a routine...");
+            const myRoutinesBtn = page.getByRole('button', { name: 'My Routines' });
+            await myRoutinesBtn.click();
+
             const activateBtn = page.getByRole('button', { name: /Set Active/i }).first();
             await expect(activateBtn).toBeVisible({ timeout: 5000 });
             await activateBtn.click();
-            await expect(activeRoutineCard).toBeVisible({ timeout: 10000 });
+
+            // Wait for success toast
+            await page.waitForTimeout(1500);
+
+            // Close dialog
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(500);
+
+            // Refresh the page so the Routine button appears on the game card
+            await page.reload();
+            await page.waitForLoadState('networkidle');
+
+            routineButton = page.getByRole('button', { name: /Routine/i }).first();
+            await expect(routineButton).toBeVisible({ timeout: 10000 });
         }
 
-        // 1. Start the active routine from the home dashboard
-        const startButton = page.getByTestId('start-routine');
-        await expect(startButton).toBeVisible();
-        await startButton.click();
+        // 1. Click the Routine button on the game card → navigates to /routine/execute/[id]
+        await routineButton.click();
+        await page.waitForURL('**/routine/execute/*', { timeout: 10000 });
 
-        // 2. Verify Execution UI loads (AC-03.1, AC-03.3)
-        await expect(page.getByTestId('step-display')).toBeVisible();
+        // 2. The RoutineExecution component auto-starts (no "Start" button).
+        //    Verify we see "Step 1 of N"
+        await expect(page.locator('text=/Step 1 of/i')).toBeVisible({ timeout: 10000 });
 
-        // 3. Complete all steps (AC-03.4)
-        // We know the recommended routine has multiple steps
-        let nextBtn = page.getByRole('button', { name: /Next Step/i });
-        while (await nextBtn.isVisible()) {
-            await nextBtn.click();
-            await page.waitForTimeout(500); // Small delay for animation
+        // 3. Complete all steps by clicking "Next Step" / "Continue" / "Complete Routine"
+        let hasNext = true;
+        while (hasNext) {
+            const nextStepBtn = page.getByRole('button', { name: /Next Step/i }).first();
+            const continueBtn = page.getByRole('button', { name: /Continue/i }).first();
+            const completeBtn = page.getByRole('button', { name: /Complete Routine/i }).first();
+
+            if (await completeBtn.isVisible()) {
+                await completeBtn.click();
+                hasNext = false;
+            } else if (await nextStepBtn.isVisible()) {
+                await nextStepBtn.click();
+                // After clicking Next Step, a "Quick Insight" recommendation may appear
+                // with a "Continue" button to advance to the next step
+                await page.waitForTimeout(500);
+            } else if (await continueBtn.isVisible()) {
+                await continueBtn.click();
+                await page.waitForTimeout(500);
+            } else {
+                // Safety exit to avoid infinite loop
+                hasNext = false;
+            }
         }
 
-        // 6. Complete the routine (AC-03.5)
-        const completeBtn = page.getByRole('button', { name: /Complete Routine/i });
-        await expect(completeBtn).toBeVisible();
-        await completeBtn.click();
-
-        // 7. Verify Completion Confirmation Screen
-        await expect(page.getByText('Routine Complete!')).toBeVisible();
+        // 4. Verify Completion Screen
+        await expect(page.getByText('Routine Complete!')).toBeVisible({ timeout: 10000 });
         const logEntryBtn = page.getByRole('button', { name: /Log Pre-Game Entry/i });
         await expect(logEntryBtn).toBeVisible();
 
-        // 8. Verify Navigation to Pre-Game Log (AC-03.5)
+        // 5. Verify Navigation to Pre-Game Log
         await logEntryBtn.click();
-        await page.waitForURL('**/log/pre', { timeout: 10000 });
+        await page.waitForURL('**/log/pre*', { timeout: 10000 });
         await expect(page.locator('h1')).toContainText('Game Log');
 
         // Optional: Back to home check

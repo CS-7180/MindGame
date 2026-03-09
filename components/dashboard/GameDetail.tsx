@@ -177,12 +177,12 @@ export default function GameDetail({ gameId, sport, upcomingGames, pastGames, ro
         );
     }
 
-    // Format date label
+    // Format date label — use local date (not UTC) to match stored game_date
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const tmrw = new Date(now);
     tmrw.setDate(tmrw.getDate() + 1);
-    const tmrwStr = tmrw.toISOString().split('T')[0];
+    const tmrwStr = `${tmrw.getFullYear()}-${String(tmrw.getMonth() + 1).padStart(2, '0')}-${String(tmrw.getDate()).padStart(2, '0')}`;
 
     let dateLabel = '';
     if (game.game_date === todayStr) dateLabel = 'Today';

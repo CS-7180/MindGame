@@ -319,7 +319,8 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                 Overview
                             </button>
                             {sportUpcomingGames.slice(0, 5).map((game) => {
-                                const isToday = game.game_date === new Date().toISOString().split('T')[0];
+                                const _now = new Date();
+                                const isToday = game.game_date === `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
                                 return (
                                     <button
                                         key={game.id}

@@ -12,9 +12,10 @@ test.describe('Routine History and Entry Review', () => {
         await page.waitForURL('**/home');
 
         // 1. Navigate to History from Home
-        const historyCard = page.locator('text=History Tracker');
-        await expect(historyCard).toBeVisible();
-        await historyCard.click();
+        // In the new layout, this is the "View All" link next to "Recent Games"
+        const historyLink = page.getByRole('button', { name: "View All" });
+        await expect(historyLink).toBeVisible();
+        await historyLink.click();
 
         // Wait to be on history page
         await page.waitForURL('**/history*');

@@ -11,14 +11,33 @@ test.describe('Post-Game Reflection', () => {
         await page.click('button:has-text("Sign in")');
         await page.waitForURL('**/home');
 
-        // Note: For a pure E2E test, we'd either intercept the DB to inject a pending log,
-        // or actually go through the pre-game logging routine flow to spawn a real today-log.
-        // Doing the latter is most robust:
+        // 1. Ensure a game exists today by navigating directly to /games/new
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
 
-        // 1. Go to pre-game log (US-05)
-        const preGameCard = page.locator('text=Pre-Game Log');
-        await expect(preGameCard).toBeVisible();
-        await preGameCard.click();
+        await page.goto('/games/new');
+        await page.waitForLoadState('networkidle');
+
+        // Fill game scheduler form
+        // The "sport" field may need to be filled if not locked
+        const sportInput = page.locator('input[name="sport"]');
+        if (await sportInput.isVisible()) {
+            await sportInput.fill('Basketball');
+        }
+        await page.locator('input[name="game_name"]').fill('E2E Post-Game Test');
+        await page.locator('input[name="game_date"]').fill(`${year}-${month}-${day}`);
+        await page.locator('input[name="game_time"]').fill('23:59');
+
+        // Submit game
+        await page.getByRole('button', { name: 'Schedule Game' }).click();
+        await page.waitForURL('**/home', { timeout: 15000 });
+
+        // 2. Now click the "Pre-Game Log" button on the game card
+        const preGameBtn = page.getByRole('button', { name: 'Pre-Game Log' }).first();
+        await expect(preGameBtn).toBeVisible({ timeout: 10000 });
+        await preGameBtn.click();
         await page.waitForURL('**/log/pre*');
 
         // Fill out pre-game to ensure a log exists today
@@ -37,7 +56,6 @@ test.describe('Post-Game Reflection', () => {
         await saveBtn.click();
 
         // Should redirect to home as per PRD FR-05.4
-        // Increased timeout to handle potential DB/Network delay in dev server
         await page.waitForURL('**/home', { timeout: 15000 });
 
         // 3. Verify the pending post-game reflection prompt is there

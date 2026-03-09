@@ -53,8 +53,9 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
         .eq("athlete_id", user.id)
         .order("log_date", { ascending: false });
 
-    // Fetch upcoming games for contextual hero card and sidebar
-    const today = new Date().toISOString().split("T")[0];
+    // Use local date to avoid UTC timezone mismatch (games are stored with local dates)
+    const _now = new Date();
+    const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
     const { data: upcomingGames } = await supabase
         .from("games")
         .select("id, sport, game_name, game_date, game_time, reminder_offset_mins, created_at")

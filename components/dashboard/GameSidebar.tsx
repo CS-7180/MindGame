@@ -28,10 +28,10 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
 
     const formatDateLabel = (dateStr: string) => {
         const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const tmrw = new Date(now);
         tmrw.setDate(tmrw.getDate() + 1);
-        const tmrwStr = tmrw.toISOString().split('T')[0];
+        const tmrwStr = `${tmrw.getFullYear()}-${String(tmrw.getMonth() + 1).padStart(2, '0')}-${String(tmrw.getDate()).padStart(2, '0')}`;
 
         if (dateStr === todayStr) return 'Today';
         if (dateStr === tmrwStr) return 'Tomorrow';
@@ -40,7 +40,9 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
     };
 
     const isGameDay = (dateStr: string) => {
-        return dateStr === new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        return dateStr === todayStr;
     };
 
     return (
