@@ -16,17 +16,17 @@ interface TemplateStep {
     };
 }
 
-interface SharedTemplateNotification {
+export interface SharedTemplateNotification {
     id: string;
-    coach: {
-        display_name: string;
-    };
     template: {
         id: string;
         name: string;
         time_tier: string;
         coach_note: string;
         steps: TemplateStep[];
+        coach: {
+            display_name: string;
+        };
     };
 }
 
@@ -49,9 +49,9 @@ export function SharedTemplateNotifications({ notifications: initialNotification
 
             if (!res.ok) throw new Error(json.error?.message || "Failed to save template");
 
-            toast.success("Template saved! It's now in your routines.");
+            toast.success("Template saved! Let's customize it.");
             setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-            router.refresh();
+            router.push(`/routine/builder?edit=${json.data.routine_id}`);
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : "Failed to save template");
         } finally {
@@ -104,7 +104,7 @@ export function SharedTemplateNotifications({ notifications: initialNotification
                                             {notif.template.name}
                                         </CardTitle>
                                         <p className="text-xs text-slate-400 mt-1">
-                                            Shared by Coach <span className="text-indigo-400 font-medium">{notif.coach.display_name}</span>
+                                            Shared by Coach <span className="text-indigo-400 font-medium">{notif.template.coach?.display_name || 'Unknown'}</span>
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">

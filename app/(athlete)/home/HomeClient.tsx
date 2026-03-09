@@ -23,6 +23,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { SharedTemplateNotification } from "@/components/routine/SharedTemplateNotifications";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -97,9 +98,10 @@ interface HomeClientProps {
     upcomingGames: UpcomingGame[];
     pastGames: UpcomingGame[];
     techniques: Technique[];
+    notifications: SharedTemplateNotification[];
 }
 
-export default function HomeClient({ displayName, routines, sports: initialSports, defaultSport, gameLogs, upcomingGames, pastGames, techniques }: HomeClientProps) {
+export default function HomeClient({ displayName, routines, sports: initialSports, defaultSport, gameLogs, upcomingGames, pastGames, techniques, notifications }: HomeClientProps) {
     const router = useRouter();
 
     // Core root state
@@ -367,6 +369,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                 upcomingGames={sportUpcomingGames}
                                 pastGames={sportPastGames}
                                 techniques={techniques}
+                                notifications={notifications}
                                 onSelectGame={setSelectedGameId}
                             />
                         )}
