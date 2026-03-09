@@ -97,7 +97,8 @@ export function PreGameLogForm({ sport }: { sport?: string | null }) {
             toast.success("Pre-game log saved!", {
                 description: "Your mental state has been recorded.",
             });
-            router.push("/home");
+            const savedSport = values.sport;
+            router.push(savedSport ? `/home?sport=${encodeURIComponent(savedSport)}` : "/home");
             router.refresh();
         } catch (err: unknown) {
             toast.error("Failed to save log", {

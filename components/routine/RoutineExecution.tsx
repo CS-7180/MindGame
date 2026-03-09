@@ -209,7 +209,7 @@ export function RoutineExecution({ routine, sport }: RoutineExecutionProps) {
                             </Button>
                             <Button
                                 className="flex-1 bg-rose-600 hover:bg-rose-500 text-white"
-                                onClick={() => router.push('/home')}
+                                onClick={() => router.push(sport ? `/home?sport=${encodeURIComponent(sport)}` : '/home')}
                             >
                                 Exit
                             </Button>

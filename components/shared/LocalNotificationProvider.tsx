@@ -34,12 +34,15 @@ export function LocalNotificationProvider({ children }: { children: React.ReactN
 
                     if (now >= reminderTime && now < gameDateObj) {
                         if (!localStorage.getItem(notifiedKey)) {
-                            new Notification(`Upcoming Game: ${game.game_name}`, {
-                                body: `Your ${game.sport} game starts in ${game.reminder_offset_mins} minutes. Time to do your routine!`,
-                                icon: "/icon.png" // Fallback if no icon
+                            const gameTime = gameDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            new Notification(`🏟️ ${game.game_name} — ${game.sport}`, {
+                                body: `Game starts at ${gameTime} (in ~${game.reminder_offset_mins} min). Time to run your pre-game routine and get in the zone!`,
+                                icon: "/icon.png"
                             });
                             localStorage.setItem(notifiedKey, "true");
-                            toast.success(`Reminder: ${game.game_name} is starting soon!`);
+                            toast.success(`⏰ ${game.game_name} (${game.sport}) starts at ${gameTime}`, {
+                                description: "Head to your dashboard to begin your routine."
+                            });
                         }
                     }
                 });
