@@ -49,9 +49,9 @@ export function SharedTemplateNotifications({ notifications: initialNotification
 
             if (!res.ok) throw new Error(json.error?.message || "Failed to save template");
 
-            toast.success("Template saved! It's now in your routines.");
+            toast.success("Template saved! Let's customize it.");
             setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-            router.refresh();
+            router.push(`/routine/builder?edit=${json.data.routine_id}`);
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : "Failed to save template");
         } finally {

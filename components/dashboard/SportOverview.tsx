@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
 import { RoutineBuilder } from "@/components/routine/RoutineBuilder";
+import { SharedTemplateNotifications } from "@/components/routine/SharedTemplateNotifications";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -84,6 +85,7 @@ export interface SportOverviewProps {
     upcomingGames: UpcomingGame[];
     pastGames?: UpcomingGame[];
     techniques: Technique[];
+    notifications?: any[];
     onSelectGame?: (id: string) => void;
 }
 
@@ -99,7 +101,7 @@ const getTheme = (sport: string) => {
     return themes[sport?.toLowerCase()] || { from: 'from-indigo-600', to: 'to-indigo-500', text: 'text-indigo-400', light: 'bg-indigo-500/10', border: 'border-indigo-500/20', bg: 'bg-indigo-500', ring: 'ring-indigo-500/40' };
 };
 
-export default function SportOverview({ displayName, selectedSport, routines, gameLogs, upcomingGames, pastGames = [], techniques, onSelectGame }: SportOverviewProps) {
+export default function SportOverview({ displayName, selectedSport, routines, gameLogs, upcomingGames, pastGames = [], techniques, notifications = [], onSelectGame }: SportOverviewProps) {
     const router = useRouter();
 
     const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
@@ -273,6 +275,10 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                     </div>
 
                     <div className="space-y-3">
+                        {notifications?.length > 0 && (
+                            <SharedTemplateNotifications notifications={notifications} />
+                        )}
+
                         {pendingPostLogId && (
                             <Card className="bg-amber-500/10 border-amber-500/30">
                                 <CardContent className="p-4">

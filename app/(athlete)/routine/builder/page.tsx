@@ -6,6 +6,7 @@ import { RoutineBuilder } from '@/components/routine/RoutineBuilder'
 export default async function RoutineBuilderPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
     const searchParams = await props.searchParams;
     const initialSport = searchParams.sport as string | undefined;
+    const editId = searchParams.edit as string | undefined;
 
     const supabase = await createClient()
 
@@ -33,7 +34,28 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
         .eq('athlete_id', user.id)
         .single()
 
-    const defaultSport = initialSport || athleteProfile?.sport || 'Unspecified';
+    let editingRoutine = undefined;
+    if (editId) {
+        const { data: fetchRoutine } = await supabase
+            .from('routines')
+            .select(`
+                *,
+                routine_steps (
+                    id,
+                    step_order,
+                    technique:techniques(*)
+                )
+            `)
+            .eq('id', editId)
+            .eq('athlete_id', user.id)
+            .single();
+
+        if (fetchRoutine) {
+            editingRoutine = fetchRoutine;
+        }
+    }
+
+    const defaultSport = initialSport || athleteProfile?.sport || editingRoutine?.sport || 'Unspecified';
 
     const isSportLocked = !!initialSport;
 
@@ -58,6 +80,7 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
                 </div>
                 <RoutineBuilder
                     initialTechniques={techniques as Technique[]}
+                    initialRoutine={editingRoutine}
                     currentRoutinesCount={currentRoutinesCount || 0}
                     defaultSport={defaultSport}
                     isSportLocked={isSportLocked}

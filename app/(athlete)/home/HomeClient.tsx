@@ -88,6 +88,32 @@ interface Technique {
     created_at: string | null;
 }
 
+interface Notification {
+    id: string;
+    template_id: string;
+    coach_id: string;
+    status: string;
+    template: {
+        name: string;
+        time_tier: string;
+        coach_note: string;
+        steps: TemplateStep[];
+        coach: { display_name: string };
+    };
+    created_at: string;
+}
+
+interface TemplateStep {
+    id: string;
+    step_order: number;
+    technique: {
+        id: string;
+        name: string;
+        category: string;
+        duration_minutes: number;
+    };
+}
+
 interface HomeClientProps {
     displayName: string;
     routines: Routine[];
@@ -97,9 +123,10 @@ interface HomeClientProps {
     upcomingGames: UpcomingGame[];
     pastGames: UpcomingGame[];
     techniques: Technique[];
+    notifications: Notification[];
 }
 
-export default function HomeClient({ displayName, routines, sports: initialSports, defaultSport, gameLogs, upcomingGames, pastGames, techniques }: HomeClientProps) {
+export default function HomeClient({ displayName, routines, sports: initialSports, defaultSport, gameLogs, upcomingGames, pastGames, techniques, notifications }: HomeClientProps) {
     const router = useRouter();
 
     // Core root state
@@ -367,6 +394,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                 upcomingGames={sportUpcomingGames}
                                 pastGames={sportPastGames}
                                 techniques={techniques}
+                                notifications={notifications}
                                 onSelectGame={setSelectedGameId}
                             />
                         )}

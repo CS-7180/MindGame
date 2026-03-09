@@ -53,6 +53,7 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
         .eq("athlete_id", user.id)
         .order("log_date", { ascending: false });
 
+    // Fetch upcoming games for dashboard (within next 7 days, limit 15)
     // Use local date to avoid UTC timezone mismatch (games are stored with local dates)
     const _now = new Date();
     const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
@@ -64,6 +65,27 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
         .order("game_date", { ascending: true })
         .order("game_time", { ascending: true })
         .limit(15);
+
+    // Fetch pending template notifications
+    const { data: notifications } = await supabase
+        .from("template_notifications")
+        .select(`
+            *,
+            template:coach_templates(
+                name,
+                time_tier,
+                coach_note,
+                steps:coach_template_steps(
+                    id,
+                    step_order,
+                    technique:techniques(*)
+                ),
+                coach:profiles!coach_templates_coach_id_fkey(display_name)
+            )
+        `)
+        .eq("athlete_id", user.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
 
     // Fetch techniques for routine building
     const { data: techniques } = await supabase
@@ -98,6 +120,7 @@ export default async function HomePage({ searchParams }: { searchParams: { sport
             upcomingGames={upcomingGames || []}
             pastGames={pastGames || []}
             techniques={techniques || []}
+            notifications={notifications || []}
         />
     );
 }
