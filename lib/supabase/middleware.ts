@@ -33,8 +33,8 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // If user is not signed in and the path is not /login, /signup, or /, redirect to /login
-    const publicPaths = ["/login", "/signup", "/"];
+    // If user is not signed in and the path is not /login, /signup, /, or /api-docs, redirect to /login
+    const publicPaths = ["/login", "/signup", "/", "/api-docs"];
     const isPublicPath = publicPaths.includes(request.nextUrl.pathname) ||
         ["/login", "/signup"].some(p => request.nextUrl.pathname.startsWith(p));
 
