@@ -286,7 +286,7 @@ export function RoutineBuilder({
             if (onSaved) {
                 onSaved(result.data.id);
             } else {
-                router.push('/home') // Redirect to dashboard/home if standalone
+                router.push(`/home?sport=${encodeURIComponent(sport)}`) // Redirect to the sport tab
                 router.refresh()
             }
         } catch (error: unknown) {
