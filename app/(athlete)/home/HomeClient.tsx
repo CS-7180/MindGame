@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getSportEmoji } from "@/lib/sportEmojis";
 import { Button } from "@/components/ui/button";
 import GameSidebar from '@/components/dashboard/GameSidebar';
 import SportOverview from '@/components/dashboard/SportOverview';
@@ -57,17 +58,10 @@ interface GameLog {
     post_performance: number | null;
 }
 
-const SPORT_EMOJIS: Record<string, string> = {
-    soccer: "⚽", basketball: "🏀", tennis: "🎾", baseball: "⚾",
-    football: "🏈", track: "🏃", swimming: "🏊", volleyball: "🏐",
-    golf: "⛳", hockey: "🏒", cricket: "🏏", rugby: "🏉",
-};
+
 
 const PRESET_SPORTS = ["Soccer", "Basketball", "Tennis", "Baseball", "Football", "Track"];
 
-
-
-const getEmoji = (sport: string) => SPORT_EMOJIS[sport?.toLowerCase()] || "🏆";
 
 interface UpcomingGame {
     id: string;
@@ -196,7 +190,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                     disabled={addingSport}
                                     onClick={() => handleAddSport(s)}
                                 >
-                                    <span className="mr-2 text-lg">{getEmoji(s)}</span>
+                                    <span className="mr-2 text-lg">{getSportEmoji(s)}</span>
                                     {s}
                                 </Button>
                             ))}
@@ -254,7 +248,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                 : "text-slate-400 hover:text-white hover:bg-slate-800"
                                 }`}
                         >
-                            <span className="mr-2 text-base">{getEmoji(s)}</span>
+                            <span className="mr-2 text-base">{getSportEmoji(s)}</span>
                             {s}
                         </Button>
                     ))}
@@ -402,7 +396,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                     disabled={addingSport}
                                     onClick={() => handleAddSport(s)}
                                 >
-                                    <span className="mr-2">{getEmoji(s)}</span>
+                                    <span className="mr-2">{getSportEmoji(s)}</span>
                                     {s}
                                 </Button>
                             ))}

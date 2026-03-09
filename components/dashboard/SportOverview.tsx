@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { getSportEmoji } from "@/lib/sportEmojis";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -209,7 +210,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                 <div className="xl:col-span-2 space-y-6">
                     <div className="mb-2">
                         <h2 className={`text-3xl sm:text-4xl font-black uppercase italic tracking-wider ${theme.text} [text-shadow:_0_0_20px_currentColor] mb-1`}>
-                            {selectedSport}
+                            <span className="not-italic">{getSportEmoji(selectedSport)}</span> {selectedSport}
                         </h2>
                         <h3 className="text-lg font-medium text-slate-300">Performance Analytics</h3>
                     </div>
@@ -596,7 +597,6 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                                 <RoutineBuilder
                                     initialTechniques={techniques}
                                     initialRoutine={editingRoutine || undefined}
-                                    currentRoutinesCount={filteredRoutines.length}
                                     defaultSport={selectedSport}
                                     isSportLocked={true}
                                     onSaved={(id) => {
