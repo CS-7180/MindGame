@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
 import { RoutineBuilder } from "@/components/routine/RoutineBuilder";
-import { SharedTemplateNotifications } from "@/components/routine/SharedTemplateNotifications";
+import { SharedTemplateNotifications, SharedTemplateNotification } from "@/components/routine/SharedTemplateNotifications";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -85,7 +85,7 @@ export interface SportOverviewProps {
     upcomingGames: UpcomingGame[];
     pastGames?: UpcomingGame[];
     techniques: Technique[];
-    notifications?: any[];
+    notifications?: SharedTemplateNotification[];
     onSelectGame?: (id: string) => void;
 }
 

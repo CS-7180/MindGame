@@ -16,7 +16,7 @@ interface TemplateStep {
     };
 }
 
-interface SharedTemplateNotification {
+export interface SharedTemplateNotification {
     id: string;
     coach: {
         display_name: string;
