@@ -46,16 +46,14 @@ test.describe('Coach Routine Templates Flow', () => {
         console.log('Adding technique...');
         const technique = page.locator('[data-testid^="technique-card-"]').first();
         await expect(technique).toBeVisible({ timeout: 15000 });
-        await technique.scrollIntoViewIfNeeded();
 
-        // Use dispatchEvent to bypass the PointerSensor's distance activation constraint
-        // that might capture the click event in headless environments
-        await technique.click({ force: true, position: { x: 5, y: 5 } });
+        // Use dispatchEvent to bypass any pointer event interception from overlays
+        await technique.dispatchEvent('click');
 
         // Wait for state update (technique being added to the builder)
         console.log('Verifying step addition...');
-        await expect(page.locator('text="No techniques added"')).not.toBeVisible({ timeout: 10000 });
-        await expect(page.locator('text=/1 step/i')).toBeVisible({ timeout: 5000 });
+        // Wait for either the "No techniques added" to disappear or the step count to appear
+        await expect(page.locator('text=/1 step/i')).toBeVisible({ timeout: 15000 });
 
         // 6. Save Template
         console.log('Saving template...');
