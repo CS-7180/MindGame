@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -166,17 +166,27 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
               <FormField
                 control={form.control}
                 name="game_time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-300">Time</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input type="time" className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const selectedDate = form.watch("game_date");
+                  const isToday = selectedDate === format(new Date(), "yyyy-MM-dd");
+                  const currentTime = format(new Date(), "HH:mm");
+                  return (
+                    <FormItem>
+                      <FormLabel className="text-slate-300">Time</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input type="time" min={isToday ? currentTime : undefined} className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
+                        </div>
+                      </FormControl>
+                      {isToday && field.value && field.value < currentTime && (
+                        <p className="text-xs text-amber-400 flex items-center gap-1 mt-1">
+                          <AlertTriangle className="w-3 h-3" /> This time has already passed today.
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 

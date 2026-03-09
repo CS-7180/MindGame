@@ -30,7 +30,7 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
 
     const { data: athleteProfile } = await supabase
         .from('athlete_profiles')
-        .select('sport')
+        .select('sport, sports')
         .eq('athlete_id', user.id)
         .single()
 
@@ -56,6 +56,13 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
     }
 
     const defaultSport = initialSport || athleteProfile?.sport || editingRoutine?.sport || 'Unspecified';
+
+    // Build the list of athlete's enrolled sports
+    const athleteSports: string[] = athleteProfile?.sports && athleteProfile.sports.length > 0
+        ? athleteProfile.sports
+        : athleteProfile?.sport
+            ? [athleteProfile.sport]
+            : [];
 
     const isSportLocked = !!initialSport;
 
@@ -84,6 +91,7 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
                     currentRoutinesCount={currentRoutinesCount || 0}
                     defaultSport={defaultSport}
                     isSportLocked={isSportLocked}
+                    athleteSports={athleteSports}
                 />
             </div>
         </div>

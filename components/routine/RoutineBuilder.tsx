@@ -153,6 +153,7 @@ export function RoutineBuilder({
     currentRoutinesCount = 0,
     defaultSport = 'Unspecified',
     isSportLocked = false,
+    athleteSports,
     onSaved
 }: {
     initialTechniques: Technique[];
@@ -160,8 +161,11 @@ export function RoutineBuilder({
     currentRoutinesCount?: number;
     defaultSport?: string;
     isSportLocked?: boolean;
+    athleteSports?: string[];
     onSaved?: (routineId: string) => void;
 }) {
+    // Use athlete's enrolled sports if available, otherwise fall back to all sports
+    const sportsForDropdown = athleteSports && athleteSports.length > 0 ? athleteSports : AVAILABLE_SPORTS;
     const router = useRouter()
     const [routineName, setRoutineName] = useState(initialRoutine?.name || '')
     const [sport, setSport] = useState(initialRoutine?.sport || defaultSport)
@@ -373,7 +377,7 @@ export function RoutineBuilder({
                                             <SelectValue placeholder="Select Sport" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-slate-900 border-white/10">
-                                            {AVAILABLE_SPORTS.map((s) => (
+                                            {sportsForDropdown.map((s) => (
                                                 <SelectItem key={s} value={s} className="text-slate-200 focus:bg-indigo-500/20 focus:text-white cursor-pointer hover:bg-indigo-500/20">
                                                     {s}
                                                 </SelectItem>
