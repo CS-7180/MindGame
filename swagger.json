@@ -10,12 +10,8 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000",
-      "description": "Local Development Server"
-    },
-    {
-      "url": "https://mind-game-app.vercel.app",
-      "description": "Production Server"
+      "url": "/",
+      "description": "Root Server (Auto-detect Host)"
     }
   ],
   "components": {
