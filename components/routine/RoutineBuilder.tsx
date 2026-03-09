@@ -136,6 +136,17 @@ function SortableStepItem({ step, onRemove }: { step: BuilderStep, onRemove: (id
 // ----------------------------------------------------------------------
 // Main Builder Component
 // ----------------------------------------------------------------------
+interface InitialRoutine {
+    id?: string;
+    name?: string;
+    sport?: string;
+    routine_steps?: Array<{
+        step_order: number;
+        technique?: Technique;
+        techniques?: Partial<Technique>;
+    }>;
+}
+
 export function RoutineBuilder({
     initialTechniques,
     initialRoutine,
@@ -144,12 +155,12 @@ export function RoutineBuilder({
     isSportLocked = false,
     onSaved
 }: {
-    initialTechniques: Technique[],
-    initialRoutine?: any,
-    currentRoutinesCount?: number,
-    defaultSport?: string,
-    isSportLocked?: boolean,
-    onSaved?: (routineId: string) => void
+    initialTechniques: Technique[];
+    initialRoutine?: InitialRoutine;
+    currentRoutinesCount?: number;
+    defaultSport?: string;
+    isSportLocked?: boolean;
+    onSaved?: (routineId: string) => void;
 }) {
     const router = useRouter()
     const [routineName, setRoutineName] = useState(initialRoutine?.name || '')
@@ -159,10 +170,10 @@ export function RoutineBuilder({
     const [steps, setSteps] = useState<BuilderStep[]>(() => {
         if (!initialRoutine?.routine_steps) return [];
         return initialRoutine.routine_steps
-            .sort((a: any, b: any) => a.step_order - b.step_order)
-            .map((rs: any) => ({
+            .sort((a, b) => a.step_order - b.step_order)
+            .map((rs) => ({
                 id: crypto.randomUUID(),
-                technique: rs.technique || rs.techniques
+                technique: rs.technique || rs.techniques as Technique
             }));
     });
     const [isSaving, setIsSaving] = useState(false)
