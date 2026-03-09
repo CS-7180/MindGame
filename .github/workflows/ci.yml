@@ -58,8 +58,11 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
       - name: Start Supabase Local Stack
-        run: npx supabase start
+        run: supabase start
       - name: Seed test users
         run: node setup_test_user.js
         env:

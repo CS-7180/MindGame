@@ -17,14 +17,17 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { sport, competitive_level, anxiety_symptoms, time_preference } = body;
+        const { action, sport, competitive_level, anxiety_symptoms, time_preference } = body;
 
-        // Validate required fields
-        if (!sport || !competitive_level || !anxiety_symptoms?.length || !time_preference) {
-            return NextResponse.json(
-                { data: null, error: { message: "All fields are required", code: "VALIDATION_ERROR" } },
-                { status: 400 }
-            );
+        // If skipping, we don't need to validate the sports fields
+        if (action !== "skip") {
+            // Validate required fields
+            if (!sport || !competitive_level || !anxiety_symptoms?.length || !time_preference) {
+                return NextResponse.json(
+                    { data: null, error: { message: "All fields are required", code: "VALIDATION_ERROR" } },
+                    { status: 400 }
+                );
+            }
         }
 
         // Ensure the profiles row exists (handles cases where profile was deleted but auth user exists)
@@ -43,27 +46,39 @@ export async function POST(request: Request) {
             );
         }
 
+        const updatePayload: Record<string, unknown> = {
+            athlete_id: user.id,
+            onboarding_complete: true,
+            updated_at: new Date().toISOString(),
+        };
+
+        if (action !== "skip") {
+            updatePayload.sport = sport;
+            updatePayload.competitive_level = competitive_level;
+            updatePayload.anxiety_symptoms = anxiety_symptoms;
+            updatePayload.time_preference = time_preference;
+        }
+
         // Upsert athlete profile (insert or update if exists)
         const { error: profileError } = await supabase
             .from("athlete_profiles")
-            .upsert(
-                {
-                    athlete_id: user.id,
-                    sport,
-                    competitive_level,
-                    anxiety_symptoms,
-                    time_preference,
-                    onboarding_complete: true,
-                    updated_at: new Date().toISOString(),
-                },
-                { onConflict: "athlete_id" }
-            );
+            .upsert(updatePayload, { onConflict: "athlete_id" });
 
         if (profileError) {
             return NextResponse.json(
                 { data: null, error: { message: profileError.message, code: "DB_ERROR" } },
                 { status: 500 }
             );
+        }
+
+        if (action === "skip") {
+            return NextResponse.json({
+                data: {
+                    profile_saved: true,
+                    skipped: true
+                },
+                error: null,
+            });
         }
 
         // Fetch all techniques for recommendation

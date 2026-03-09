@@ -3,33 +3,27 @@
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import GameSidebar from '@/components/dashboard/GameSidebar';
+import SportOverview from '@/components/dashboard/SportOverview';
+import GameDetail from '@/components/dashboard/GameDetail';
 import {
     Brain,
-    Play,
     Plus,
-    Lock,
-    LogOut,
-    Clock,
-    Trash2,
     Settings,
-    CheckCircle2,
-    BarChart3
+    LogOut,
+    Lock,
+    CalendarPlus,
+    Trophy,
 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RoutineLibrary } from "@/components/routine/RoutineLibrary";
-import { SharedTemplateNotifications } from "@/components/routine/SharedTemplateNotifications";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { useState, useEffect } from "react";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface RoutineStep {
@@ -48,412 +42,388 @@ interface Routine {
     name: string;
     source: string;
     is_active: boolean;
+    sport: string;
     routine_steps: RoutineStep[];
 }
 
-interface SharedTemplateNotification {
+interface GameLog {
     id: string;
-    coach: {
-        display_name: string;
-    };
-    template: {
-        id: string;
-        name: string;
-        time_tier: string;
-        coach_note: string;
-        steps: {
-            id: string;
-            technique: {
-                name: string;
-                duration_minutes: number;
-            };
-        }[];
-    };
+    log_date: string;
+    sport: string;
+    pre_confidence_level: number | null;
+    pre_anxiety_level: number | null;
+    routine_completed: string | null;
+    post_performance: number | null;
+}
+
+const SPORT_EMOJIS: Record<string, string> = {
+    soccer: "⚽", basketball: "🏀", tennis: "🎾", baseball: "⚾",
+    football: "🏈", track: "🏃", swimming: "🏊", volleyball: "🏐",
+    golf: "⛳", hockey: "🏒", cricket: "🏏", rugby: "🏉",
+};
+
+const PRESET_SPORTS = ["Soccer", "Basketball", "Tennis", "Baseball", "Football", "Track"];
+
+
+
+const getEmoji = (sport: string) => SPORT_EMOJIS[sport?.toLowerCase()] || "🏆";
+
+interface UpcomingGame {
+    id: string;
+    sport: string;
+    game_name: string;
+    game_date: string;
+    game_time: string;
+    reminder_offset_mins: number;
+    created_at?: string;
+}
+
+interface Technique {
+    id: string;
+    name: string;
+    category: string;
+    duration_minutes: number;
+    instruction: string;
+    slug: string;
+    created_at: string | null;
 }
 
 interface HomeClientProps {
     displayName: string;
     routines: Routine[];
-    sport: string;
-    notifications: SharedTemplateNotification[];
+    sports: string[];
+    defaultSport: string;
+    gameLogs: GameLog[];
+    upcomingGames: UpcomingGame[];
+    pastGames: UpcomingGame[];
+    techniques: Technique[];
 }
 
-export default function HomeClient({ displayName, routines, sport, notifications }: HomeClientProps) {
+export default function HomeClient({ displayName, routines, sports: initialSports, defaultSport, gameLogs, upcomingGames, pastGames, techniques }: HomeClientProps) {
     const router = useRouter();
-    const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isActivating, setIsActivating] = useState<string | null>(null);
-    const [pendingPostLogId, setPendingPostLogId] = useState<string | null>(null);
 
-    const handleActivateRoutine = async (id: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        setIsActivating(id);
+    // Core root state
+    const [selectedSport, setSelectedSport] = useState<string>(defaultSport);
+    const [sports, setSports] = useState<string[]>(initialSports);
+
+    // Two-panel architecture state
+    const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+
+    // Modals
+    const [showAddSport, setShowAddSport] = useState(false);
+    const [customSportInput, setCustomSportInput] = useState("");
+    const [addingSport, setAddingSport] = useState(false);
+
+    const handleSportChange = (newSport: string) => {
+        setSelectedSport(newSport);
+        setSelectedGameId(null); // Reset game view on sport change
+        router.replace(`/home?sport=${encodeURIComponent(newSport)}`, { scroll: false });
+    };
+
+    const handleAddSport = async (sportName: string) => {
+        if (!sportName.trim()) return;
+        setAddingSport(true);
         try {
-            const res = await fetch(`/api/routines/${id}/activate`, {
-                method: 'POST'
+            const res = await fetch("/api/athlete/sports", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sport: sportName.trim() }),
             });
             const json = await res.json();
-            if (!res.ok) throw new Error(json.error?.message || "Failed to activate routine");
+            if (!res.ok) throw new Error(json.error?.message || "Failed to add sport");
 
-            toast.success("Routine activated successfully!");
-            router.refresh();
-        } catch (err: unknown) {
-            toast.error("Failed to activate", { description: err instanceof Error ? err.message : "Unknown error" });
+            const newSports = Array.from(new Set([...sports, sportName.trim()]));
+            setSports(newSports);
+            setShowAddSport(false);
+            setCustomSportInput("");
+            handleSportChange(sportName.trim());
+            toast.success("Sport added!");
+        } catch (error: Error | unknown) {
+            toast.error(error instanceof Error ? error.message : "Failed to add sport.");
         } finally {
-            setIsActivating(null);
+            setAddingSport(false);
         }
     };
 
-    useEffect(() => {
-        const checkPendingPosts = async () => {
-            try {
-                const res = await fetch('/api/logs/pending-post');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.pendingLog) {
-                        setPendingPostLogId(data.pendingLog.id);
-                    }
-                }
-            } catch (err) {
-                console.error("Failed to check pending posts:", err);
-            }
-        };
-        checkPendingPosts();
-    }, []);
+    // Derive data for the selected sport
+    const sportUpcomingGames = upcomingGames.filter(g => g.sport === selectedSport);
+    const sportPastGames = pastGames.filter(g => g.sport === selectedSport);
 
-    const handleDeleteRoutine = async () => {
-        if (!deletingRoutineId) return;
-        setIsDeleting(true);
-        try {
-            const res = await fetch(`/api/routines/${deletingRoutineId}`, {
-                method: 'DELETE'
-            });
-            const json = await res.json();
-            if (!res.ok) throw new Error(json.error?.message || "Failed to delete routine");
-
-            toast.success("Routine deleted successfully!");
-            router.refresh();
-        } catch (err: unknown) {
-            toast.error("Failed to delete", { description: err instanceof Error ? err.message : "Unknown error" });
-        } finally {
-            setIsDeleting(false);
-            setDeletingRoutineId(null);
-        }
-    };
-
-    const handleLogout = async () => {
-        const supabase = createClient();
-        await supabase.auth.signOut();
-        router.push("/login");
-        router.refresh();
-    };
-
-    const activeRoutine = routines.find((r) => r.is_active);
-    const totalTime = activeRoutine
-        ? activeRoutine.routine_steps.reduce((sum, s) => sum + (s.techniques?.duration_minutes || 0), 0)
-        : 0;
-
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950">
-            {/* Header */}
-            <header className="p-4 flex items-center justify-between border-b border-slate-800/50">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25">
-                        <Brain className="h-5 w-5 text-white" />
+    // ── ZERO-SPORT WELCOME STATE ──
+    if (sports.length === 0) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-slate-200 flex flex-col">
+                <header className="p-5 flex items-center justify-between border-b border-slate-800/80">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+                            <Trophy className="h-5 w-5 text-white" />
+                        </div>
+                        <span className="font-bold text-white text-xl tracking-tight">MindGame</span>
                     </div>
-                    <span className="font-bold text-white text-lg">MindGame</span>
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => router.push("/settings")} className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full">
+                            <Settings className="h-5 w-5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={async () => {
+                            const supabase = createClient();
+                            await supabase.auth.signOut();
+                            router.push("/login");
+                            router.refresh();
+                        }} className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full" data-testid="logout-button">
+                            <LogOut className="h-5 w-5" />
+                        </Button>
+                    </div>
+                </header>
+
+                <main className="flex-1 flex items-center justify-center p-6">
+                    <div className="max-w-md w-full text-center space-y-6">
+                        <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-indigo-500/20">
+                            <Trophy className="h-10 w-10 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold text-white mb-2">Welcome to MindGame!</h1>
+                            <p className="text-slate-400 text-lg">Your mental training hub. Start by adding your first sport.</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            {PRESET_SPORTS.map((s) => (
+                                <Button
+                                    key={s}
+                                    variant="outline"
+                                    className="border-slate-700 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white h-14 text-base font-medium"
+                                    disabled={addingSport}
+                                    onClick={() => handleAddSport(s)}
+                                >
+                                    <span className="mr-2 text-lg">{getEmoji(s)}</span>
+                                    {s}
+                                </Button>
+                            ))}
+                        </div>
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
+                            <div className="relative flex justify-center"><span className="px-3 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-sm text-slate-500">or type your own</span></div>
+                        </div>
+
+                        <form onSubmit={(e) => { e.preventDefault(); handleAddSport(customSportInput); }} className="flex gap-2">
+                            <Input
+                                placeholder="e.g. Swimming, Golf..."
+                                value={customSportInput}
+                                onChange={(e) => setCustomSportInput(e.target.value)}
+                                className="bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-500"
+                            />
+                            <Button type="submit" disabled={!customSportInput.trim() || addingSport} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+                                Add
+                            </Button>
+                        </form>
+                    </div>
+                </main>
+
+                <footer className="flex items-center justify-center gap-2 text-xs text-slate-600 pb-8">
+                    <Lock className="h-3 w-3" />
+                    <span>All your data is private — only visible to you</span>
+                </footer>
+            </div>
+        );
+    }
+
+    // ── MAIN DASHBOARD (1+ SPORTS) ──
+    return (
+        <div className="min-h-screen bg-slate-950 flex flex-col font-sans text-slate-50 selection:bg-indigo-500/30 overflow-hidden">
+            {/* Header */}
+            <header className="px-6 py-4 flex items-center justify-between border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.3)]">
+                        <Brain className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">MindGame</h1>
+                        <p className="text-xs text-slate-400 font-medium tracking-wide">Athlete Portal</p>
+                    </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                    {sports.map(s => (
+                        <Button
+                            key={s}
+                            variant="ghost"
+                            onClick={() => handleSportChange(s)}
+                            className={`rounded-full px-4 font-medium transition-all ${selectedSport === s
+                                ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 shadow-[0_0_10px_rgba(79,70,229,0.1)]"
+                                : "text-slate-400 hover:text-white hover:bg-slate-800"
+                                }`}
+                        >
+                            <span className="mr-2 text-base">{getEmoji(s)}</span>
+                            {s}
+                        </Button>
+                    ))}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowAddSport(true)}
+                        className="rounded-full text-slate-400 hover:text-white hover:bg-slate-800 focus:ring-1 focus:ring-indigo-500"
+                        title="Add Sport"
+                    >
+                        <Plus className="h-5 w-5" />
+                    </Button>
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => router.push("/settings")}
-                        className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full"
-                        data-testid="settings-button"
+                        className="rounded-full text-slate-400 hover:text-white hover:bg-slate-800"
+                        title="Settings"
                     >
-                        <Settings className="h-4 w-4" />
+                        <Settings className="h-5 w-5" />
                     </Button>
                     <Button
                         variant="ghost"
-                        size="sm"
-                        onClick={handleLogout}
-                        className="text-slate-400 hover:text-white hover:bg-slate-800"
-                        data-testid="logout-button"
+                        size="icon"
+                        onClick={async () => {
+                            const supabase = createClient();
+                            await supabase.auth.signOut();
+                            router.push("/login");
+                            router.refresh();
+                        }}
+                        className="rounded-full text-slate-400 hover:text-white hover:bg-slate-800"
+                        title="Log Out"
                     >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
+                        <LogOut className="h-5 w-5" />
                     </Button>
                 </div>
             </header>
 
-            <main className="p-4 max-w-lg mx-auto space-y-6">
-                {/* Welcome Section */}
-                <div className="pt-4">
-                    <h1 className="text-2xl font-bold text-white">
-                        Welcome back, {displayName} 👋
-                    </h1>
-                    <p className="text-slate-400 mt-1">
-                        {sport ? `Ready to dominate your next ${sport} game?` : "Ready to build your mental game?"}
-                    </p>
+            {/* Main Layout */}
+            <div className="flex flex-1 overflow-hidden">
+                {/* Left Panel: Game Sidebar (hidden on small screens, can implement a mobile drawer later) */}
+                <div className="hidden md:block">
+                    <GameSidebar
+                        upcomingGames={sportUpcomingGames}
+                        pastGames={sportPastGames}
+                        selectedGameId={selectedGameId}
+                        onSelectGame={setSelectedGameId}
+                        selectedSport={selectedSport}
+                    />
                 </div>
 
-                {/* Shared Template Notifications */}
-                <SharedTemplateNotifications notifications={notifications} />
-
-                {/* Pending Post-Game Reflection Alert */}
-                {pendingPostLogId && (
-                    <Card className="border-amber-500/50 bg-amber-500/10 backdrop-blur-sm shadow-xl animate-in slide-in-from-top-2 duration-300">
-                        <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-xl bg-amber-500/20">
-                                    <Brain className="h-5 w-5 text-amber-400" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-white">Post-Game Reflection Pending</h3>
-                                    <p className="text-sm text-amber-200/80">
-                                        How did your game go today? Take a minute to reflect.
-                                    </p>
-                                </div>
-                            </div>
-                            <Button
-                                className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shadow-lg shadow-amber-500/25 whitespace-nowrap"
-                                onClick={() => router.push(`/post-game/${pendingPostLogId}`)}
+                {/* Right Panel: Dynamic Content */}
+                <main className="flex-1 overflow-y-auto w-full bg-slate-950">
+                    {/* Mobile Game Picker (visible on small screens only) */}
+                    <div className="md:hidden border-b border-slate-800/60 bg-slate-900/50 p-3">
+                        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                            <button
+                                onClick={() => setSelectedGameId(null)}
+                                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedGameId === null
+                                    ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
+                                    : 'text-slate-400 bg-slate-800 hover:text-white'
+                                    }`}
                             >
-                                Complete Now
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Active Routine Card */}
-                {activeRoutine ? (
-                    <Card className="border-slate-800 bg-gradient-to-br from-slate-900/90 to-indigo-950/50 backdrop-blur-sm overflow-hidden shadow-xl" data-testid="active-routine">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <p className="text-xs text-indigo-400 font-medium uppercase tracking-wider mb-1">Active Routine</p>
-                                    <h2 className="text-xl font-bold text-white">{activeRoutine.name}</h2>
-                                </div>
-                                <div className="flex items-center gap-1 text-slate-400">
-                                    <Clock className="h-4 w-4" />
-                                    <span className="text-sm">{totalTime} min</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 mb-4 text-sm text-slate-400">
-                                <span>{activeRoutine.routine_steps.length} steps</span>
-                                <span>•</span>
-                                <span className="capitalize">{activeRoutine.source === "recommended" ? "Personalized for you" : "Custom"}</span>
-                            </div>
+                                Overview
+                            </button>
+                            {sportUpcomingGames.slice(0, 5).map((game) => {
+                                const _now = new Date();
+                                const isToday = game.game_date === `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
+                                return (
+                                    <button
+                                        key={game.id}
+                                        onClick={() => setSelectedGameId(game.id)}
+                                        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedGameId === game.id
+                                            ? 'bg-indigo-500/15 text-white border border-indigo-500/30'
+                                            : isToday
+                                                ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
+                                                : 'text-slate-400 bg-slate-800 hover:text-white'
+                                            }`}
+                                    >
+                                        <span className="font-semibold">{game.game_name.length > 15 ? game.game_name.substring(0, 15) + '...' : game.game_name}</span> · {game.game_time.substring(0, 5)}
+                                    </button>
+                                );
+                            })}
                             <Button
-                                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/25 h-12"
-                                data-testid="start-routine"
-                                onClick={() => router.push(`/routine/execute/${activeRoutine.id}`)}
+                                variant="ghost"
+                                size="sm"
+                                className="shrink-0 text-indigo-400 hover:text-indigo-300 text-xs h-7 px-2"
+                                onClick={() => router.push(`/games/new?sport=${encodeURIComponent(selectedSport)}`)}
                             >
-                                <Play className="h-5 w-5 mr-2" />
-                                Start Routine
+                                <CalendarPlus className="h-3 w-3 mr-1" /> Schedule
                             </Button>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <Card className="border-slate-800 bg-slate-900/80 backdrop-blur-sm border-dashed" data-testid="no-routine">
-                        <CardContent className="p-8 text-center">
-                            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
-                                <Plus className="h-6 w-6 text-slate-500" />
-                            </div>
-                            <h3 className="font-semibold text-white mb-2">No Routine Yet</h3>
-                            <p className="text-sm text-slate-400 mb-4">
-                                Build your first pre-game mental routine
-                            </p>
-                            <Button
-                                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white"
-                                data-testid="build-routine"
-                                onClick={() => router.push("/routine/builder")}
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Build Routine
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
+                        </div>
+                    </div>
 
-                <Tabs defaultValue="my-routines" className="w-full space-y-6">
-                    <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 border border-slate-800 p-1">
-                        <TabsTrigger value="my-routines" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-slate-400 transition-all">
-                            My Routines
-                        </TabsTrigger>
-                        <TabsTrigger value="library" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-slate-400 transition-all">
-                            Template Library
-                        </TabsTrigger>
-                    </TabsList>
+                    <div className="max-w-5xl mx-auto p-4 md:p-8">
+                        {selectedGameId ? (
+                            <GameDetail
+                                gameId={selectedGameId}
+                                sport={selectedSport}
+                                upcomingGames={sportUpcomingGames}
+                                pastGames={sportPastGames}
+                                routines={routines}
+                                gameLogs={gameLogs}
+                                onBack={() => setSelectedGameId(null)}
+                            />
+                        ) : (
+                            <SportOverview
+                                displayName={displayName}
+                                selectedSport={selectedSport}
+                                routines={routines}
+                                gameLogs={gameLogs}
+                                upcomingGames={sportUpcomingGames}
+                                pastGames={sportPastGames}
+                                techniques={techniques}
+                                onSelectGame={setSelectedGameId}
+                            />
+                        )}
+                    </div>
 
-                    <TabsContent value="my-routines" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
-                        {/* Saved Routines */}
-                        {routines.length > 0 && (
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="font-semibold text-white">Your Routines</h3>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-slate-400">{routines.length}/5 Saved</span>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 gap-2">
-                                    {routines.map((routine) => (
-                                        <Card
-                                            key={routine.id}
-                                            data-testid={`routine-card-${routine.name.replace(/\s+/g, '-').toLowerCase()}`}
-                                            className="border-white/5 bg-slate-900/40 backdrop-blur-md hover:bg-slate-800/60 hover:border-white/10 transition-all cursor-pointer shadow-sm group"
-                                            onClick={() => router.push(`/routine/execute/${routine.id}`)}
-                                        >
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <div className="flex flex-col">
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="font-medium text-slate-200 group-hover:text-indigo-300 transition-colors">{routine.name}</p>
-                                                        {routine.is_active ? (
-                                                            <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
-                                                                Active
-                                                            </span>
-                                                        ) : (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/20 h-8 rounded-full px-3"
-                                                                onClick={(e) => handleActivateRoutine(routine.id, e)}
-                                                                disabled={isActivating === routine.id}
-                                                            >
-                                                                <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                                                                {isActivating === routine.id ? '...' : 'Activate'}
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-xs text-slate-400 mt-1">
-                                                        {routine.routine_steps?.length || 0} steps • {routine.source === "recommended" ? "Personalized" : "Custom"}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button
-                                                            variant="ghost"
-                                                        size="icon"
-                                                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-8 w-8 rounded-full"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setDeletingRoutineId(routine.id);
-                                                        }}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="text-slate-500 hover:text-white hover:bg-slate-800 h-8 w-8 rounded-full">
-                                                        <Play className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
+                    {/* Privacy Footer */}
+                    <footer className="flex items-center justify-center gap-2 text-xs text-slate-600 pb-8 mt-12" data-testid="privacy-footer">
+                        <Lock className="h-3 w-3" />
+                        <span>All your data is private — only visible to you</span>
+                    </footer>
+                </main>
+            </div>
+
+            {/* Add Sport Dialog */}
+            <Dialog open={showAddSport} onOpenChange={setShowAddSport}>
+                <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>Add a Sport</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Choose from common sports or type your own.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 mt-2">
+                        <div className="grid grid-cols-2 gap-2">
+                            {PRESET_SPORTS.filter(s => !sports.includes(s)).map((s) => (
+                                <Button
+                                    key={s}
+                                    variant="outline"
+                                    className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white h-11"
+                                    disabled={addingSport}
+                                    onClick={() => handleAddSport(s)}
+                                >
+                                    <span className="mr-2">{getEmoji(s)}</span>
+                                    {s}
+                                </Button>
+                            ))}
+                        </div>
+                        {PRESET_SPORTS.filter(s => !sports.includes(s)).length > 0 && (
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
+                                <div className="relative flex justify-center"><span className="px-3 bg-slate-900 text-sm text-slate-500">or</span></div>
                             </div>
                         )}
-
-                        {/* Quick Actions */}
-                        <div className="space-y-3">
-                            <h3 className="font-semibold text-white">Quick Actions</h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                <Card
-                                    className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
-                                    onClick={() => router.push("/routine/builder")}
-                                >
-                                    <CardContent className="p-4 text-center">
-                                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                                            <Plus className="h-5 w-5 text-indigo-400" />
-                                        </div>
-                                        <p className="text-sm font-medium text-slate-300">Routine Builder</p>
-                                    </CardContent>
-                                </Card>
-                                <Card
-                                    className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
-                                    onClick={() => router.push("/games/new")}
-                                >
-                                    <CardContent className="p-4 text-center">
-                                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                                            <Plus className="h-5 w-5 text-orange-400" />
-                                        </div>
-                                        <p className="text-sm font-medium text-slate-300">Schedule Game</p>
-                                    </CardContent>
-                                </Card>
-                                <Card
-                                    className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
-                                    onClick={() => router.push("/log/pre")}
-                                >
-                                    <CardContent className="p-4 text-center">
-                                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                                            <Brain className="h-5 w-5 text-purple-400" />
-                                        </div>
-                                        <p className="text-sm font-medium text-slate-300">Pre-Game Log</p>
-                                    </CardContent>
-                                </Card>
-                                <Card
-                                    className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer"
-                                    onClick={() => router.push("/history")}
-                                >
-                                    <CardContent className="p-4 text-center">
-                                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                                            <Clock className="h-5 w-5 text-emerald-400" />
-                                        </div>
-                                        <p className="text-sm font-medium text-slate-300">Routine History</p>
-                                    </CardContent>
-                                </Card>
-                                <Card
-                                    className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all cursor-pointer col-span-2"
-                                    onClick={() => router.push("/correlation")}
-                                >
-                                    <CardContent className="p-4 text-center flex items-center justify-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                                            <BarChart3 className="h-5 w-5 text-blue-400" />
-                                        </div>
-                                        <p className="text-sm font-medium text-slate-300">View Insights & Performance Correlation</p>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="library" className="focus-visible:outline-none focus-visible:ring-0">
-                        <RoutineLibrary
-                            currentRoutinesCount={routines.length}
-                            userRoutineTitles={routines.map(r => r.name)}
-                        />
-                    </TabsContent>
-                </Tabs>
-            </main>
-
-            {/* Privacy Footer */}
-            <footer className="flex items-center justify-center gap-2 text-xs text-slate-600 pb-8" data-testid="privacy-footer">
-                <Lock className="h-3 w-3" />
-                <span>All your data is private — only visible to you</span>
-            </footer>
-
-            {/* Delete Confirmation Dialog */}
-            <AlertDialog open={!!deletingRoutineId} onOpenChange={(open) => !open && !isDeleting && setDeletingRoutineId(null)}>
-                <AlertDialogContent className="bg-slate-900 border-slate-800 text-white">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-400">
-                            This action cannot be undone. This will permanently delete your pre-game mental routine.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isDeleting} className="bg-slate-800 text-white border-slate-700 hover:bg-slate-700 hover:text-white">Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleDeleteRoutine();
-                            }}
-                            disabled={isDeleting}
-                            className="bg-red-600 hover:bg-red-700 text-white"
-                        >
-                            {isDeleting ? "Deleting..." : "Delete Routine"}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                        <form onSubmit={(e) => { e.preventDefault(); handleAddSport(customSportInput); }} className="flex gap-2">
+                            <Input
+                                placeholder="Type sport name..."
+                                value={customSportInput}
+                                onChange={(e) => setCustomSportInput(e.target.value)}
+                                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                            />
+                            <Button type="submit" disabled={!customSportInput.trim() || addingSport} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4">
+                                Add
+                            </Button>
+                        </form>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -30,6 +30,27 @@ import {
     CardTitle
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+
+export const AVAILABLE_SPORTS = [
+    "Soccer",
+    "Basketball",
+    "Football",
+    "Baseball",
+    "Tennis",
+    "Track & Field",
+    "Swimming",
+    "Volleyball",
+    "Golf",
+    "Esports",
+    "Unspecified"
+]
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Clock, GripVertical, Plus, Trash2, Save, ArrowLeft, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
@@ -115,10 +136,46 @@ function SortableStepItem({ step, onRemove }: { step: BuilderStep, onRemove: (id
 // ----------------------------------------------------------------------
 // Main Builder Component
 // ----------------------------------------------------------------------
-export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: { initialTechniques: Technique[], currentRoutinesCount?: number }) {
+interface InitialRoutine {
+    id?: string;
+    name?: string;
+    sport?: string;
+    routine_steps?: Array<{
+        step_order: number;
+        technique?: Technique;
+        techniques?: Partial<Technique>;
+    }>;
+}
+
+export function RoutineBuilder({
+    initialTechniques,
+    initialRoutine,
+    currentRoutinesCount = 0,
+    defaultSport = 'Unspecified',
+    isSportLocked = false,
+    onSaved
+}: {
+    initialTechniques: Technique[];
+    initialRoutine?: InitialRoutine;
+    currentRoutinesCount?: number;
+    defaultSport?: string;
+    isSportLocked?: boolean;
+    onSaved?: (routineId: string) => void;
+}) {
     const router = useRouter()
-    const [routineName, setRoutineName] = useState('')
-    const [steps, setSteps] = useState<BuilderStep[]>([])
+    const [routineName, setRoutineName] = useState(initialRoutine?.name || '')
+    const [sport, setSport] = useState(initialRoutine?.sport || defaultSport)
+
+    // Parse initial routine steps if provided
+    const [steps, setSteps] = useState<BuilderStep[]>(() => {
+        if (!initialRoutine?.routine_steps) return [];
+        return initialRoutine.routine_steps
+            .sort((a, b) => a.step_order - b.step_order)
+            .map((rs) => ({
+                id: crypto.randomUUID(),
+                technique: rs.technique || rs.techniques as Technique
+            }));
+    });
     const [isSaving, setIsSaving] = useState(false)
     const [showLimitDialog, setShowLimitDialog] = useState(false)
 
@@ -165,13 +222,17 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
     }
 
     const handleSaveRoutine = async () => {
-        if (currentRoutinesCount >= 5) {
+        if (!initialRoutine && currentRoutinesCount >= 5) {
             setShowLimitDialog(true);
             return;
         }
 
         if (!routineName.trim()) {
             toast.error('Please enter a name for your routine.')
+            return
+        }
+        if (!sport.trim()) {
+            toast.error('Please enter a sport for your routine.')
             return
         }
         if (steps.length === 0) {
@@ -181,11 +242,15 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
 
         setIsSaving(true)
         try {
-            const response = await fetch('/api/routines', {
-                method: 'POST',
+            const url = initialRoutine ? `/api/routines/${initialRoutine.id}` : '/api/routines';
+            const method = initialRoutine ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: routineName,
+                    sport: sport,
                     steps: steps.map((step, index) => ({
                         technique_id: step.technique.id,
                         step_order: index
@@ -199,9 +264,14 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
                 throw new Error(result.error?.message || 'Failed to save routine')
             }
 
-            toast.success("Routine saved successfully!")
-            router.push('/home') // Redirect to dashboard/home
-            router.refresh()
+            toast.success(initialRoutine ? "Routine updated successfully!" : "Routine saved successfully!")
+
+            if (onSaved) {
+                onSaved(result.data.id);
+            } else {
+                router.push('/home') // Redirect to dashboard/home if standalone
+                router.refresh()
+            }
         } catch (error: unknown) {
             toast.error(error instanceof Error ? error.message : "Unknown error")
         } finally {
@@ -241,7 +311,7 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
                                             {category}
                                         </h3>
                                         <div className="space-y-3">
-                                            {techs.map(tech => (
+                                            {(techs as Technique[]).map((tech: Technique) => (
                                                 <div
                                                     key={tech.id}
                                                     data-testid={`technique-item-${tech.id}`}
@@ -284,13 +354,34 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
             <div className="xl:col-span-8 space-y-4">
                 <Card className="h-[calc(100vh-14rem)] flex flex-col border-white/10 bg-slate-900/40 backdrop-blur-xl shadow-2xl rounded-3xl relative overflow-hidden">
                     <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 pt-6 px-8 border-b border-white/5 bg-slate-950/40 z-10">
-                        <div className="flex-1 w-full max-w-xl">
+                        <div className="flex-1 w-full max-w-xl flex gap-3">
                             <Input
-                                placeholder="Give your routine a name (e.g., Final Pre-Game Focus)"
-                                className="text-xl font-bold h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all w-full"
+                                placeholder="Routine Name (e.g., Final Focus)"
+                                className="text-xl font-bold h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all w-2/3"
                                 value={routineName}
                                 onChange={(e) => setRoutineName(e.target.value)}
                             />
+                            <div className="w-1/3">
+                                {isSportLocked ? (
+                                    <div className="h-14 bg-slate-950/30 border border-white/5 text-slate-300 rounded-xl px-4 flex items-center justify-between opacity-80 cursor-not-allowed">
+                                        <span className="truncate">{sport}</span>
+                                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-white/10 bg-white/5 text-slate-400">Locked</Badge>
+                                    </div>
+                                ) : (
+                                    <Select value={sport} onValueChange={setSport}>
+                                        <SelectTrigger className="h-14 bg-slate-950/50 border-white/10 text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl">
+                                            <SelectValue placeholder="Select Sport" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-slate-900 border-white/10">
+                                            {AVAILABLE_SPORTS.map((s) => (
+                                                <SelectItem key={s} value={s} className="text-slate-200 focus:bg-indigo-500/20 focus:text-white cursor-pointer hover:bg-indigo-500/20">
+                                                    {s}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            </div>
                         </div>
                         <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 w-full sm:w-auto">
                             <Badge className="text-sm px-4 py-1.5 bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-semibold shadow-none whitespace-nowrap">
@@ -345,7 +436,13 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
                     <div className="px-8 py-5 border-t border-white/5 bg-slate-950/60 flex items-center justify-between gap-4 z-10 backdrop-blur-md">
                         <Button
                             variant="ghost"
-                            onClick={() => router.back()}
+                            onClick={() => {
+                                if (onSaved) {
+                                    onSaved(""); // empty string signals cancel/back if we have a callback
+                                } else {
+                                    router.back();
+                                }
+                            }}
                             className="text-slate-400 hover:text-white hover:bg-slate-800 transition-colors px-5 rounded-xl text-sm font-medium h-11"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
@@ -357,7 +454,7 @@ export function RoutineBuilder({ initialTechniques, currentRoutinesCount = 0 }: 
                         >
                             {isSaving ? 'Saving...' : (
                                 <span className="flex items-center">
-                                    <Save className="mr-2 h-4 w-4" /> Save Routine
+                                    <Save className="mr-2 h-4 w-4" /> {initialRoutine ? 'Save Edits' : 'Save Routine'}
                                 </span>
                             )}
                         </Button>

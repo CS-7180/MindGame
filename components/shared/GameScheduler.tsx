@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,19 +31,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 const formSchema = z.object({
   sport: z.string().min(2, { message: "Sport name is required." }),
+  game_name: z.string().min(2, { message: "Game name is required." }),
   game_date: z.string().min(1, { message: "Date is required." }),
   game_time: z.string().min(1, { message: "Time is required." }),
   reminder_offset_mins: z.string(),
 });
 
-export function GameScheduler() {
+interface GameSchedulerProps {
+  defaultSport?: string;
+  isSportLocked?: boolean;
+}
+
+export function GameScheduler({ defaultSport = "", isSportLocked = false }: GameSchedulerProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      sport: "",
+      sport: defaultSport,
       game_date: format(new Date(), "yyyy-MM-dd"),
       game_time: "14:00",
       reminder_offset_mins: "45",
@@ -98,7 +104,30 @@ export function GameScheduler() {
                 <FormItem>
                   <FormLabel className="text-slate-300">Sport</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Basketball, Soccer" className="bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600" {...field} />
+                    {isSportLocked ? (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-slate-950/50 border border-slate-800">
+                        <Lock className="h-4 w-4 text-slate-500" />
+                        <span className="text-white font-medium">{field.value}</span>
+                      </div>
+                    ) : (
+                      <Input placeholder="e.g. Basketball, Soccer" className="bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600" {...field} />
+                    )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="game_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-300">
+                    Game Name <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Practice Match vs Eagles" className="bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -130,7 +159,7 @@ export function GameScheduler() {
                     <FormLabel className="text-slate-300">Time</FormLabel>
                     <FormControl>
                       <div className="relative">
-                         <Input type="time" className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
+                        <Input type="time" className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -168,8 +197,8 @@ export function GameScheduler() {
             />
 
             <div className="flex gap-3 pt-2">
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white py-6 rounded-xl"
                 onClick={() => router.push("/home")}
@@ -178,10 +207,10 @@ export function GameScheduler() {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <Button 
-                  type="submit" 
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-6 rounded-xl transition-all shadow-lg shadow-indigo-500/20"
-                  disabled={loading}
+              <Button
+                type="submit"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-6 rounded-xl transition-all shadow-lg shadow-indigo-500/20"
+                disabled={loading}
               >
                 {loading ? "Scheduling..." : "Schedule Game"}
               </Button>

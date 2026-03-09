@@ -12,24 +12,27 @@ test.describe('Routine History and Entry Review', () => {
         await page.waitForURL('**/home');
 
         // 1. Navigate to History from Home
-        const historyCard = page.locator('text=Routine History');
-        await expect(historyCard).toBeVisible();
-        await historyCard.click();
+        // In the new layout, this is the "View All" link next to "Recent Games"
+        const historyLink = page.getByRole('button', { name: "View All" });
+        await expect(historyLink).toBeVisible();
+        await historyLink.click();
 
         // Wait to be on history page
-        await page.waitForURL('**/history');
+        await page.waitForURL('**/history*');
 
         // 2. Verify History List loads (AC-11.1)
-        await expect(page.locator('h1:has-text("Routine History")')).toBeVisible();
+        await expect(page.locator('h1')).toContainText('History');
 
-        // 3. Check for elements or "No history found"
-        // Either they have history cards, or they see the empty state.
+        // 3. Check for elements or empty state
         const noHistory = page.locator('text=No history found');
         const historyCards = page.locator('.group').first();
 
         if (await noHistory.isVisible()) {
-            // Test empty state
-            await expect(page.locator('text=Try adjusting your filters.')).toBeVisible();
+            // Test empty state — in CI with fresh DB, logs.length === 0
+            // so it shows "You haven't recorded any entries yet."
+            // With existing logs but filtered to nothing, it shows "Try adjusting your filters."
+            const emptyMessage = page.locator('text=/haven.*recorded|adjusting your filters/i');
+            await expect(emptyMessage).toBeVisible();
         } else {
             // Test populated state
             await expect(historyCards).toBeVisible();
@@ -48,7 +51,7 @@ test.describe('Routine History and Entry Review', () => {
             // For now, just verifying the detail view is enough for AC-11.2
 
             // Check for post-game section header
-            await expect(page.getByText('Post-Game Reflection')).toBeVisible();
+            await expect(page.getByText('Post-Game Reflection', { exact: true })).toBeVisible();
         }
     });
 });

@@ -4,6 +4,7 @@ import { z } from "zod";
 
 const createRoutineSchema = z.object({
     name: z.string().min(1, "Name is required").max(100, "Name is too long"),
+    sport: z.string().min(1, "Sport is required"),
     steps: z.array(z.object({
         technique_id: z.string().uuid(),
         step_order: z.number().int().min(0)
@@ -62,27 +63,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // 1. Check strict 5 routine limit
-        const { count, error: countError } = await supabase
-            .from("routines")
-            .select("*", { count: "exact", head: true })
-            .eq("athlete_id", user.id);
-
-        if (countError) {
-            return NextResponse.json(
-                { data: null, error: { message: countError.message, code: "DB_ERROR" } },
-                { status: 500 }
-            );
-        }
-
-        if (count !== null && count >= 5) {
-            return NextResponse.json(
-                { data: null, error: { message: "Maximum of 5 routines reached. Please delete an existing routine.", code: "LIMIT_REACHED" } },
-                { status: 400 }
-            );
-        }
-
-        // 2. Parse and validate request body
+        // 1. Parse and validate request body first to get the sport
         const body = await request.json();
         const validation = createRoutineSchema.safeParse(body);
 
@@ -93,30 +74,53 @@ export async function POST(request: Request) {
             );
         }
 
-        const { name, steps } = validation.data;
+        const { name, sport, steps } = validation.data;
 
-        // 3. Fetch athlete's sport from their athlete profile
-        const { data: athleteProfile, error: profileError } = await supabase
-            .from("athlete_profiles")
-            .select("sport")
+        // 2. Check strict 5 routine limit PER SPORT
+        const { count, error: countError } = await supabase
+            .from("routines")
+            .select("*", { count: "exact", head: true })
             .eq("athlete_id", user.id)
-            .single();
+            .eq("sport", sport);
 
-        if (profileError || !athleteProfile?.sport) {
+        if (countError) {
             return NextResponse.json(
-                { data: null, error: { message: "Could not determine athlete sport. Please complete onboarding.", code: "MISSING_SPORT" } },
+                { data: null, error: { message: countError.message, code: "DB_ERROR" } },
+                { status: 500 }
+            );
+        }
+
+        if (count !== null && count >= 5) {
+            return NextResponse.json(
+                { data: null, error: { message: `Maximum of 5 routines reached for ${sport}. Please delete an existing routine.`, code: "LIMIT_REACHED" } },
                 { status: 400 }
             );
         }
 
-        // 4. Insert routine
+        // Deactivate any existing active routines for this athlete and sport
+        const { error: deactivateError } = await supabase
+            .from("routines")
+            .update({ is_active: false })
+            .eq("athlete_id", user.id)
+            .eq("sport", sport);
+
+        if (deactivateError) {
+            return NextResponse.json(
+                { data: null, error: { message: "Failed to clear previous active routines", code: "DB_ERROR" } },
+                { status: 500 }
+            );
+        }
+
+        // 3. Insert routine
         const { data: routine, error: routineError } = await supabase
             .from("routines")
             .insert({
                 athlete_id: user.id,
                 name: name,
+                sport: sport,
+                is_template: false,
+                is_active: true,
                 source: "custom",
-                sport: athleteProfile.sport,
             })
             .select()
             .single();

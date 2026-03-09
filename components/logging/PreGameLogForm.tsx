@@ -153,12 +153,13 @@ export function PreGameLogForm({ sport }: { sport?: string | null }) {
                                     <FormControl>
                                         <Input
                                             placeholder="e.g. Tennis, Basketball, Soccer"
-                                            className="bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-500 max-w-md focus-visible:ring-indigo-500"
+                                            className="bg-slate-900/60 border-slate-700 text-slate-400 placeholder:text-slate-500 max-w-md focus-visible:ring-indigo-500 cursor-not-allowed"
+                                            readOnly
                                             {...field}
                                         />
                                     </FormControl>
                                     <FormDescription className="text-slate-400">
-                                        What sport are you playing today?
+                                        Logging for your selected sport
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>

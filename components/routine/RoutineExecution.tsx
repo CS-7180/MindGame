@@ -4,15 +4,16 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { RoutineWithSteps } from '@/types/index'
 import { Button } from '@/components/ui/button'
-import { Pause, Play, CheckCircle, ArrowRight, X } from 'lucide-react'
+import { Pause, Play, CheckCircle, ArrowRight, X, Lightbulb } from 'lucide-react'
 import { RoutineCompletion } from './RoutineCompletion'
 import { toast } from 'sonner'
 
 interface RoutineExecutionProps {
     routine: RoutineWithSteps
+    sport?: string
 }
 
-export function RoutineExecution({ routine }: RoutineExecutionProps) {
+export function RoutineExecution({ routine, sport }: RoutineExecutionProps) {
     const router = useRouter()
 
     // Memoize sorted steps so the reference is stable across renders
@@ -28,6 +29,7 @@ export function RoutineExecution({ routine }: RoutineExecutionProps) {
     const [isCompleted, setIsCompleted] = useState(false)
     const [isLoaded, setIsLoaded] = useState(false)
     const [showExitConfirm, setShowExitConfirm] = useState(false)
+    const [showRecommendation, setShowRecommendation] = useState(false)
 
     // Ref for the interval so we can clear it from inside the updater
     const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -109,17 +111,23 @@ export function RoutineExecution({ routine }: RoutineExecutionProps) {
 
     const nextStep = useCallback(() => {
         if (currentStepIndex < totalSteps - 1) {
-            const nextIdx = currentStepIndex + 1
-            setCurrentStepIndex(nextIdx)
-            setTimeLeftInStep(sortedSteps[nextIdx].technique.duration_minutes * 60)
-            // Auto play the next step
-            setIsPaused(false)
+            setShowRecommendation(true)
+            setIsPaused(true)
         } else {
             // Finish routine
             setIsCompleted(true)
             localStorage.removeItem(storageKey)
         }
-    }, [currentStepIndex, totalSteps, sortedSteps, storageKey])
+    }, [currentStepIndex, totalSteps, storageKey])
+
+    const continueToNextStep = () => {
+        const nextIdx = currentStepIndex + 1
+        setCurrentStepIndex(nextIdx)
+        setTimeLeftInStep(sortedSteps[nextIdx].technique.duration_minutes * 60)
+        setShowRecommendation(false)
+        // Auto play the next step
+        setIsPaused(false)
+    }
 
     const handleExit = () => {
         setIsPaused(true) // Pause timer while confirming
@@ -129,7 +137,53 @@ export function RoutineExecution({ routine }: RoutineExecutionProps) {
     if (!isLoaded) return <div className="min-h-screen flex items-center justify-center text-white">Loading routine...</div>
 
     if (isCompleted) {
-        return <RoutineCompletion routineName={routine.name} />
+        return <RoutineCompletion routineName={routine.name} sport={sport} />
+    }
+
+    if (showRecommendation) {
+        const finishedStep = sortedSteps[currentStepIndex]
+        const upcomingStep = sortedSteps[currentStepIndex + 1]
+
+        const getRecommendation = (currentCategory: string) => {
+            const recommendations: Record<string, string> = {
+                'Breathing': 'Great job centering yourself. Deep breathing lowers your heart rate and prepares your nervous system for peak performance.',
+                'Visualization': 'Excellent visualization. Seeing success in your mind builds neural pathways that make it far more likely to happen in reality.',
+                'Physical Drill': 'Nice work. Physical readiness and an elevated heart rate are the foundation of mental sharpness.',
+                'Mental Check-in': 'Good self-awareness. Acknowledging your current mental state is the crucial first step to conquering it.',
+            }
+            return recommendations[currentCategory] || 'Great focus. Take a second to reset and absorb the benefits before moving to the next technique.'
+        }
+
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col text-white items-center justify-center p-6 relative overflow-hidden">
+                <div className="absolute inset-0 blur-[150px] opacity-20 transition-colors duration-1000 -z-10 rounded-full bg-indigo-600" />
+
+                <div className="max-w-2xl w-full bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-3xl p-8 sm:p-12 text-center space-y-8 shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+                    <div className="inline-flex p-4 rounded-full bg-indigo-500/20 text-indigo-400 mb-2">
+                        <Lightbulb className="w-10 h-10" />
+                    </div>
+
+                    <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Quick Insight</h2>
+
+                    <p className="text-xl sm:text-2xl text-slate-300 leading-relaxed font-light">
+                        {getRecommendation(finishedStep.technique.category)}
+                    </p>
+
+                    <div className="pt-8 flex flex-col sm:flex-row gap-6 justify-center items-center border-t border-slate-800/50 mt-8">
+                        <div className="text-left text-sm text-slate-400 hidden sm:block mr-auto">
+                            Up next: <span className="font-semibold text-white truncate max-w-[200px] inline-block align-bottom">{upcomingStep.technique.name}</span>
+                        </div>
+                        <Button
+                            size="lg"
+                            className="w-full sm:w-auto px-10 h-14 rounded-full text-lg font-semibold bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.3)] transition-all"
+                            onClick={continueToNextStep}
+                        >
+                            Continue <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     const currentStep = sortedSteps[currentStepIndex]

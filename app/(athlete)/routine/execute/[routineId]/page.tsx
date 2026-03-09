@@ -37,5 +37,5 @@ export default async function ExecuteRoutinePage({ params }: { params: { routine
         )
     }
 
-    return <RoutineExecution routine={routine as unknown as RoutineWithSteps} />
+    return <RoutineExecution routine={routine as unknown as RoutineWithSteps} sport={(routine as { sport?: string }).sport} />
 }
