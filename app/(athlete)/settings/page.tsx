@@ -200,7 +200,7 @@ export default function SettingsPage() {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-600"
+                                    className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-600 shrink-0 ml-4"
                                     onClick={() => router.push("/log/pre")}
                                     data-testid="delete-entries-link"
                                 >
@@ -222,7 +222,7 @@ export default function SettingsPage() {
                                     variant="destructive"
                                     size="sm"
                                     onClick={() => setShowDeleteDialog(true)}
-                                    className="bg-red-600 hover:bg-red-700"
+                                    className="bg-red-600 hover:bg-red-700 shrink-0 ml-4"
                                     data-testid="delete-account-button"
                                 >
                                     <Trash2 className="h-3.5 w-3.5 mr-1.5" />

@@ -40,11 +40,42 @@ export async function POST(
             );
         }
 
-        // 2. Check routine limit (max 5)
+        const body = await request.json().catch(() => ({}));
+        let targetSport = body.sport;
+
+        // 3. Fetch athlete's sports profile if needed
+        const { data: athleteProfile, error: profileError } = await supabase
+            .from("athlete_profiles")
+            .select("sport, sports")
+            .eq("athlete_id", user.id)
+            .single();
+
+        if (profileError && !athleteProfile) {
+            return NextResponse.json(
+                { data: null, error: { message: "Athlete profile not found. Please complete onboarding.", code: "NOT_FOUND" } },
+                { status: 404 }
+            );
+        }
+
+        if (!targetSport) {
+            targetSport = (athleteProfile?.sports && athleteProfile.sports.length > 0)
+                ? athleteProfile.sports[0]
+                : athleteProfile?.sport;
+        }
+
+        if (!targetSport) {
+            return NextResponse.json(
+                { data: null, error: { message: "Athlete sport not found. Please complete onboarding or specify a sport.", code: "NOT_FOUND" } },
+                { status: 404 }
+            );
+        }
+
+        // 2. Check routine limit (max 5 PER SPORT)
         const { count, error: countError } = await supabase
             .from("routines")
             .select("*", { count: "exact", head: true })
-            .eq("athlete_id", user.id);
+            .eq("athlete_id", user.id)
+            .eq("sport", targetSport);
 
         if (countError) {
             return NextResponse.json(
@@ -55,22 +86,8 @@ export async function POST(
 
         if (count !== null && count >= 5) {
             return NextResponse.json(
-                { data: null, error: { message: "Maximum of 5 routines reached. Please delete one before saving this template.", code: "LIMIT_REACHED" } },
+                { data: null, error: { message: `Maximum of 5 routines reached for ${targetSport}. Please delete one before saving this template.`, code: "LIMIT_REACHED" } },
                 { status: 400 }
-            );
-        }
-
-        // 3. Fetch athlete's sport for the routine
-        const { data: athleteProfile, error: profileError } = await supabase
-            .from("athlete_profiles")
-            .select("sport")
-            .eq("athlete_id", user.id)
-            .single();
-
-        if (profileError || !athleteProfile?.sport) {
-            return NextResponse.json(
-                { data: null, error: { message: "Athlete sport not found. Please complete onboarding.", code: "NOT_FOUND" } },
-                { status: 404 }
             );
         }
 
@@ -80,7 +97,7 @@ export async function POST(
             .insert({
                 athlete_id: user.id,
                 name: notification.template.name,
-                sport: athleteProfile.sport,
+                sport: targetSport,
                 source: "coach_template",
                 coach_template_id: notification.template_id,
                 is_active: false // Do not activate by default

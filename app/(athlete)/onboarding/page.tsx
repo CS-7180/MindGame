@@ -383,7 +383,7 @@ function OnboardingContent() {
 export default function OnboardingPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 flex items-center justify-center">
                 <div className="text-white animate-pulse">Loading onboarding...</div>
             </div>
         }>

@@ -35,6 +35,18 @@ const formSchema = z.object({
   game_date: z.string().min(1, { message: "Date is required." }),
   game_time: z.string().min(1, { message: "Time is required." }),
   reminder_offset_mins: z.string(),
+}).superRefine((data, ctx) => {
+  if (data.game_date && data.game_time) {
+    const gameDateTime = new Date(`${data.game_date}T${data.game_time}`);
+    const now = new Date();
+    if (gameDateTime < now) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Game cannot be in the past.",
+        path: ["game_time"],
+      });
+    }
+  }
 });
 
 interface GameSchedulerProps {
@@ -143,7 +155,7 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
                     <FormLabel className="text-slate-300">Date</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Input type="date" className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
+                        <Input type="date" min={format(new Date(), "yyyy-MM-dd")} className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />

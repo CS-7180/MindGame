@@ -357,14 +357,14 @@ export function RoutineBuilder({
                         <div className="flex-1 w-full max-w-xl flex gap-3">
                             <Input
                                 placeholder="Routine Name (e.g., Final Focus)"
-                                className="text-xl font-bold h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all w-2/3"
+                                className="text-xl font-bold h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all flex-1"
                                 value={routineName}
                                 onChange={(e) => setRoutineName(e.target.value)}
                             />
-                            <div className="w-1/3">
+                            <div className="w-[180px] shrink-0">
                                 {isSportLocked ? (
                                     <div className="h-14 bg-slate-950/30 border border-white/5 text-slate-300 rounded-xl px-4 flex items-center justify-between opacity-80 cursor-not-allowed">
-                                        <span className="truncate">{sport}</span>
+                                        <span className="truncate font-medium">{sport}</span>
                                         <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-white/10 bg-white/5 text-slate-400">Locked</Badge>
                                     </div>
                                 ) : (

@@ -32,9 +32,10 @@ export interface SharedTemplateNotification {
 
 interface Props {
     notifications: SharedTemplateNotification[];
+    currentSport?: string;
 }
 
-export function SharedTemplateNotifications({ notifications: initialNotifications }: Props) {
+export function SharedTemplateNotifications({ notifications: initialNotifications, currentSport }: Props) {
     const [notifications, setNotifications] = useState(initialNotifications);
     const [actionId, setActionId] = useState<string | null>(null);
     const router = useRouter();
@@ -42,8 +43,11 @@ export function SharedTemplateNotifications({ notifications: initialNotification
     const handleSave = async (notificationId: string) => {
         setActionId(notificationId);
         try {
+            const body = currentSport ? JSON.stringify({ sport: currentSport }) : undefined;
             const res = await fetch(`/api/notifications/${notificationId}/save`, {
                 method: "POST",
+                headers: currentSport ? { "Content-Type": "application/json" } : undefined,
+                body
             });
             const json = await res.json();
 

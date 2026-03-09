@@ -5,9 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Clock, Plus, Share2, Trash2, LayoutTemplate } from "lucide-react";
+import { Clock, Plus, Share2, Trash2, LayoutTemplate, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 
 type TemplateStep = {
     id: string;
@@ -19,15 +30,16 @@ type Template = {
     id: string;
     name: string;
     time_tier: string;
-    coach_note?: string;
+    coach_note?: string | null;
     steps?: TemplateStep[];
+    sharedCount?: number;
 };
 
-export function TemplateListClient({ initialTemplates }: { initialTemplates: Template[] }) {
+export function TemplateListClient({ initialTemplates, rosterCount }: { initialTemplates: Template[], rosterCount: number }) {
     const [templates, setTemplates] = useState<Template[]>(initialTemplates);
     const [isSharing, setIsSharing] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
-    const { toast } = useToast();
+    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
     const router = useRouter();
 
     const handleDelete = async (id: string) => {
@@ -40,19 +52,13 @@ export function TemplateListClient({ initialTemplates }: { initialTemplates: Tem
             if (!res.ok) throw new Error("Failed to delete");
 
             setTemplates(prev => prev.filter(t => t.id !== id));
-            toast({
-                title: "Template Deleted",
-                description: "The template has been removed.",
-            });
+            toast.success("Template deleted successfully");
             router.refresh();
         } catch {
-            toast({
-                title: "Error",
-                description: "Could not delete template.",
-                variant: "destructive"
-            });
+            toast.error("Could not delete template.");
         } finally {
             setIsDeleting(null);
+            setDeleteConfirmId(null);
         }
     };
 
@@ -66,24 +72,23 @@ export function TemplateListClient({ initialTemplates }: { initialTemplates: Tem
             const body = await res.json();
 
             if (!res.ok) {
-                toast({
-                    title: "Error Sharing",
-                    description: body.error?.message || "Could not share template.",
-                    variant: "destructive"
-                });
+                toast.error(body.error?.message || "Could not share template.");
                 return;
             }
 
-            toast({
-                title: "Template Shared",
-                description: `${name} was sent to ${body.data.count} athletes.`,
-            });
+            toast.success(body.data.count > 0
+                ? `${name} was sent to ${body.data.count} new athlete(s).`
+                : "All athletes already have this template."
+            );
+
+            // Optimistically update shared count
+            if (body.data.sharedCount !== undefined) {
+                setTemplates(prev => prev.map(t =>
+                    t.id === id ? { ...t, sharedCount: body.data.sharedCount } : t
+                ));
+            }
         } catch {
-            toast({
-                title: "Error",
-                description: "Could not share template.",
-                variant: "destructive"
-            });
+            toast.error("Could not share template.");
         } finally {
             setIsSharing(null);
         }
@@ -112,9 +117,13 @@ export function TemplateListClient({ initialTemplates }: { initialTemplates: Tem
     }
 
     return (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 max-h-[600px] overflow-y-auto pr-2 pb-4 pt-1 custom-scrollbar">
             {templates.map((template) => {
                 const totalMinutes = template.steps?.reduce((acc: number, step) => acc + (step.technique?.duration_minutes || 0), 0) || 0;
+
+                const sharedCount = template.sharedCount || 0;
+                const allShared = rosterCount > 0 && sharedCount >= rosterCount;
+                const hasRoster = rosterCount > 0;
 
                 return (
                     <Card key={template.id} className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all text-white flex flex-col">
@@ -166,15 +175,22 @@ export function TemplateListClient({ initialTemplates }: { initialTemplates: Tem
 
                         <CardFooter className="pt-0 flex gap-2">
                             <Button
-                                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md border-none"
+                                className={`flex-1 shadow-md border-none ${allShared ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white'}`}
                                 onClick={() => handleShare(template.id, template.name)}
-                                disabled={isSharing === template.id}
+                                disabled={isSharing === template.id || allShared || !hasRoster}
                             >
                                 {isSharing === template.id ? (
                                     <>Sharing...</>
+                                ) : allShared ? (
+                                    <>
+                                        <CheckCircle2 className="w-4 h-4 mr-2" /> Shared
+                                    </>
                                 ) : (
                                     <>
-                                        <Share2 className="w-4 h-4 mr-2" /> Share with Team
+                                        <Share2 className="w-4 h-4 mr-2" />
+                                        {hasRoster && sharedCount > 0
+                                            ? `Share (${sharedCount}/${rosterCount})`
+                                            : "Share with Team"}
                                     </>
                                 )}
                             </Button>
@@ -183,7 +199,7 @@ export function TemplateListClient({ initialTemplates }: { initialTemplates: Tem
                                 variant="outline"
                                 size="icon"
                                 className="text-red-400 hover:text-red-300 hover:bg-red-900/20 border-slate-700 bg-slate-800/50"
-                                onClick={() => handleDelete(template.id)}
+                                onClick={() => setDeleteConfirmId(template.id)}
                                 disabled={isDeleting === template.id}
                             >
                                 <Trash2 className="w-4 h-4" />
@@ -192,6 +208,28 @@ export function TemplateListClient({ initialTemplates }: { initialTemplates: Tem
                     </Card>
                 );
             })}
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+                <AlertDialogContent className="bg-slate-900 border-slate-800 text-white">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Template?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            This will permanently delete the template. Athletes who already received it will keep their routines, but you will no longer be able to share it.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-800 text-white border-slate-700 hover:bg-slate-700">Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+                            disabled={!!isDeleting}
+                            className="bg-red-600 hover:bg-red-700 text-white focus:ring-red-500"
+                        >
+                            {isDeleting ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
