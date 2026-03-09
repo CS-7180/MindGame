@@ -1,0 +1,471 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "MindGame API",
+    "description": "API documentation for the MindGame application. All routes require a valid Supabase Auth session token passed in the Authorization header.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Current Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Technique": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "slug": { "type": "string" },
+          "name": { "type": "string" },
+          "category": { "type": "string" },
+          "instruction": { "type": "string" },
+          "duration_minutes": { "type": "integer" }
+        }
+      },
+      "Routine": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "athlete_id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "is_active": { "type": "boolean" },
+          "source": { "type": "string", "enum": ["custom", "recommended", "coach_template"] }
+        }
+      },
+      "GameLog": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "game_id": { "type": "string", "format": "uuid" },
+          "log_date": { "type": "string", "format": "date" },
+          "sport": { "type": "string" },
+          "routine_completed": { "type": "string", "enum": ["yes", "partial", "no"] },
+          "pre_anxiety_level": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "pre_confidence_level": { "type": "integer", "minimum": 1, "maximum": 5 }
+        }
+      },
+      "CoachTemplate": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "coach_id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "time_tier": { "type": "string", "enum": ["quick", "standard", "extended"] },
+          "coach_note": { "type": "string" }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/onboarding": {
+      "post": {
+        "tags": ["Athlete"],
+        "summary": "Save onboarding profile and get routine recommendation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sport": { "type": "string" },
+                  "competitive_level": { "type": "string" },
+                  "anxiety_symptoms": { "type": "array", "items": { "type": "string" } },
+                  "time_preference": { "type": "string" }
+                },
+                "required": ["sport", "competitive_level", "anxiety_symptoms", "time_preference"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Onboarding successful, returning recommended routine techniques",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "object", "properties": { "recommendedRoutine": { "type": "array", "items": { "$ref": "#/components/schemas/Technique" } } } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/techniques": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "List all seeded techniques",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Technique" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/routines": {
+      "get": {
+        "tags": ["Athlete"],
+        "summary": "List athlete's routines",
+        "responses": {
+          "200": {
+            "description": "Array of routines",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Routine" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Athlete"],
+        "summary": "Create new routine with steps",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "steps": { "type": "array", "items": { "type": "string", "format": "uuid" } },
+                  "source": { "type": "string" },
+                  "coach_template_id": { "type": "string", "format": "uuid" }
+                },
+                "required": ["name", "steps"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Routine created successfully"
+          }
+        }
+      }
+    },
+    "/api/routines/{id}": {
+      "get": {
+        "tags": ["Athlete"],
+        "summary": "Get single routine with steps",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Routine data" }
+        }
+      },
+      "put": {
+        "tags": ["Athlete"],
+        "summary": "Update routine name or steps",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "steps": { "type": "array", "items": { "type": "string", "format": "uuid" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Routine updated" }
+        }
+      },
+      "delete": {
+        "tags": ["Athlete"],
+        "summary": "Delete routine",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Routine deleted" }
+        }
+      }
+    },
+    "/api/logs/pre": {
+      "post": {
+        "tags": ["Athlete"],
+        "summary": "Save pre-game log entry",
+        "requestBody": {
+          "required": true,
+          "content": {
+             "application/json": {
+               "schema": {
+                 "type": "object",
+                 "properties": {
+                   "routine_completed": { "type": "string", "enum": ["yes", "partial", "no"] },
+                   "pre_anxiety_level": { "type": "integer" },
+                   "pre_confidence_level": { "type": "integer" },
+                   "pre_notes": { "type": "string" },
+                   "game_id": { "type": "string" }
+                 },
+                 "required": ["routine_completed", "pre_anxiety_level", "pre_confidence_level"]
+               }
+             }
+          }
+        },
+        "responses": {
+          "200": { "description": "Pre-game log saved" }
+        }
+      }
+    },
+    "/api/logs/post": {
+      "post": {
+        "tags": ["Athlete"],
+        "summary": "Save post-game reflection",
+        "requestBody": {
+          "required": true,
+          "content": {
+             "application/json": {
+               "schema": {
+                 "type": "object",
+                 "properties": {
+                   "log_id": { "type": "string", "format": "uuid" },
+                   "post_performance": { "type": "integer" },
+                   "post_mental_state": { "type": "integer" },
+                   "post_descriptor": { "type": "string" }
+                 },
+                 "required": ["log_id", "post_performance", "post_mental_state"]
+               }
+             }
+          }
+        },
+        "responses": {
+          "200": { "description": "Post-game log saved" }
+        }
+      }
+    },
+    "/api/logs": {
+      "get": {
+        "tags": ["Athlete"],
+        "summary": "List all game logs",
+        "responses": {
+          "200": {
+            "description": "Array of logs",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/GameLog" } } } } } }
+          }
+        }
+      }
+    },
+    "/api/dashboard": {
+      "get": {
+        "tags": ["Athlete"],
+        "summary": "Get correlation stats",
+        "responses": {
+          "200": { "description": "Dashboard statistics and chart data" }
+        }
+      }
+    },
+    "/api/games": {
+      "post": {
+        "tags": ["Athlete"],
+        "summary": "Schedule a game + set reminder",
+        "requestBody": {
+          "required": true,
+          "content": {
+             "application/json": {
+               "schema": {
+                 "type": "object",
+                 "properties": {
+                   "sport": { "type": "string" },
+                   "scheduled_at": { "type": "string", "format": "date-time" },
+                   "reminder_offset_min": { "type": "integer" }
+                 },
+                 "required": ["sport", "scheduled_at"]
+               }
+             }
+          }
+        },
+        "responses": {
+          "200": { "description": "Game scheduled" }
+        }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "tags": ["Athlete"],
+        "summary": "List pending template notifications",
+        "responses": {
+          "200": { "description": "Pending notifications array" }
+        }
+      }
+    },
+    "/api/notifications/{id}/save": {
+      "post": {
+        "tags": ["Athlete"],
+        "summary": "Save coach template as personal routine",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Template saved" }
+        }
+      }
+    },
+    "/api/notifications/{id}/dismiss": {
+      "post": {
+        "tags": ["Athlete"],
+        "summary": "Dismiss template notification",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Notification dismissed" }
+        }
+      }
+    },
+    "/api/notifications/subscribe": {
+      "post": {
+        "tags": ["Athlete"],
+        "summary": "Register Web Push subscription",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object" } } }
+        },
+        "responses": {
+          "200": { "description": "Subscription saved" }
+        }
+      }
+    },
+    "/api/coach/templates": {
+      "get": {
+        "tags": ["Coach"],
+        "summary": "List coach's templates",
+        "responses": {
+          "200": { "description": "Array of coach templates" }
+        }
+      },
+      "post": {
+        "tags": ["Coach"],
+        "summary": "Create new template",
+        "requestBody": {
+          "required": true,
+          "content": {
+             "application/json": {
+               "schema": {
+                 "type": "object",
+                 "properties": {
+                   "name": { "type": "string" },
+                   "time_tier": { "type": "string", "enum": ["quick","standard","extended"] },
+                   "coach_note": { "type": "string" },
+                   "steps": { "type": "array", "items": { "type": "string", "format": "uuid" } }
+                 },
+                 "required": ["name", "time_tier", "steps"]
+               }
+             }
+          }
+        },
+        "responses": {
+          "200": { "description": "Template created" }
+        }
+      }
+    },
+    "/api/coach/templates/{id}": {
+      "get": {
+        "tags": ["Coach"],
+        "summary": "Get template with steps",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Template data" }
+        }
+      },
+      "delete": {
+        "tags": ["Coach"],
+        "summary": "Delete template",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Template deleted" }
+        }
+      }
+    },
+    "/api/coach/templates/{id}/share": {
+      "post": {
+        "tags": ["Coach"],
+        "summary": "Share template with roster",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Template shared successfully" }
+        }
+      }
+    },
+    "/api/coach/roster": {
+      "get": {
+        "tags": ["Coach"],
+        "summary": "List roster with activation status",
+        "responses": {
+          "200": { "description": "Array of roster athletes" }
+        }
+      }
+    },
+    "/api/coach/roster/invite": {
+      "post": {
+        "tags": ["Coach"],
+        "summary": "Invite athlete to roster",
+        "requestBody": {
+          "required": true,
+          "content": {
+             "application/json": {
+               "schema": {
+                 "type": "object",
+                 "properties": {
+                   "email": { "type": "string", "format": "email" }
+                 },
+                 "required": ["email"]
+               }
+             }
+          }
+        },
+        "responses": {
+          "200": { "description": "Invite sent/added" }
+        }
+      }
+    }
+  }
+}
