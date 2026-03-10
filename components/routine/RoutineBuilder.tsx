@@ -150,18 +150,22 @@ interface InitialRoutine {
 export function RoutineBuilder({
     initialTechniques,
     initialRoutine,
-    currentRoutinesCount = 0,
     defaultSport = 'Unspecified',
     isSportLocked = false,
+    athleteSports,
+    notificationId,
     onSaved
 }: {
     initialTechniques: Technique[];
     initialRoutine?: InitialRoutine;
-    currentRoutinesCount?: number;
     defaultSport?: string;
     isSportLocked?: boolean;
+    athleteSports?: string[];
+    notificationId?: string;
     onSaved?: (routineId: string) => void;
 }) {
+    // Use athlete's enrolled sports if available, otherwise fall back to all sports
+    const sportsForDropdown = athleteSports && athleteSports.length > 0 ? athleteSports : AVAILABLE_SPORTS;
     const router = useRouter()
     const [routineName, setRoutineName] = useState(initialRoutine?.name || '')
     const [sport, setSport] = useState(initialRoutine?.sport || defaultSport)
@@ -222,10 +226,8 @@ export function RoutineBuilder({
     }
 
     const handleSaveRoutine = async () => {
-        if (!initialRoutine && currentRoutinesCount >= 5) {
-            setShowLimitDialog(true);
-            return;
-        }
+        // Only check limit for brand-new routines (not edits)
+        const isEditing = initialRoutine?.id;
 
         if (!routineName.trim()) {
             toast.error('Please enter a name for your routine.')
@@ -242,8 +244,9 @@ export function RoutineBuilder({
 
         setIsSaving(true)
         try {
-            const url = initialRoutine ? `/api/routines/${initialRoutine.id}` : '/api/routines';
-            const method = initialRoutine ? 'PUT' : 'POST';
+            // If editing an existing routine (has id), use PUT; otherwise POST
+            const url = isEditing ? `/api/routines/${initialRoutine!.id}` : '/api/routines';
+            const method = isEditing ? 'PUT' : 'POST';
 
             const response = await fetch(url, {
                 method,
@@ -261,15 +264,29 @@ export function RoutineBuilder({
             const result = await response.json()
 
             if (!response.ok) {
+                // Show the limit dialog if the API reports per-sport limit reached
+                if (result.error?.code === 'LIMIT_REACHED') {
+                    setShowLimitDialog(true);
+                    return;
+                }
                 throw new Error(result.error?.message || 'Failed to save routine')
             }
 
-            toast.success(initialRoutine ? "Routine updated successfully!" : "Routine saved successfully!")
+            // If this was from a coach template notification, mark it as saved
+            if (notificationId) {
+                await fetch(`/api/notifications/${notificationId}/complete`, {
+                    method: 'POST',
+                }).catch(() => {
+                    // Non-critical: notification status update can fail silently
+                });
+            }
+
+            toast.success(isEditing ? "Routine updated successfully!" : "Routine saved successfully!")
 
             if (onSaved) {
                 onSaved(result.data.id);
             } else {
-                router.push('/home') // Redirect to dashboard/home if standalone
+                router.push(`/home?sport=${encodeURIComponent(sport)}`) // Redirect to the sport tab
                 router.refresh()
             }
         } catch (error: unknown) {
@@ -357,14 +374,14 @@ export function RoutineBuilder({
                         <div className="flex-1 w-full max-w-xl flex gap-3">
                             <Input
                                 placeholder="Routine Name (e.g., Final Focus)"
-                                className="text-xl font-bold h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all w-2/3"
+                                className="text-xl font-bold h-14 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 placeholder:font-normal focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-5 transition-all flex-1"
                                 value={routineName}
                                 onChange={(e) => setRoutineName(e.target.value)}
                             />
-                            <div className="w-1/3">
+                            <div className="w-[180px] shrink-0">
                                 {isSportLocked ? (
                                     <div className="h-14 bg-slate-950/30 border border-white/5 text-slate-300 rounded-xl px-4 flex items-center justify-between opacity-80 cursor-not-allowed">
-                                        <span className="truncate">{sport}</span>
+                                        <span className="truncate font-medium">{sport}</span>
                                         <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-white/10 bg-white/5 text-slate-400">Locked</Badge>
                                     </div>
                                 ) : (
@@ -373,7 +390,7 @@ export function RoutineBuilder({
                                             <SelectValue placeholder="Select Sport" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-slate-900 border-white/10">
-                                            {AVAILABLE_SPORTS.map((s) => (
+                                            {sportsForDropdown.map((s) => (
                                                 <SelectItem key={s} value={s} className="text-slate-200 focus:bg-indigo-500/20 focus:text-white cursor-pointer hover:bg-indigo-500/20">
                                                     {s}
                                                 </SelectItem>

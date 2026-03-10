@@ -49,7 +49,7 @@ export function RoutineCompletion({ routineName, sport }: RoutineCompletionProps
                     <Button
                         variant="ghost"
                         className="w-full mt-4 text-slate-400 hover:text-white"
-                        onClick={() => router.push('/home')}
+                        onClick={() => router.push(sport ? `/home?sport=${encodeURIComponent(sport)}` : '/home')}
                     >
                         Back to Home
                     </Button>

@@ -1,7 +1,13 @@
+import { LocalNotificationProvider } from "@/components/shared/LocalNotificationProvider";
+
 export default function AthleteLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <LocalNotificationProvider>
+            {children}
+        </LocalNotificationProvider>
+    );
 }

@@ -7,11 +7,9 @@ import { Bell, Info, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { 
-  subscribeToNotifications, 
-  unsubscribeFromNotifications, 
-  getSubscription 
-} from "@/lib/push-utils";
+// Local notification setup without VAPID
+export const isRemindersEnabled = () => typeof window !== "undefined" && localStorage.getItem("remindersEnabled") === "true";
+export const setRemindersEnabled = (val: boolean) => typeof window !== "undefined" && localStorage.setItem("remindersEnabled", String(val));
 
 export function NotificationSettings() {
   const router = useRouter();
@@ -25,8 +23,7 @@ export function NotificationSettings() {
       try {
         if ("Notification" in window) {
           setPermission(Notification.permission);
-          const sub = await getSubscription();
-          setIsSubscribed(!!sub);
+          setIsSubscribed(isRemindersEnabled() && Notification.permission === "granted");
         }
       } catch (error) {
         console.error("Error checking subscription:", error);
@@ -52,11 +49,11 @@ export function NotificationSettings() {
           }
         }
 
-        await subscribeToNotifications();
+        setRemindersEnabled(true);
         setIsSubscribed(true);
         toast.success("Notifications enabled!");
       } else {
-        await unsubscribeFromNotifications();
+        setRemindersEnabled(false);
         setIsSubscribed(false);
         toast.success("Notifications disabled");
       }
@@ -95,8 +92,8 @@ export function NotificationSettings() {
               Receive a notification on this device before your scheduled games.
             </div>
           </div>
-          <Switch 
-            checked={isSubscribed} 
+          <Switch
+            checked={isSubscribed}
             onCheckedChange={handleToggle}
             disabled={isToggling || isFetching || permission === "denied"}
           />
@@ -116,7 +113,7 @@ export function NotificationSettings() {
         </div>
 
         <div className="pt-2">
-          <Button 
+          <Button
             variant="outline"
             className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
             onClick={() => router.push("/settings")}

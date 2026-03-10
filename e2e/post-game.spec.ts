@@ -39,7 +39,7 @@ test.describe('Post-Game Reflection', () => {
 
         // Submit game
         await page.getByRole('button', { name: 'Schedule Game' }).click();
-        await page.waitForURL('**/home', { timeout: 15000 });
+        await page.waitForURL(/\/home.*/, { timeout: 15000 });
         await page.waitForLoadState('networkidle');
 
         // 2. The Post-Game Log button appears when gamesToday is non-empty
@@ -92,7 +92,7 @@ test.describe('Post-Game Reflection', () => {
         await saveBtn.click();
 
         // Should redirect to home as per PRD FR-05.4
-        await page.waitForURL('**/home', { timeout: 15000 });
+        await page.waitForURL(/\/home.*/, { timeout: 15000 });
 
         // 3. Verify the pending post-game reflection prompt is there
         const completeNowBtn = page.locator('text=Complete Now');

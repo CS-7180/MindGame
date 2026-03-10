@@ -53,8 +53,25 @@ export async function POST(
             );
         }
 
-        // 3. Create notifications for each athlete
-        const notificationsToInsert = roster.map((athlete) => ({
+        // 3. Fetch existing notifications
+        const { data: existingNotifs } = await supabase
+            .from("template_notifications")
+            .select("athlete_id")
+            .eq("template_id", templateId);
+
+        const existingSet = new Set(existingNotifs?.map(n => n.athlete_id) || []);
+
+        // 4. Create notifications for each athlete who doesn't have it
+        const athletesToNotify = roster.filter(r => !existingSet.has(r.athlete_id));
+
+        if (athletesToNotify.length === 0) {
+            return NextResponse.json({
+                data: { success: true, count: 0, sharedCount: roster.length, message: "All athletes already have this template" },
+                error: null
+            });
+        }
+
+        const notificationsToInsert = athletesToNotify.map((athlete) => ({
             athlete_id: athlete.athlete_id,
             coach_id: user.id,
             template_id: templateId,
@@ -72,7 +89,9 @@ export async function POST(
             );
         }
 
-        return NextResponse.json({ data: { success: true, count: roster.length }, error: null });
+        const newSharedCount = existingSet.size + athletesToNotify.length;
+
+        return NextResponse.json({ data: { success: true, count: athletesToNotify.length, sharedCount: newSharedCount }, error: null });
     } catch {
         return NextResponse.json(
             { data: null, error: { message: "Internal server error", code: "INTERNAL_ERROR" } },

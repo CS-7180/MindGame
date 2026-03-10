@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getSportEmoji } from "@/lib/sportEmojis";
 import { Button } from "@/components/ui/button";
 import GameSidebar from '@/components/dashboard/GameSidebar';
 import SportOverview from '@/components/dashboard/SportOverview';
@@ -57,17 +58,10 @@ interface GameLog {
     post_performance: number | null;
 }
 
-const SPORT_EMOJIS: Record<string, string> = {
-    soccer: "⚽", basketball: "🏀", tennis: "🎾", baseball: "⚾",
-    football: "🏈", track: "🏃", swimming: "🏊", volleyball: "🏐",
-    golf: "⛳", hockey: "🏒", cricket: "🏏", rugby: "🏉",
-};
+
 
 const PRESET_SPORTS = ["Soccer", "Basketball", "Tennis", "Baseball", "Football", "Track"];
 
-
-
-const getEmoji = (sport: string) => SPORT_EMOJIS[sport?.toLowerCase()] || "🏆";
 
 interface UpcomingGame {
     id: string;
@@ -196,7 +190,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                     disabled={addingSport}
                                     onClick={() => handleAddSport(s)}
                                 >
-                                    <span className="mr-2 text-lg">{getEmoji(s)}</span>
+                                    <span className="mr-2 text-lg">{getSportEmoji(s)}</span>
                                     {s}
                                 </Button>
                             ))}
@@ -231,9 +225,9 @@ export default function HomeClient({ displayName, routines, sports: initialSport
 
     // ── MAIN DASHBOARD (1+ SPORTS) ──
     return (
-        <div className="min-h-screen bg-slate-950 flex flex-col font-sans text-slate-50 selection:bg-indigo-500/30 overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 flex flex-col font-sans text-slate-50 selection:bg-indigo-500/30">
             {/* Header */}
-            <header className="px-6 py-4 flex items-center justify-between border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+            <header className="px-6 py-4 flex items-center justify-between border-b border-slate-800/60 bg-slate-950/95 backdrop-blur-md fixed top-0 left-0 right-0 z-50">
                 <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.3)]">
                         <Brain className="h-6 w-6 text-white" />
@@ -254,7 +248,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                 : "text-slate-400 hover:text-white hover:bg-slate-800"
                                 }`}
                         >
-                            <span className="mr-2 text-base">{getEmoji(s)}</span>
+                            <span className="mr-2 text-base">{getSportEmoji(s)}</span>
                             {s}
                         </Button>
                     ))}
@@ -294,7 +288,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
             </header>
 
             {/* Main Layout */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 pt-[65px]">
                 {/* Left Panel: Game Sidebar (hidden on small screens, can implement a mobile drawer later) */}
                 <div className="hidden md:block">
                     <GameSidebar
@@ -402,7 +396,7 @@ export default function HomeClient({ displayName, routines, sports: initialSport
                                     disabled={addingSport}
                                     onClick={() => handleAddSport(s)}
                                 >
-                                    <span className="mr-2">{getEmoji(s)}</span>
+                                    <span className="mr-2">{getSportEmoji(s)}</span>
                                     {s}
                                 </Button>
                             ))}

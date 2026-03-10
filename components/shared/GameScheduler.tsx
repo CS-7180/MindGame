@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,18 @@ const formSchema = z.object({
   game_date: z.string().min(1, { message: "Date is required." }),
   game_time: z.string().min(1, { message: "Time is required." }),
   reminder_offset_mins: z.string(),
+}).superRefine((data, ctx) => {
+  if (data.game_date && data.game_time) {
+    const gameDateTime = new Date(`${data.game_date}T${data.game_time}`);
+    const now = new Date();
+    if (gameDateTime < now) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Game cannot be in the past.",
+        path: ["game_time"],
+      });
+    }
+  }
 });
 
 interface GameSchedulerProps {
@@ -77,7 +89,7 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
 
       toast.success("Game scheduled successfully!");
       router.refresh();
-      router.push("/home");
+      router.push(`/home?sport=${encodeURIComponent(form.getValues("sport"))}`);
     } catch (error) {
       console.error(error);
       toast.error("An error occurred. Please try again.");
@@ -143,7 +155,7 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
                     <FormLabel className="text-slate-300">Date</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Input type="date" className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
+                        <Input type="date" min={format(new Date(), "yyyy-MM-dd")} className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -154,17 +166,27 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
               <FormField
                 control={form.control}
                 name="game_time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-slate-300">Time</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input type="time" className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const selectedDate = form.watch("game_date");
+                  const isToday = selectedDate === format(new Date(), "yyyy-MM-dd");
+                  const currentTime = format(new Date(), "HH:mm");
+                  return (
+                    <FormItem>
+                      <FormLabel className="text-slate-300">Time</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input type="time" min={isToday ? currentTime : undefined} className="bg-slate-950/50 border-slate-800 text-white text-sm" {...field} />
+                        </div>
+                      </FormControl>
+                      {isToday && field.value && field.value < currentTime && (
+                        <p className="text-xs text-amber-400 flex items-center gap-1 mt-1">
+                          <AlertTriangle className="w-3 h-3" /> This time has already passed today.
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 
@@ -201,7 +223,7 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
                 type="button"
                 variant="outline"
                 className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white py-6 rounded-xl"
-                onClick={() => router.push("/home")}
+                onClick={() => router.push(`/home?sport=${encodeURIComponent(form.getValues("sport"))}`)}
                 disabled={loading}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />

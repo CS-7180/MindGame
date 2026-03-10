@@ -155,7 +155,7 @@ export function RoutineExecution({ routine, sport }: RoutineExecutionProps) {
         }
 
         return (
-            <div className="min-h-screen bg-slate-950 flex flex-col text-white items-center justify-center p-6 relative overflow-hidden">
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 flex flex-col text-white items-center justify-center p-6 relative overflow-hidden">
                 <div className="absolute inset-0 blur-[150px] opacity-20 transition-colors duration-1000 -z-10 rounded-full bg-indigo-600" />
 
                 <div className="max-w-2xl w-full bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-3xl p-8 sm:p-12 text-center space-y-8 shadow-2xl animate-in fade-in zoom-in-95 duration-500">
@@ -191,7 +191,7 @@ export function RoutineExecution({ routine, sport }: RoutineExecutionProps) {
     const isLastStep = currentStepIndex === totalSteps - 1
 
     return (
-        <div className="min-h-screen bg-slate-950 flex flex-col text-white">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 flex flex-col text-white">
             {/* Exit Confirmation Banner */}
             {showExitConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -209,7 +209,7 @@ export function RoutineExecution({ routine, sport }: RoutineExecutionProps) {
                             </Button>
                             <Button
                                 className="flex-1 bg-rose-600 hover:bg-rose-500 text-white"
-                                onClick={() => router.push('/home')}
+                                onClick={() => router.push(sport ? `/home?sport=${encodeURIComponent(sport)}` : '/home')}
                             >
                                 Exit
                             </Button>

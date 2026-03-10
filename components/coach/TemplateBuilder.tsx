@@ -34,7 +34,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Clock, GripVertical, Plus, Trash2, Save, ArrowLeft, BookOpen, UserCheck } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { Technique } from '@/types'
 
 // Local state representation of a step before saving
@@ -155,15 +155,15 @@ export function TemplateBuilder({ initialTechniques }: { initialTechniques: Tech
 
     const handleSaveTemplate = async () => {
         if (!templateName.trim()) {
-            toast({ title: "Error", description: 'Please enter a name for your template.', variant: "destructive" })
+            toast.error('Please enter a name for your template.')
             return
         }
         if (steps.length === 0) {
-            toast({ title: "Error", description: 'Please add at least one technique to your template.', variant: "destructive" })
+            toast.error('Please add at least one technique to your template.')
             return
         }
         if (coachNote.length > 300) {
-            toast({ title: "Error", description: 'Coach note must be under 300 characters.', variant: "destructive" })
+            toast.error('Coach note must be under 300 characters.')
             return
         }
 
@@ -189,11 +189,11 @@ export function TemplateBuilder({ initialTechniques }: { initialTechniques: Tech
                 throw new Error(result.error?.message || 'Failed to save template')
             }
 
-            toast({ title: "Success", description: "Template saved successfully!" })
+            toast.success("Template saved successfully!")
             router.push('/coach/templates') // Redirect to templates list
             router.refresh()
         } catch (error: unknown) {
-            toast({ title: "Error", description: (error as Error).message || "Unknown error", variant: "destructive" })
+            toast.error((error as Error).message || "Unknown error")
         } finally {
             setIsSaving(false)
         }

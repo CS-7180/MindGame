@@ -46,7 +46,7 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
     };
 
     return (
-        <aside className="w-72 h-[calc(100vh-65px)] border-r border-slate-800/60 bg-slate-950/50 flex flex-col overflow-hidden">
+        <aside className="w-72 h-[calc(100vh-65px)] sticky top-[65px] border-r border-slate-800/60 bg-slate-950 flex flex-col overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-slate-800/40">
                 <div className="flex items-center justify-between mb-3">

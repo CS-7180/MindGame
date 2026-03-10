@@ -7,6 +7,8 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
     const searchParams = await props.searchParams;
     const initialSport = searchParams.sport as string | undefined;
     const editId = searchParams.edit as string | undefined;
+    const fromTemplateId = searchParams.fromTemplate as string | undefined;
+    const notificationId = searchParams.notificationId as string | undefined;
 
     const supabase = await createClient()
 
@@ -22,19 +24,31 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
         .order('category')
         .order('name')
 
-    const { count: currentRoutinesCount, error: countError } = await supabase
-        .from('routines')
-        .select('*', { count: 'exact', head: true })
-        .eq('athlete_id', user.id)
-        .eq('is_template', false)
 
     const { data: athleteProfile } = await supabase
         .from('athlete_profiles')
-        .select('sport')
+        .select('sport, sports')
         .eq('athlete_id', user.id)
         .single()
 
+    // Build the list of athlete's enrolled sports by merging profile + routine sports (same as dashboard)
+    const profileSports: string[] = athleteProfile?.sports && athleteProfile.sports.length > 0
+        ? athleteProfile.sports
+        : athleteProfile?.sport
+            ? [athleteProfile.sport]
+            : [];
+    const { data: routineRows } = await supabase
+        .from('routines')
+        .select('sport')
+        .eq('athlete_id', user.id)
+        .eq('is_template', false);
+    const routineSports = (routineRows || []).map((r: { sport: string }) => r.sport).filter(Boolean);
+    const athleteSports = Array.from(new Set([...profileSports, ...routineSports]));
+
     let editingRoutine = undefined;
+    let templateRoutine = undefined;
+
+    // Handle editing an existing routine
     if (editId) {
         const { data: fetchRoutine } = await supabase
             .from('routines')
@@ -55,11 +69,38 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
         }
     }
 
-    const defaultSport = initialSport || athleteProfile?.sport || editingRoutine?.sport || 'Unspecified';
+    // Handle loading a coach template (from "Customize & Save" action)
+    if (fromTemplateId) {
+        const { data: coachTemplate } = await supabase
+            .from('coach_templates')
+            .select(`
+                *,
+                steps:coach_template_steps(
+                    *,
+                    technique:techniques(*)
+                )
+            `)
+            .eq('id', fromTemplateId)
+            .single();
 
-    const isSportLocked = !!initialSport;
+        if (coachTemplate) {
+            // Convert coach template format to the builder's InitialRoutine format
+            templateRoutine = {
+                name: coachTemplate.name,
+                sport: initialSport || athleteSports[0] || 'Unspecified',
+                routine_steps: coachTemplate.steps.map((s: { step_order: number; technique: Technique }) => ({
+                    step_order: s.step_order,
+                    technique: s.technique,
+                })),
+            };
+        }
+    }
 
-    if (error || !techniques || countError !== null) {
+    const defaultSport = initialSport || athleteProfile?.sport || editingRoutine?.sport || templateRoutine?.sport || 'Unspecified';
+
+    const isSportLocked = !!initialSport && !fromTemplateId;
+
+    if (error || !techniques) {
         return (
             <div className="container mx-auto py-8 text-center text-red-500">
                 Failed to load data. Please try again later.
@@ -80,10 +121,11 @@ export default async function RoutineBuilderPage(props: { searchParams: Promise<
                 </div>
                 <RoutineBuilder
                     initialTechniques={techniques as Technique[]}
-                    initialRoutine={editingRoutine}
-                    currentRoutinesCount={currentRoutinesCount || 0}
+                    initialRoutine={editingRoutine || templateRoutine}
                     defaultSport={defaultSport}
                     isSportLocked={isSportLocked}
+                    athleteSports={athleteSports}
+                    notificationId={notificationId}
                 />
             </div>
         </div>
