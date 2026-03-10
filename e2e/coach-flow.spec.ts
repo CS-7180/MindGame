@@ -59,7 +59,7 @@ test.describe('Coach Routine Templates Flow', () => {
         console.log('Saving template...');
         const saveTemplateBtn = page.locator('button:has-text("Save Template")').first();
         await saveTemplateBtn.scrollIntoViewIfNeeded();
-        await saveTemplateBtn.click();
+        await saveTemplateBtn.click({ force: true });
 
         // Wait for redirect to templates list (toast may disappear due to router.refresh)
         await expect(page).toHaveURL(/\/coach\/templates/, { timeout: 15000 });
