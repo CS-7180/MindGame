@@ -1,6 +1,7 @@
 # MindGame
 
-**Live Application:** [https://mind-game-app.vercel.app/](https://mind-game-app.vercel.app/)
+**Live Application:** [https://mind-game-app.vercel.app/](https://mind-game-app.vercel.app/)  
+**API Documentation:** [https://mind-game-app.vercel.app/api-docs](https://mind-game-app.vercel.app/api-docs)
 
 **MindGame** is a full-stack web application designed to help athletes build and execute personalized pre-game mental routines. By leveraging techniques like visualization, guided breathing, and affirmations, MindGame empowers athletes to close the practice-to-match performance gap and achieve peak mental states on game day.
 
