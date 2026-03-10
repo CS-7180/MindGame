@@ -177,7 +177,7 @@ export function TemplateListClient({ initialTemplates, rosterCount }: { initialT
                             <Button
                                 className={`flex-1 shadow-md border-none ${allShared ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white'}`}
                                 onClick={() => handleShare(template.id, template.name)}
-                                disabled={isSharing === template.id || allShared || !hasRoster}
+                                disabled={isSharing === template.id || allShared}
                             >
                                 {isSharing === template.id ? (
                                     <>Sharing...</>

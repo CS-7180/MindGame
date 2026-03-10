@@ -56,7 +56,7 @@ test.describe('Guided Routine Execution Flow', () => {
         await page.getByRole('button', { name: 'Schedule Game' }).click();
 
         // Wait for redirect back to home
-        await page.waitForURL('**/home', { timeout: 15000 });
+        await page.waitForURL(/\/home.*/, { timeout: 15000 });
 
         // 0.7. Ensure a routine is active
         // After onboarding + saving a recommended routine, it should already be active.

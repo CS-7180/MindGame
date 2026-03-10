@@ -57,7 +57,7 @@ test.describe('Coach Routine Templates Flow', () => {
 
         // 6. Save Template
         console.log('Saving template...');
-        const saveTemplateBtn = page.getByRole('button', { name: /save template/i });
+        const saveTemplateBtn = page.locator('button:has-text("Save Template")').first();
         await saveTemplateBtn.scrollIntoViewIfNeeded();
         await saveTemplateBtn.click();
 
