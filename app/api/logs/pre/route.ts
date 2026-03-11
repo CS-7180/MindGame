@@ -4,6 +4,7 @@ import { z } from "zod";
 
 const preGameLogSchema = z.object({
     log_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+    game_id: z.string().uuid("Invalid game ID").optional().nullable(),
     routine_completed: z.enum(["yes", "partial", "no"]),
     pre_anxiety_level: z.number().int().min(1).max(5),
     pre_confidence_level: z.number().int().min(1).max(5),
@@ -36,10 +37,11 @@ export async function POST(request: Request) {
         }
 
         // Destructure validated data
-        const { log_date, sport, routine_completed, pre_anxiety_level, pre_confidence_level, pre_notes } = parsed.data;
+        const { log_date, game_id, sport, routine_completed, pre_anxiety_level, pre_confidence_level, pre_notes } = parsed.data;
 
         console.log("Saving pre-game log:", {
             athlete_id: user.id,
+            game_id: game_id || null,
             sport: sport,
             routine_completed: routine_completed,
             pre_anxiety_level: pre_anxiety_level,
@@ -53,6 +55,7 @@ export async function POST(request: Request) {
             .from("game_logs")
             .insert({
                 athlete_id: user.id,
+                game_id: game_id || null,
                 log_date: log_date,
                 sport: sport,
                 routine_completed: routine_completed,

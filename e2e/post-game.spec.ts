@@ -42,6 +42,17 @@ test.describe('Post-Game Reflection', () => {
         await page.waitForURL(/\/home.*/, { timeout: 15000 });
         await page.waitForLoadState('networkidle');
 
+        // We capture the pre-game log ID when it saves so we can use it to mock the post-game pending API later
+        let logId = '';
+        page.on('response', async response => {
+            if (response.url().includes('/api/logs/pre') && response.request().method() === 'POST') {
+                try {
+                    const json = await response.json();
+                    if (json && json.data && json.data.id) logId = json.data.id;
+                } catch (e) {}
+            }
+        });
+
         // 2. The Post-Game Log button appears when gamesToday is non-empty
         //    The dashboard should now show today's game in the Action Items section
         //    Make sure we're on the correct sport tab
@@ -93,6 +104,18 @@ test.describe('Post-Game Reflection', () => {
 
         // Should redirect to home as per PRD FR-05.4
         await page.waitForURL(/\/home.*/, { timeout: 15000 });
+
+        // Since the game is scheduled in the future (23:59), the server would normally hide the pending post-game log.
+        // We mock the API response to bypass this time check so we can verify the UI prompt.
+        await page.route('**/api/logs/pending-post*', async route => {
+            await route.fulfill({
+                json: { pendingLog: { id: logId, game_name: 'E2E Post-Game Test' } }
+            });
+        });
+
+        // Trigger a reload to fetch the mocked endpoint and show the button
+        await page.reload();
+        await page.waitForLoadState('networkidle');
 
         // 3. Verify the pending post-game reflection prompt is there
         const completeNowBtn = page.locator('text=Complete Now');

@@ -189,27 +189,6 @@ export default function SettingsPage() {
 
                     <Card className="border-red-900/30 bg-red-950/10 backdrop-blur-sm overflow-hidden">
                         <CardContent className="p-5 space-y-4">
-                            {/* Delete Individual Entries */}
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-white">Delete Log Entries</p>
-                                    <p className="text-xs text-slate-400 mt-0.5">
-                                        Remove individual game log entries from your history
-                                    </p>
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-600 shrink-0 ml-4"
-                                    onClick={() => router.push("/log/pre")}
-                                    data-testid="delete-entries-link"
-                                >
-                                    View History
-                                </Button>
-                            </div>
-
-                            <Separator className="bg-red-900/20" />
-
                             {/* Delete Account */}
                             <div className="flex items-center justify-between">
                                 <div>
