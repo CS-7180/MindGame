@@ -30,9 +30,16 @@ export default function GameInsights({ game, gameLogs }: GameInsightsProps) {
     // Find the log specifically for this game
     // Prefer exact game_id matching if available, else date/sport fallback 
     const gameLog = useMemo(() => {
+        // 1. Try exact match first
         const exactMatch = gameLogs.find(l => l.game_id === game.id);
         if (exactMatch) return exactMatch;
-        return gameLogs.find(l => l.log_date === game.game_date && l.sport === game.sport);
+        
+        // 2. Fallback for legacy logs (only match if the log doesn't belong to another game)
+        return gameLogs.find(l => 
+            !l.game_id && 
+            l.log_date === game.game_date && 
+            l.sport === game.sport
+        );
     }, [gameLogs, game]);
 
     // Format adherence

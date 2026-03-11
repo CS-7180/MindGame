@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 async function getTemplates() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
