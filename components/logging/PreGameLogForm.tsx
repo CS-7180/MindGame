@@ -60,7 +60,7 @@ const CONFIDENCE_LABELS: Record<number, string> = {
     5: "Very high",
 };
 
-export function PreGameLogForm({ sport }: { sport?: string | null }) {
+export function PreGameLogForm({ sport, gameId }: { sport?: string | null; gameId?: string }) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -79,13 +79,19 @@ export function PreGameLogForm({ sport }: { sport?: string | null }) {
     const onSubmit = async (values: PreGameLogFormValues) => {
         setIsSubmitting(true);
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const bodyPayload: Record<string, any> = {
+                ...values,
+                log_date: format(new Date(), "yyyy-MM-dd"),
+            };
+            if (gameId) {
+                bodyPayload.game_id = gameId;
+            }
+
             const res = await fetch("/api/logs/pre", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...values,
-                    log_date: format(new Date(), "yyyy-MM-dd"),
-                }),
+                body: JSON.stringify(bodyPayload),
             });
 
             const json = await res.json();

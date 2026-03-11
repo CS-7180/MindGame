@@ -287,10 +287,11 @@ export default function GameDetail({ gameId, sport, upcomingGames, pastGames, ro
                         <Button
                             variant="outline"
                             className="w-full border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white h-11"
-                            onClick={() => router.push(`/log/pre?sport=${encodeURIComponent(sport)}`)}
+                            onClick={() => router.push(`/log/pre?sport=${encodeURIComponent(sport)}&gameId=${game.id}`)}
+                            disabled={isPostGameUnlocked}
                         >
                             <Brain className="h-5 w-5 mr-2" />
-                            Fill Pre-Game Log
+                            {isPostGameUnlocked ? "Pre-Game Log Locked" : "Fill Pre-Game Log"}
                         </Button>
                     </CardContent>
                 </Card>
@@ -317,22 +318,22 @@ export default function GameDetail({ gameId, sport, upcomingGames, pastGames, ro
                             </CardContent>
                         </Card>
                     ) : (
-                        <Card className="border-emerald-500/30 bg-emerald-500/5">
+                        <Card className="border-red-500/30 bg-red-500/5">
                             <CardContent className="p-5">
                                 <div className="flex items-start gap-3 mb-4">
-                                    <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                                    <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
                                     <div>
-                                        <p className="text-sm text-white font-medium">Game time has passed</p>
-                                        <p className="text-xs text-slate-400 mt-0.5">Log a pre-game entry first to unlock post-game reflection.</p>
+                                        <p className="text-sm text-red-400 font-medium">Missed Pre-Game Log</p>
+                                        <p className="text-xs text-slate-400 mt-0.5">Since the game time has passed and you missed the pre-game log, you cannot fill out a post-game reflection.</p>
                                     </div>
                                 </div>
                                 <Button
                                     variant="outline"
-                                    className="w-full border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white h-11"
-                                    onClick={() => router.push(`/log/pre?sport=${encodeURIComponent(sport)}`)}
+                                    disabled
+                                    className="w-full border-slate-700 text-slate-500 bg-slate-800/50 h-11"
                                 >
-                                    <Brain className="h-5 w-5 mr-2" />
-                                    Log Pre-Game Entry First
+                                    <Lock className="h-4 w-4 mr-2" />
+                                    Post-Game Reflection Locked
                                 </Button>
                             </CardContent>
                         </Card>
@@ -353,10 +354,7 @@ export default function GameDetail({ gameId, sport, upcomingGames, pastGames, ro
             </div>
 
             {/* ── Game Insights Section ── */}
-            <div className="space-y-3">
-                <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Game Insights</h2>
-                <GameInsights sport={sport} gameLogs={gameLogs} />
-            </div>
+            <GameInsights game={game} gameLogs={gameLogs} />
         </div>
     );
 }

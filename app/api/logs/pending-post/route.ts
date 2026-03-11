@@ -47,17 +47,55 @@ export async function GET(request: Request) {
             query = query.eq('sport', sport);
         }
 
-        const { data, error } = await query
+        const { data: logData, error: logError } = await query
             .order('created_at', { ascending: false })
             .limit(1)
             .single();
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 means zero rows returned from single()
-            console.error('Error fetching pending post logs:', error);
+        if (logError && logError.code !== 'PGRST116') {
+            console.error('Error fetching pending post logs:', logError);
             return NextResponse.json({ error: 'Database error' }, { status: 500 });
         }
 
-        return NextResponse.json({ pendingLog: data || null });
+        if (!logData) {
+            return NextResponse.json({ pendingLog: null });
+        }
+
+        // Now find the game for this sport and date to check if game_time has passed
+        const { data: gameData, error: gameError } = await supabase
+            .from('games')
+            .select('game_name, game_time')
+            .eq('athlete_id', session.user.id)
+            .eq('sport', logData.sport)
+            .eq('game_date', today)
+            .order('game_time', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (gameError && gameError.code !== 'PGRST116') {
+            console.error('Error fetching game for log:', gameError);
+        }
+
+        if (gameData) {
+            // Check if game time has passed
+            const gameDateTime = new Date(`${today}T${gameData.game_time}`);
+            const now = new Date();
+            
+            if (now.getTime() < gameDateTime.getTime()) {
+                // Game hasn't happened yet, so don't show pending post-game log
+                return NextResponse.json({ pendingLog: null });
+            }
+
+            return NextResponse.json({ 
+                pendingLog: {
+                    ...logData,
+                    game_name: gameData.game_name
+                }
+            });
+        }
+
+        // If no game found but log exists (fallback)
+        return NextResponse.json({ pendingLog: logData });
     } catch (error) {
         console.error('Unexpected error in GET /api/logs/pending-post:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -108,7 +108,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
     const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [settingActiveId, setSettingActiveId] = useState<string | null>(null);
-    const [pendingPostLogId, setPendingPostLogId] = useState<string | null>(null);
+    const [pendingPostLog, setPendingPostLog] = useState<{id: string, game_name?: string} | null>(null);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
     const [showBuilder, setShowBuilder] = useState(false);
@@ -122,7 +122,15 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
     const sportGames = upcomingGames.filter(g => g.sport === selectedSport);
 
     // Combine past games and recent logs to form the recent games list
-    const combinedPastGames = [...pastGames].filter(g => g.sport === selectedSport).sort((a, b) => new Date(`${b.game_date}T${b.game_time}`).getTime() - new Date(`${a.game_date}T${a.game_time}`).getTime());
+    const nowForCombine = new Date();
+    const isCompleted = (g: UpcomingGame) => {
+        const gameDateTime = new Date(`${g.game_date}T${g.game_time}`);
+        return nowForCombine.getTime() >= gameDateTime.getTime();
+    };
+    
+    // Past games + any games scheduled for today that have already passed
+    const completedGamesToday = sportGames.filter(isCompleted);
+    const combinedPastGames = [...pastGames.filter(g => g.sport === selectedSport), ...completedGamesToday].sort((a, b) => new Date(`${b.game_date}T${b.game_time}`).getTime() - new Date(`${a.game_date}T${a.game_time}`).getTime());
 
     const theme = getTheme(selectedSport);
 
@@ -133,7 +141,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                 const res = await fetch(`/api/logs/pending-post?sport=${encodeURIComponent(selectedSport)}`);
                 if (res.ok) {
                     const data = await res.json();
-                    setPendingPostLogId(data.pendingLog?.id || null);
+                    setPendingPostLog(data.pendingLog || null);
                 }
             } catch (err) {
                 console.error("Failed to check pending posts:", err);
@@ -285,15 +293,15 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                             <SharedTemplateNotifications notifications={notifications} currentSport={selectedSport} />
                         )}
 
-                        {pendingPostLogId && (
+                        {pendingPostLog && (
                             <Card className="bg-amber-500/10 border-amber-500/30">
                                 <CardContent className="p-4">
                                     <div className="flex items-start gap-3">
                                         <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                                         <div>
                                             <p className="text-sm font-medium text-amber-100">Pending Post-Game Log</p>
-                                            <p className="text-xs text-amber-200/70 mt-1 mb-3">Reflect on your recent performance.</p>
-                                            <Button size="sm" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold" onClick={() => router.push(`/post-game/${pendingPostLogId}`)}>
+                                            <p className="text-xs text-amber-200/70 mt-1 mb-3">Reflect on your recent performance{pendingPostLog.game_name ? ` for ${pendingPostLog.game_name}` : ''}.</p>
+                                            <Button size="sm" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold" onClick={() => router.push(`/post-game/${pendingPostLog.id}`)}>
                                                 Complete Now
                                             </Button>
                                         </div>
@@ -302,49 +310,61 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                             </Card>
                         )}
 
-                        {gamesToday.map(game => (
-                            <Card key={game.id} className="bg-indigo-500/10 border-indigo-500/30">
-                                <CardContent className="p-4">
-                                    <div className="flex items-start gap-3">
-                                        <Calendar className="h-5 w-5 text-indigo-400 shrink-0 mt-0.5" />
-                                        <div className="w-full">
-                                            <p className="text-sm font-medium text-white">Game Today: {game.game_name}</p>
-                                            <p className="text-xs text-indigo-200/70 mt-1 mb-3">at {game.game_time.substring(0, 5)}</p>
-                                            <div className="flex gap-2">
-                                                <Button size="sm" variant="outline" className="flex-1 bg-slate-900 border-indigo-500/50 text-indigo-300 hover:bg-indigo-500/20 hover:text-white" onClick={() => router.push(`/log/pre?sport=${encodeURIComponent(selectedSport)}`)}>
-                                                    Pre-Game Log
+                        {(() => {
+                            const actionableGames = gamesToday.filter(game => {
+                                const gameDateTime = new Date(`${game.game_date}T${game.game_time}`);
+                                const nowDate = new Date();
+                                return nowDate.getTime() < gameDateTime.getTime();
+                            });
+
+                            return (
+                                <>
+                                    {actionableGames.map(game => (
+                                        <Card key={game.id} className="bg-indigo-500/10 border-indigo-500/30">
+                                            <CardContent className="p-4">
+                                                <div className="flex items-start gap-3">
+                                                    <Calendar className="h-5 w-5 text-indigo-400 shrink-0 mt-0.5" />
+                                                    <div className="w-full">
+                                                        <p className="text-sm font-medium text-white">Game Today: {game.game_name}</p>
+                                                        <p className="text-xs text-indigo-200/70 mt-1 mb-3">at {game.game_time.substring(0, 5)}</p>
+                                                        <div className="flex gap-2">
+                                                            <Button size="sm" variant="outline" className="flex-1 bg-slate-900 border-indigo-500/50 text-indigo-300 hover:bg-indigo-500/20 hover:text-white" onClick={() => router.push(`/log/pre?sport=${encodeURIComponent(selectedSport)}&gameId=${game.id}`)}>
+                                                                Pre-Game Log
+                                                            </Button>
+                                                            {activeRoutine && (
+                                                                <Button size="sm" className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white" onClick={() => router.push(`/routine/execute/${activeRoutine.id}`)}>
+                                                                    Routine <Play className="h-3 w-3 ml-1 fill-current" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+
+                                    {!activeRoutine && (
+                                        <Card className="bg-slate-900 border-slate-800 border-dashed">
+                                            <CardContent className="p-4 flex flex-col items-center text-center">
+                                                <Brain className="h-8 w-8 text-slate-500 mb-2" />
+                                                <p className="text-sm font-medium text-white">No Active Routine</p>
+                                                <p className="text-xs text-slate-400 mt-1 mb-4">Build a routine to prep for games.</p>
+                                                <Button size="sm" variant="secondary" className="w-full" onClick={() => { setShowTemplateLibrary(false); setIsCreateDialogOpen(true); }}>
+                                                    <Plus className="h-4 w-4 mr-1" /> Create Routine
                                                 </Button>
-                                                {activeRoutine && (
-                                                    <Button size="sm" className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white" onClick={() => router.push(`/routine/execute/${activeRoutine.id}`)}>
-                                                        Routine <Play className="h-3 w-3 ml-1 fill-current" />
-                                                    </Button>
-                                                )}
-                                            </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {!pendingPostLog && actionableGames.length === 0 && activeRoutine && (
+                                        <div className="text-center p-6 border border-slate-800 rounded-xl bg-slate-900/50">
+                                            <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto mb-2 opacity-50" />
+                                            <p className="text-sm text-slate-400">You&apos;re all caught up!</p>
                                         </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-
-                        {!activeRoutine && (
-                            <Card className="bg-slate-900 border-slate-800 border-dashed">
-                                <CardContent className="p-4 flex flex-col items-center text-center">
-                                    <Brain className="h-8 w-8 text-slate-500 mb-2" />
-                                    <p className="text-sm font-medium text-white">No Active Routine</p>
-                                    <p className="text-xs text-slate-400 mt-1 mb-4">Build a routine to prep for games.</p>
-                                    <Button size="sm" variant="secondary" className="w-full" onClick={() => { setShowTemplateLibrary(false); setIsCreateDialogOpen(true); }}>
-                                        <Plus className="h-4 w-4 mr-1" /> Create Routine
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {!pendingPostLogId && gamesToday.length === 0 && activeRoutine && (
-                            <div className="text-center p-6 border border-slate-800 rounded-xl bg-slate-900/50">
-                                <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto mb-2 opacity-50" />
-                                <p className="text-sm text-slate-400">You&apos;re all caught up!</p>
-                            </div>
-                        )}
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
                 </div>
             </div>
@@ -457,7 +477,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                             })
                         ) : (
                             <div className="rounded-xl border border-dashed border-slate-700 p-8 text-center bg-slate-900/40">
-                                <p className="text-slate-400 text-sm mb-3">No recent games found.</p>
+                                <p className="text-slate-400 text-sm mb-3">No recent games found. Your scheduled games will appear here once they are completed.</p>
                                 <Button size="sm" variant="outline" className="border-slate-700" onClick={() => router.push(`/games/new?sport=${encodeURIComponent(selectedSport)}`)}>
                                     Schedule Game
                                 </Button>
