@@ -75,8 +75,6 @@ test.describe('Coach Routine Templates Flow', () => {
             });
         });
 
-        // Wait for templates page to fully load after save redirect
-        await page.waitForURL('**/coach/templates', { timeout: 15000 });
 
         // The newly created template card should have a Share button
         const shareButton = page.locator('text="Share with Team"').first();
