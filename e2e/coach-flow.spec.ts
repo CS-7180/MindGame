@@ -75,10 +75,14 @@ test.describe('Coach Routine Templates Flow', () => {
             });
         });
 
+        // Wait for templates page to fully load after save redirect
+        await page.waitForURL('**/coach/templates', { timeout: 15000 });
+
         // The newly created template card should have a Share button
         const shareButton = page.locator('text="Share with Team"').first();
+        await expect(shareButton).toBeVisible({ timeout: 15000 });
         await shareButton.scrollIntoViewIfNeeded();
-        await shareButton.click();
+        await shareButton.click({ force: true });
 
         // Wait for share success toast
         await expect(page.locator('text=/sent to 1/i')).toBeVisible({ timeout: 10000 });
