@@ -164,6 +164,14 @@ export default function GameDetail({ gameId, sport, upcomingGames, pastGames, ro
         return () => clearInterval(interval);
     }, [game]);
 
+    const formatTime = (timeStr: string) => {
+        if (!timeStr) return '';
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours}:${String(minutes).padStart(2, '0')} ${ampm}`;
+    };
+
     if (!game) {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -240,7 +248,7 @@ export default function GameDetail({ gameId, sport, upcomingGames, pastGames, ro
                                     </span>
                                     <span className="flex items-center gap-1.5">
                                         <Clock className="h-4 w-4" />
-                                        {game.game_time.substring(0, 5)}
+                                        {formatTime(game.game_time)}
                                     </span>
                                 </div>
                             </div>
