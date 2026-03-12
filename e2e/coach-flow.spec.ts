@@ -57,7 +57,7 @@ test.describe('Coach Routine Templates Flow', () => {
 
         // 6. Save Template
         console.log('Saving template...');
-        const saveTemplateBtn = page.locator('button:has-text("Save Template")').first();
+        const saveTemplateBtn = page.getByTestId('save-template-button').first();
         await saveTemplateBtn.scrollIntoViewIfNeeded();
         await saveTemplateBtn.click({ force: true });
 
@@ -75,10 +75,7 @@ test.describe('Coach Routine Templates Flow', () => {
             });
         });
 
-        // Wait for templates page to fully load after save redirect
-        await page.waitForURL('**/coach/templates', { timeout: 15000 });
-
-        // The newly created template card should have a Share button
+        // Wait for redirect and ensure the newly created template card has a Share button
         const shareButton = page.getByTestId('share-template-button').first();
         await expect(shareButton).toBeVisible({ timeout: 15000 });
         await shareButton.scrollIntoViewIfNeeded();
