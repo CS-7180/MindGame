@@ -1,0 +1,204 @@
+[dotenv@17.3.1] injecting env (6) from .env.local -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+{
+  "config": {
+    "configFile": "C:\\Users\\VGoli\\OneDrive - Blue Moon Industries, Incorporated\\Documents\\CS7180\\Project 2\\MindGame\\playwright.config.ts",
+    "rootDir": "C:/Users/VGoli/OneDrive - Blue Moon Industries, Incorporated/Documents/CS7180/Project 2/MindGame/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/VGoli/OneDrive - Blue Moon Industries, Incorporated/Documents/CS7180/Project 2/MindGame/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/VGoli/OneDrive - Blue Moon Industries, Incorporated/Documents/CS7180/Project 2/MindGame/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 8,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "coach-flow.spec.ts",
+      "file": "coach-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Coach Routine Templates Flow",
+          "file": "coach-flow.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should allow a coach to create a template and share it",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6921,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: [data-testid=\"template-card\"], text=/No templates yet/i >> nth=0\nExpected: visible\nError: Unexpected token \"=\" while parsing css selector \"[data-testid=\"template-card\"], text=/No templates yet/i\". Did you mean to CSS.escape it?\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for [data-testid=\"template-card\"], text=/No templates yet/i >> nth=0\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: [data-testid=\"template-card\"], text=/No templates yet/i >> nth=0\nExpected: visible\nError: Unexpected token \"=\" while parsing css selector \"[data-testid=\"template-card\"], text=/No templates yet/i\". Did you mean to CSS.escape it?\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for [data-testid=\"template-card\"], text=/No templates yet/i >> nth=0\u001b[22m\n\n    at C:\\Users\\VGoli\\OneDrive - Blue Moon Industries, Incorporated\\Documents\\CS7180\\Project 2\\MindGame\\e2e\\coach-flow.spec.ts:69:103",
+                        "location": {
+                          "file": "C:\\Users\\VGoli\\OneDrive - Blue Moon Industries, Incorporated\\Documents\\CS7180\\Project 2\\MindGame\\e2e\\coach-flow.spec.ts",
+                          "column": 103,
+                          "line": 69
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 67 |\u001b[39m         \n \u001b[90m 68 |\u001b[39m         \u001b[90m// Wait for the template list to be populated (either a template card or the empty state)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 69 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"template-card\"], text=/No templates yet/i'\u001b[39m)\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m15000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 70 |\u001b[39m         console\u001b[33m.\u001b[39mlog(\u001b[32m'Template saved and list rendered.'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m\n \u001b[90m 72 |\u001b[39m         \u001b[90m// 7. Share with Team\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\VGoli\\OneDrive - Blue Moon Industries, Incorporated\\Documents\\CS7180\\Project 2\\MindGame\\e2e\\coach-flow.spec.ts",
+                            "column": 103,
+                            "line": 69
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: [data-testid=\"template-card\"], text=/No templates yet/i >> nth=0\nExpected: visible\nError: Unexpected token \"=\" while parsing css selector \"[data-testid=\"template-card\"], text=/No templates yet/i\". Did you mean to CSS.escape it?\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for [data-testid=\"template-card\"], text=/No templates yet/i >> nth=0\u001b[22m\n\n\n  67 |         \n  68 |         // Wait for the template list to be populated (either a template card or the empty state)\n> 69 |         await expect(page.locator('[data-testid=\"template-card\"], text=/No templates yet/i').first()).toBeVisible({ timeout: 15000 });\n     |                                                                                                       ^\n  70 |         console.log('Template saved and list rendered.');\n  71 |\n  72 |         // 7. Share with Team\n    at C:\\Users\\VGoli\\OneDrive - Blue Moon Industries, Incorporated\\Documents\\CS7180\\Project 2\\MindGame\\e2e\\coach-flow.spec.ts:69:103"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "PAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
+                        },
+                        {
+                          "text": "PAGE LOG: [Fast Refresh] rebuilding\n"
+                        },
+                        {
+                          "text": "PAGE LOG: [Fast Refresh] done in 374ms\n"
+                        },
+                        {
+                          "text": "Starting coach flow test...\n"
+                        },
+                        {
+                          "text": "PAGE LOG: [Fast Refresh] rebuilding\n"
+                        },
+                        {
+                          "text": "PAGE LOG: [Fast Refresh] done in 386ms\n"
+                        },
+                        {
+                          "text": "PAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
+                        },
+                        {
+                          "text": "Navigated to /coach/templates\n"
+                        },
+                        {
+                          "text": "PAGE LOG: [Fast Refresh] rebuilding\n"
+                        },
+                        {
+                          "text": "PAGE LOG: [Fast Refresh] done in 1126ms\n"
+                        },
+                        {
+                          "text": "PAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
+                        },
+                        {
+                          "text": "Navigated to /coach/templates/new\n"
+                        },
+                        {
+                          "text": "Filling template details...\n"
+                        },
+                        {
+                          "text": "Adding technique...\n"
+                        },
+                        {
+                          "text": "Verifying step addition...\n"
+                        },
+                        {
+                          "text": "Saving template...\n"
+                        },
+                        {
+                          "text": "Waiting for redirect to /coach/templates...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-12T02:22:37.047Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\VGoli\\OneDrive - Blue Moon Industries, Incorporated\\Documents\\CS7180\\Project 2\\MindGame\\test-results\\coach-flow-Coach-Routine-T-8c4a3-ate-a-template-and-share-it-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\VGoli\\OneDrive - Blue Moon Industries, Incorporated\\Documents\\CS7180\\Project 2\\MindGame\\e2e\\coach-flow.spec.ts",
+                        "column": 103,
+                        "line": 69
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f88f06f3b9c45ba98769-7c87ca928f12d9075f21",
+              "file": "coach-flow.spec.ts",
+              "line": 19,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-12T02:22:25.720Z",
+    "duration": 20846.641,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -126,83 +126,89 @@ export function TemplateListClient({ initialTemplates, rosterCount }: { initialT
                 const hasRoster = rosterCount > 0;
 
                 return (
-                    <Card key={template.id} className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all text-white flex flex-col">
-                        <CardHeader className="pb-4">
+                    <Card key={template.id} className="border-white/5 bg-slate-900/40 backdrop-blur-xl hover:border-indigo-500/30 transition-all duration-300 text-white flex flex-col group/card rounded-3xl overflow-hidden relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
+                        <CardHeader className="pb-4 relative">
                             <div className="flex items-start justify-between">
-                                <div>
-                                    <CardTitle className="text-lg text-white">{template.name}</CardTitle>
+                                <div className="space-y-1">
+                                    <CardTitle className="text-xl text-white font-bold tracking-tight">{template.name}</CardTitle>
                                     <div className="flex items-center gap-2 mt-2">
-                                        <Badge variant="secondary" className="capitalize bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-medium">
+                                        <Badge variant="secondary" className="capitalize bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-bold px-3 py-0.5 rounded-lg">
                                             {template.time_tier}
                                         </Badge>
-                                        <div className="flex items-center text-xs text-slate-400 font-medium">
-                                            <Clock className="w-3 h-3 mr-1" />
-                                            {totalMinutes} min
+                                        <div className="flex items-center text-xs text-slate-400 font-bold bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">
+                                            <Clock className="w-3.5 h-3.5 mr-1.5 text-indigo-400" />
+                                            {totalMinutes} MIN
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </CardHeader>
 
-                        <CardContent className="flex-1 pb-4">
+                        <CardContent className="flex-1 pb-4 relative">
                             {template.coach_note && (
-                                <div className="text-sm text-slate-300 bg-slate-800/50 p-3 rounded-md mb-4 italic">
+                                <div className="text-sm text-slate-300 bg-white/5 p-4 rounded-2xl mb-4 italic border border-white/5 leading-relaxed">
                                     &quot;{template.coach_note}&quot;
                                 </div>
                             )}
 
-                            <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
-                                    {template.steps?.length || 0} Steps
+                            <div className="space-y-3">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                                    <span className="w-1 h-1 rounded-full bg-slate-500"></span>
+                                    {template.steps?.length || 0} Routine Steps
                                 </p>
                                 <ul className="space-y-2">
                                     {template.steps?.sort((a, b) => a.step_order - b.step_order).slice(0, 3).map((step) => (
-                                        <li key={step.id} className="flex items-center text-sm text-slate-300">
-                                            <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[10px] mr-2 flex-shrink-0">
+                                        <li key={step.id} className="flex items-center text-sm text-slate-400 group/item">
+                                            <span className="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-bold mr-3 border border-indigo-500/20 group-hover/item:bg-indigo-500 group-hover/item:text-white transition-colors">
                                                 {step.step_order + 1}
                                             </span>
-                                            <span className="truncate">{step.technique?.name}</span>
+                                            <span className="truncate font-medium">{step.technique?.name}</span>
                                         </li>
                                     ))}
                                     {(template.steps?.length || 0) > 3 && (
-                                        <li className="text-xs text-slate-500 italic pl-7">
-                                            + {(template.steps?.length || 0) - 3} more
+                                        <li className="text-[10px] text-slate-500 font-bold uppercase tracking-wider pl-9">
+                                            + {(template.steps?.length || 0) - 3} additional techniques
                                         </li>
                                     )}
                                 </ul>
                             </div>
                         </CardContent>
 
-                        <CardFooter className="pt-0 flex gap-2">
+                        <CardFooter className="pt-2 p-6 flex gap-3 relative border-t border-white/5 bg-white/5">
                             <Button
-                                className={`flex-1 shadow-md border-none ${allShared ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white'}`}
+                                className={`flex-1 h-12 rounded-2xl font-bold shadow-lg transition-all active:scale-95 ${allShared ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-indigo-500/20'}`}
                                 onClick={() => handleShare(template.id, template.name)}
                                 disabled={isSharing === template.id || allShared}
+                                data-testid={`share-button-${template.id}`}
                             >
                                 {isSharing === template.id ? (
-                                    <>Sharing...</>
+                                    <span className="flex items-center gap-2 animate-pulse text-sm">
+                                        <Share2 className="w-4 h-4 animate-spin" /> Sharing...
+                                    </span>
                                 ) : allShared ? (
-                                    <>
-                                        <CheckCircle2 className="w-4 h-4 mr-2" /> Shared
-                                    </>
+                                    <span className="flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4" /> SHARED WITH TEAM
+                                    </span>
                                 ) : (
-                                    <>
-                                        <Share2 className="w-4 h-4 mr-2" />
+                                    <span className="flex items-center gap-2">
+                                        <Share2 className="w-4 h-4" />
                                         {hasRoster && sharedCount > 0
-                                            ? `Share (${sharedCount}/${rosterCount})`
-                                            : "Share with Team"}
-                                    </>
+                                            ? `SYNC (${sharedCount}/${rosterCount})`
+                                            : "SHARE WITH TEAM"}
+                                    </span>
                                 )}
                             </Button>
 
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="icon"
-                                className="text-red-400 hover:text-red-300 hover:bg-red-900/20 border-slate-700 bg-slate-800/50"
+                                className="h-12 w-12 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-2xl border border-white/5 group-hover/card:border-rose-500/20 transition-all"
                                 onClick={() => setDeleteConfirmId(template.id)}
                                 disabled={isDeleting === template.id}
+                                data-testid={`delete-button-${template.id}`}
                             >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-5 h-5" />
                             </Button>
                         </CardFooter>
                     </Card>
