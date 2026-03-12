@@ -15,12 +15,12 @@ export default async function CoachHomePage() {
     if (user) {
         // Fetch coach profile for the code
         const { data: profile } = await supabase
-            .from("coach_profiles")
-            .select("coach_code")
+            .from("profiles")
+            .select("team_code")
             .eq("id", user.id)
             .single();
 
-        coachCode = profile?.coach_code || '';
+        coachCode = profile?.team_code || '';
 
         // Fetch roster count
         const { count: rc } = await supabase
