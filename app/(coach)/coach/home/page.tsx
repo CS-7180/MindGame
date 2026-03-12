@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Plus, Users, LayoutTemplate, Sparkles, Share2 } from "lucide-react";
+import { Plus, Users, LayoutTemplate, Sparkles, Share2, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TeamCodeCard } from "@/components/coach/TeamCodeCard";
 import { createClient } from "@/lib/supabase/server";
+import { format } from "date-fns";
 
 export default async function CoachHomePage() {
     const supabase = await createClient();
@@ -19,6 +20,8 @@ export default async function CoachHomePage() {
 
     interface RosterItem {
         athlete_id: string;
+        joined_at: string | null;
+        has_active_routine: boolean;
         profiles: {
             full_name: string | null;
             avatar_url: string | null;
@@ -27,6 +30,7 @@ export default async function CoachHomePage() {
 
     interface RawRosterData {
         athlete_id: string;
+        joined_at: string | null;
         profiles: {
             full_name: string | null;
             avatar_url: string | null;
@@ -55,14 +59,34 @@ export default async function CoachHomePage() {
         // Fetch roster count and recent athletes
         const { data: rosterData, count: rc } = await supabase
             .from("coach_roster")
-            .select("athlete_id, profiles(full_name, avatar_url)", { count: "exact" })
+            .select("athlete_id, joined_at, profiles(full_name, avatar_url)", { count: "exact" })
             .eq("coach_id", user.id)
+            .order("joined_at", { ascending: false })
             .limit(5);
         rosterCount = rc || 0;
-        // Cast the relationship data to match our interface without using 'any'
+
+        const athleteIds = (rosterData || []).map(r => r.athlete_id);
+        const activeRoutineMap: Record<string, boolean> = {};
+
+        if (athleteIds.length > 0) {
+            const { data: routines } = await supabase
+                .from("routines")
+                .select("athlete_id, is_active")
+                .in("athlete_id", athleteIds)
+                .eq("is_active", true);
+
+            if (routines) {
+                for (const r of routines) {
+                    activeRoutineMap[r.athlete_id] = true;
+                }
+            }
+        }
+
+        // Cast and format the relationship data
         roster = (rosterData as unknown as RawRosterData[])?.map((item) => ({
             ...item,
-            profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles
+            profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles,
+            has_active_routine: !!activeRoutineMap[item.athlete_id]
         })) || [];
 
         // Fetch templates
@@ -152,7 +176,7 @@ export default async function CoachHomePage() {
                 </div>
 
                 {/* Right Column: Main Modules */}
-                <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="lg:col-span-8 space-y-8">
                     {/* Templates Module */}
                     <Card className="border-white/5 bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden flex flex-col group hover:border-indigo-500/30 transition-all duration-300">
                         <CardHeader className="border-b border-white/5 bg-white/5 pb-4 px-6 flex flex-row items-center justify-between">
@@ -162,73 +186,101 @@ export default async function CoachHomePage() {
                             </CardTitle>
                             <Badge variant="secondary" className="bg-white/5 text-slate-400 border-none">{templateCount}</Badge>
                         </CardHeader>
-                        <CardContent className="p-6 flex-1 space-y-4">
+                        <CardContent className="p-6 space-y-4">
                             {templates.length > 0 ? (
-                                <ul className="space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {templates.map((t) => (
-                                        <li key={t.id} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-center justify-between group/item hover:bg-white/10 transition-all">
+                                        <div key={t.id} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-center justify-between group/item hover:bg-white/10 transition-all">
                                             <div className="space-y-1">
-                                                <p className="font-semibold text-slate-200">{t.name}</p>
-                                                <p className="text-xs text-slate-500 capitalize">{t.time_tier} Tier</p>
+                                                <p className="font-semibold text-slate-200 text-sm truncate max-w-[150px]">{t.name}</p>
+                                                <p className="text-[10px] text-indigo-400 uppercase tracking-wider font-bold">{t.time_tier} Tier</p>
                                             </div>
                                             <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity">
                                                 <Share2 className="w-4 h-4 text-indigo-400" />
                                             </div>
-                                        </li>
+                                        </div>
                                     ))}
-                                </ul>
+                                </div>
                             ) : (
                                 <p className="text-center text-slate-500 py-10 text-sm">No templates archived yet.</p>
                             )}
                         </CardContent>
-                        <div className="p-6 pt-0 mt-auto">
+                        <div className="p-6 pt-0 flex justify-end">
                             <Link href="/coach/templates">
-                                <Button className="w-full h-12 bg-white/5 hover:bg-white/10 text-white border-white/10 rounded-2xl font-semibold transition-all group-hover:bg-indigo-600 group-hover:border-indigo-500">
-                                    View Repository
+                                <Button variant="ghost" className="text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-xl font-semibold transition-all">
+                                    Manage Repository →
                                 </Button>
                             </Link>
                         </div>
                     </Card>
 
-                    {/* Roster Module */}
+                    {/* Detailed Roster Module */}
                     <Card className="border-white/5 bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden flex flex-col group hover:border-purple-500/30 transition-all duration-300">
                         <CardHeader className="border-b border-white/5 bg-white/5 pb-4 px-6 flex flex-row items-center justify-between">
                             <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
                                 <Users className="w-5 h-5 text-purple-400" />
                                 Team Roster
                             </CardTitle>
-                            <Badge variant="secondary" className="bg-white/5 text-slate-400 border-none">{rosterCount}</Badge>
+                            <Badge variant="secondary" className="bg-white/5 text-slate-400 border-none">{rosterCount} Total</Badge>
                         </CardHeader>
-                        <CardContent className="p-6 flex-1 space-y-4">
+                        <CardContent className="p-0">
                             {roster.length > 0 ? (
-                                <ul className="space-y-3">
-                                    {roster.map((r) => (
-                                        <li key={r.athlete_id} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500/40 to-indigo-500/40 flex items-center justify-center text-white font-bold text-sm">
-                                                {r.profiles?.full_name?.charAt(0) || 'A'}
-                                            </div>
-                                            <div className="space-y-0.5">
-                                                <p className="font-semibold text-slate-200 text-sm">{r.profiles?.full_name || 'Anonymous Athlete'}</p>
-                                                <div className="flex items-center gap-1.5">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Active</p>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="border-b border-white/5 bg-white/5 mt-4">
+                                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Athlete</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest hidden md:table-cell">Joined</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/5">
+                                            {roster.map((athlete) => (
+                                                <tr key={athlete.athlete_id} className="group/row hover:bg-white/5 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center text-purple-400 font-bold text-xs ring-1 ring-white/10 group-hover/row:scale-110 transition-transform">
+                                                                {athlete.profiles?.full_name?.charAt(0) || 'A'}
+                                                            </div>
+                                                            <span className="font-semibold text-slate-200">{athlete.profiles?.full_name || 'Anonymous Athlete'}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-slate-500 hidden md:table-cell">
+                                                        {athlete.joined_at ? format(new Date(athlete.joined_at), 'MMM d, yyyy') : 'Recently'}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        {athlete.has_active_routine ? (
+                                                            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-medium px-2.5 py-1">
+                                                                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Active Routine
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge variant="outline" className="text-slate-500 border-slate-700 bg-transparent font-medium px-2.5 py-1">
+                                                                <XCircle className="w-3.5 h-3.5 mr-1.5" /> No Routine
+                                                            </Badge>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             ) : (
                                 <p className="text-center text-slate-500 py-10 text-sm">Roster is currently empty.</p>
                             )}
                         </CardContent>
-                        <div className="p-6 pt-0 mt-auto">
+                        <div className="p-6 flex justify-end">
                             <Link href="/coach/roster">
-                                <Button className="w-full h-12 bg-white/5 hover:bg-white/10 text-white border-white/10 rounded-2xl font-semibold transition-all group-hover:bg-purple-600 group-hover:border-purple-500">
-                                    Manage Athletes
+                                <Button variant="ghost" className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-xl font-semibold transition-all">
+                                    Manage Athletes →
                                 </Button>
                             </Link>
                         </div>
                     </Card>
+
+                    <p className="text-xs text-slate-500 italic mt-2 flex items-center gap-1.5 px-6">
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        Privacy note: You only see activation status, not personal scores or logs.
+                    </p>
                 </div>
             </div>
         </div>
