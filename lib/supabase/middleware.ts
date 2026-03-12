@@ -33,19 +33,23 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // If user is not signed in and the path is not /login, /signup, /, or /api-docs, redirect to /login
-    const publicPaths = ["/login", "/signup", "/", "/api-docs"];
-    const isPublicPath = publicPaths.includes(request.nextUrl.pathname) ||
-        ["/login", "/signup"].some(p => request.nextUrl.pathname.startsWith(p));
+    // Paths accessible to anyone (signed in or not)
+    const publicPaths = ["/", "/api-docs"];
+    // Paths only accessible to users who are NOT signed in
+    const authPaths = ["/login", "/signup"];
 
-    if (!user && !isPublicPath) {
+    const isPublicPath = publicPaths.includes(request.nextUrl.pathname);
+    const isAuthPath = authPaths.some(p => request.nextUrl.pathname.startsWith(p));
+
+    // If user is not signed in and the path is not public or an auth path, redirect to /login
+    if (!user && !isPublicPath && !isAuthPath) {
         const url = request.nextUrl.clone();
         url.pathname = "/login";
         return NextResponse.redirect(url);
     }
 
-    // If user IS signed in and trying to access /login or /signup, redirect to /home
-    if (user && isPublicPath) {
+    // If user IS signed in and trying to access auth paths (login/signup), redirect to /home
+    if (user && isAuthPath) {
         const url = request.nextUrl.clone();
         url.pathname = "/home";
         return NextResponse.redirect(url);
