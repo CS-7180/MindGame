@@ -96,7 +96,7 @@ export function TemplateListClient({ initialTemplates, rosterCount }: { initialT
 
     if (templates.length === 0) {
         return (
-            <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm border-dashed text-center py-8">
+            <Card data-testid="empty-templates-state" className="border-slate-800 bg-slate-900/60 backdrop-blur-sm border-dashed text-center py-8">
                 <CardContent className="p-0">
                     <div className="bg-slate-800/50 p-4 rounded-full mx-auto w-16 h-16 flex items-center justify-center mb-4">
                         <LayoutTemplate className="h-8 w-8 text-slate-400" />
@@ -122,11 +122,12 @@ export function TemplateListClient({ initialTemplates, rosterCount }: { initialT
                 const totalMinutes = template.steps?.reduce((acc: number, step) => acc + (step.technique?.duration_minutes || 0), 0) || 0;
 
                 const sharedCount = template.sharedCount || 0;
-                const allShared = rosterCount > 0 && sharedCount >= rosterCount;
-                const hasRoster = rosterCount > 0;
+                const rosterAvailable = rosterCount > 0;
+                const allShared = rosterAvailable && sharedCount >= rosterCount;
+                const hasRoster = rosterAvailable;
 
                 return (
-                    <Card key={template.id} className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all text-white flex flex-col">
+                    <Card key={template.id} data-testid="template-card" className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all text-white flex flex-col">
                         <CardHeader className="pb-4">
                             <div className="flex items-start justify-between">
                                 <div>
@@ -177,7 +178,8 @@ export function TemplateListClient({ initialTemplates, rosterCount }: { initialT
                             <Button
                                 className={`flex-1 shadow-md border-none ${allShared ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white'}`}
                                 onClick={() => handleShare(template.id, template.name)}
-                                disabled={isSharing === template.id || allShared}
+                                disabled={isSharing === template.id || (rosterAvailable && allShared)}
+                                data-testid="share-template-button"
                             >
                                 {isSharing === template.id ? (
                                     <>Sharing...</>

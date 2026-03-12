@@ -82,7 +82,7 @@ type RosterAthlete = {
 function RosterList({ roster }: { roster: RosterAthlete[] }) {
     if (roster.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-slate-800 rounded-lg bg-slate-900/40 backdrop-blur-sm">
+            <div data-testid="empty-roster-state" className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-slate-800 rounded-lg bg-slate-900/40 backdrop-blur-sm">
                 <h3 className="text-xl font-semibold mb-2 text-white">Your roster is empty</h3>
                 <p className="text-slate-400 mb-6 max-w-sm mx-auto">
                     Athletes will appear here once they use your invite code to join.

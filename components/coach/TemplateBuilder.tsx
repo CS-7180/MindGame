@@ -378,6 +378,7 @@ export function TemplateBuilder({ initialTechniques }: { initialTechniques: Tech
                             onClick={handleSaveTemplate}
                             disabled={isSaving || steps.length === 0 || !templateName.trim()}
                             className="h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold shadow-[0_0_20px_rgba(16,185,129,0.4)] disabled:shadow-none hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] transition-all duration-300 px-8 rounded-xl disabled:opacity-50"
+                            data-testid="save-template-button"
                         >
                             {isSaving ? 'Saving...' : (
                                 <span className="flex items-center">
