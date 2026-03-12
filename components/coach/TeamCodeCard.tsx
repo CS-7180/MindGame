@@ -38,7 +38,10 @@ export function TeamCodeCard({ code }: TeamCodeCardProps) {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg font-mono text-xl font-bold tracking-widest text-indigo-400 shadow-inner">
+                        <div 
+                            className="px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg font-mono text-xl font-bold tracking-widest text-indigo-400 shadow-inner"
+                            data-testid="team-code-display"
+                        >
                             {code}
                         </div>
                         <Button

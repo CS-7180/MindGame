@@ -47,8 +47,8 @@ test.describe('Coach Routine Templates Flow', () => {
         const technique = page.locator('[data-testid^="technique-card-"]').first();
         await expect(technique).toBeVisible({ timeout: 15000 });
 
-        // Use dispatchEvent to bypass any pointer event interception from overlays
-        await technique.dispatchEvent('click');
+        // Use standard click instead of dispatchEvent for better reliability
+        await technique.click();
 
         // Wait for state update (technique being added to the builder)
         console.log('Verifying step addition...');
@@ -58,12 +58,16 @@ test.describe('Coach Routine Templates Flow', () => {
         // 6. Save Template
         console.log('Saving template...');
         const saveTemplateBtn = page.getByTestId('save-template-button').first();
-        await saveTemplateBtn.scrollIntoViewIfNeeded();
-        await saveTemplateBtn.click({ force: true });
+        await expect(saveTemplateBtn).toBeEnabled();
+        await saveTemplateBtn.click();
 
-        // Wait for redirect to templates list (toast may disappear due to router.refresh)
+        // Wait for redirect to templates list and ensure list container is visible
+        console.log('Waiting for redirect to /coach/templates...');
         await expect(page).toHaveURL(/\/coach\/templates/, { timeout: 15000 });
-        console.log('Template saved.');
+        
+        // Wait for the template list to be populated (either a template card or the empty state)
+        await expect(page.locator('[data-testid="template-card"]').first().or(page.getByText(/No templates yet/i))).toBeVisible({ timeout: 15000 });
+        console.log('Template saved and list rendered.');
 
         // 7. Share with Team
         console.log('Sharing template...');
@@ -75,14 +79,17 @@ test.describe('Coach Routine Templates Flow', () => {
             });
         });
 
-        // Wait for redirect and ensure the newly created template card has a Share button
-        const shareButton = page.getByTestId('share-template-button').first();
+        // Wait for the newly created template card to have a Share button
+        const firstCard = page.getByTestId('template-card').first();
+        await expect(firstCard).toBeVisible({ timeout: 15000 });
+        
+        const shareButton = firstCard.getByTestId('share-template-button').first();
         await expect(shareButton).toBeVisible({ timeout: 15000 });
         await shareButton.scrollIntoViewIfNeeded();
         await shareButton.click({ force: true });
 
         // Wait for share success toast
-        await expect(page.locator('text=/sent to 1/i')).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('text=/sent to 1/i')).toBeVisible({ timeout: 15000 });
         console.log('Template shared.');
     });
 });

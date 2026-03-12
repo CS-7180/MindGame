@@ -127,7 +127,7 @@ export function TemplateListClient({ initialTemplates, rosterCount }: { initialT
                 const hasRoster = rosterAvailable;
 
                 return (
-                    <Card key={template.id} className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all text-white flex flex-col">
+                    <Card key={template.id} data-testid="template-card" className="border-slate-800 bg-slate-900/60 backdrop-blur-sm hover:bg-slate-900/80 transition-all text-white flex flex-col">
                         <CardHeader className="pb-4">
                             <div className="flex items-start justify-between">
                                 <div>
