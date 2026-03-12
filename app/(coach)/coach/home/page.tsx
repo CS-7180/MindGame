@@ -10,11 +10,37 @@ export default async function CoachHomePage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    interface Template {
+        id: string;
+        name: string;
+        time_tier: string;
+        coach_note: string | null;
+    }
+
+    interface RosterItem {
+        athlete_id: string;
+        profiles: {
+            full_name: string | null;
+            avatar_url: string | null;
+        } | null;
+    }
+
+    interface RawRosterData {
+        athlete_id: string;
+        profiles: {
+            full_name: string | null;
+            avatar_url: string | null;
+        }[] | {
+            full_name: string | null;
+            avatar_url: string | null;
+        } | null;
+    }
+
     let coachCode = '';
     let rosterCount = 0;
     let templateCount = 0;
-    let templates: any[] = [];
-    let roster: any[] = [];
+    let templates: Template[] = [];
+    let roster: RosterItem[] = [];
 
     if (user) {
         // Fetch coach profile
@@ -33,7 +59,11 @@ export default async function CoachHomePage() {
             .eq("coach_id", user.id)
             .limit(5);
         rosterCount = rc || 0;
-        roster = rosterData || [];
+        // Cast the relationship data to match our interface without using 'any'
+        roster = (rosterData as unknown as RawRosterData[])?.map((item) => ({
+            ...item,
+            profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles
+        })) || [];
 
         // Fetch templates
         const { data: templateData, count: tc } = await supabase

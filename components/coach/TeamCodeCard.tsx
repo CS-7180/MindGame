@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Check, Users, CheckCircle2 } from "lucide-react";
+import { Copy, Check, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
 
 interface TeamCodeCardProps {
