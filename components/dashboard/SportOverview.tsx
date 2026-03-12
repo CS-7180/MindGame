@@ -174,6 +174,14 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const gamesToday = sportGames.filter(g => g.game_date === todayStr);
 
+    const formatTime = (timeStr: string) => {
+        if (!timeStr) return '';
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours}:${String(minutes).padStart(2, '0')} ${ampm}`;
+    };
+
     const handleDeleteRoutine = async () => {
         if (!deletingRoutineId) return;
         setIsDeleting(true);
@@ -326,7 +334,7 @@ export default function SportOverview({ displayName, selectedSport, routines, ga
                                                     <Calendar className="h-5 w-5 text-indigo-400 shrink-0 mt-0.5" />
                                                     <div className="w-full">
                                                         <p className="text-sm font-medium text-white">Game Today: {game.game_name}</p>
-                                                        <p className="text-xs text-indigo-200/70 mt-1 mb-3">at {game.game_time.substring(0, 5)}</p>
+                                                        <p className="text-xs text-indigo-200/70 mt-1 mb-3">at {formatTime(game.game_time)}</p>
                                                         <div className="flex gap-2">
                                                             <Button size="sm" variant="outline" className="flex-1 bg-slate-900 border-indigo-500/50 text-indigo-300 hover:bg-indigo-500/20 hover:text-white" onClick={() => router.push(`/log/pre?sport=${encodeURIComponent(selectedSport)}&gameId=${game.id}`)}>
                                                                 Pre-Game Log

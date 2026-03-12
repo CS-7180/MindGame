@@ -45,6 +45,14 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
         return dateStr === todayStr;
     };
 
+    const formatTime = (timeStr: string) => {
+        if (!timeStr) return '';
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours}:${String(minutes).padStart(2, '0')} ${ampm}`;
+    };
+
     return (
         <aside className="w-72 h-[calc(100vh-65px)] sticky top-[65px] border-r border-slate-800/60 bg-slate-950 flex flex-col overflow-hidden">
             {/* Header */}
@@ -103,7 +111,7 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
                                                 {game.game_name}
                                             </p>
                                             <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 mt-0.5">
-                                                <Calendar className="h-3 w-3" /> {dateLabel} • <Clock className="h-3 w-3" /> {game.game_time.substring(0, 5)}
+                                                <Calendar className="h-3 w-3" /> {dateLabel} • <Clock className="h-3 w-3" /> {formatTime(game.game_time)}
                                             </p>
                                         </div>
                                         {isSelected && (
@@ -142,7 +150,7 @@ export default function GameSidebar({ upcomingGames, pastGames, selectedGameId, 
                                                 {game.game_name}
                                             </p>
                                             <p className="text-[11px] text-slate-600 flex items-center gap-1 mt-0.5">
-                                                <Calendar className="h-3 w-3" /> {dateLabel} • <Clock className="h-3 w-3" /> {game.game_time.substring(0, 5)}
+                                                <Calendar className="h-3 w-3" /> {dateLabel} • <Clock className="h-3 w-3" /> {formatTime(game.game_time)}
                                             </p>
                                         </div>
                                     </button>

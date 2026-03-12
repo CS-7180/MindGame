@@ -63,7 +63,7 @@ export function GameScheduler({ defaultSport = "", isSportLocked = false }: Game
     defaultValues: {
       sport: defaultSport,
       game_date: format(new Date(), "yyyy-MM-dd"),
-      game_time: "14:00",
+      game_time: format(new Date(), "HH:mm"),
       reminder_offset_mins: "45",
     },
   });
