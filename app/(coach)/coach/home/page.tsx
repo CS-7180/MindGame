@@ -3,8 +3,8 @@ import { Plus, Users, LayoutTemplate, Sparkles, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TeamCodeCard } from "@/components/coach/TeamCodeCard";
 import { createClient } from "@/lib/supabase/server";
-import { toast } from "sonner";
 
 export default async function CoachHomePage() {
     const supabase = await createClient();
@@ -99,29 +99,7 @@ export default async function CoachHomePage() {
                 {/* Left Column: Stats & Action Items */}
                 <div className="lg:col-span-4 space-y-8">
                     {/* Coach Code Card */}
-                    <Card className="border-indigo-500/20 bg-indigo-950/20 backdrop-blur-xl relative overflow-hidden rounded-3xl group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
-                                <Users className="w-4 h-4" />
-                                Your Team Access
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center justify-between gap-4">
-                                <div className="space-y-1">
-                                    <p className="text-3xl font-mono font-bold text-white tracking-widest" data-testid="coach-code">{coachCode}</p>
-                                    <p className="text-xs text-slate-500">Share this code with your athletes</p>
-                                </div>
-                                <Button size="sm" variant="ghost" className="text-indigo-400 hover:bg-white/5 h-12 w-12 rounded-xl" onClick={() => {
-                                    navigator.clipboard.writeText(coachCode);
-                                    toast.success("Code copied!");
-                                }}>
-                                    <Share2 className="w-5 h-5" />
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <TeamCodeCard code={coachCode} />
 
                     {/* Action Items */}
                     <Card className="border-white/5 bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden">
