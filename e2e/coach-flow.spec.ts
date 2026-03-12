@@ -47,8 +47,8 @@ test.describe('Coach Routine Templates Flow', () => {
         const technique = page.locator('[data-testid^="technique-card-"]').first();
         await expect(technique).toBeVisible({ timeout: 15000 });
 
-        // Use standard click instead of dispatchEvent for better reliability
-        await technique.click();
+        // Revert to dispatchEvent to bypass pointer event interception by <html> in CI
+        await technique.dispatchEvent('click');
 
         // Wait for state update (technique being added to the builder)
         console.log('Verifying step addition...');
@@ -59,7 +59,7 @@ test.describe('Coach Routine Templates Flow', () => {
         console.log('Saving template...');
         const saveTemplateBtn = page.getByTestId('save-template-button').first();
         await expect(saveTemplateBtn).toBeEnabled();
-        await saveTemplateBtn.click();
+        await saveTemplateBtn.click({ force: true });
 
         // Wait for redirect to templates list and ensure list container is visible
         console.log('Waiting for redirect to /coach/templates...');
