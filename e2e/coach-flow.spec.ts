@@ -79,7 +79,7 @@ test.describe('Coach Routine Templates Flow', () => {
         await page.waitForURL('**/coach/templates', { timeout: 15000 });
 
         // The newly created template card should have a Share button
-        const shareButton = page.locator('text="Share with Team"').first();
+        const shareButton = page.getByTestId('share-template-button').first();
         await expect(shareButton).toBeVisible({ timeout: 15000 });
         await shareButton.scrollIntoViewIfNeeded();
         await shareButton.click({ force: true });
