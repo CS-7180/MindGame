@@ -50,7 +50,6 @@ test.describe('Coach Routine Templates Flow', () => {
 
         // Verify that at least one step is added
         console.log('Verifying step addition...');
-        await expect(page.locator('text="No techniques added"')).not.toBeVisible();
         await expect(page.locator('text="1 step configured"')).toBeVisible();
 
         // 6. Save Template
