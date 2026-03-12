@@ -96,7 +96,7 @@ export function TemplateListClient({ initialTemplates, rosterCount }: { initialT
 
     if (templates.length === 0) {
         return (
-            <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm border-dashed text-center py-8">
+            <Card data-testid="empty-templates-state" className="border-slate-800 bg-slate-900/60 backdrop-blur-sm border-dashed text-center py-8">
                 <CardContent className="p-0">
                     <div className="bg-slate-800/50 p-4 rounded-full mx-auto w-16 h-16 flex items-center justify-center mb-4">
                         <LayoutTemplate className="h-8 w-8 text-slate-400" />

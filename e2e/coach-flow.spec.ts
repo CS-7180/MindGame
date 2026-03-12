@@ -61,12 +61,18 @@ test.describe('Coach Routine Templates Flow', () => {
         await expect(saveTemplateBtn).toBeEnabled();
         await saveTemplateBtn.click({ force: true });
 
-        // Wait for redirect to templates list and ensure list container is visible
+        // Wait for success toast to confirm DB operation completion
+        await expect(page.getByText(/Template saved successfully/i)).toBeVisible({ timeout: 10000 });
+
+        // Wait for redirect to templates list and ensure exact URL match to avoid matching /new
         console.log('Waiting for redirect to /coach/templates...');
-        await expect(page).toHaveURL(/\/coach\/templates/, { timeout: 15000 });
+        await expect(page).toHaveURL(/.*\/coach\/templates$/, { timeout: 15000 });
         
         // Wait for the template list to be populated (either a template card or the empty state)
-        await expect(page.locator('[data-testid="template-card"]').first().or(page.getByText(/No templates yet/i))).toBeVisible({ timeout: 15000 });
+        await expect(page.locator('[data-testid="template-card"]').first()
+            .or(page.getByTestId('empty-templates-state'))
+            .or(page.getByText(/No templates yet/i))
+        ).toBeVisible({ timeout: 15000 });
         console.log('Template saved and list rendered.');
 
         // 7. Share with Team
